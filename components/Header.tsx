@@ -17,8 +17,8 @@ export default async function Header({ locale }: { locale: string }) {
       padding: '16px 20px',
       flexWrap: 'wrap'
     }}>
-      <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-      
+      <link rel="icon" href="/icon2.svg" type="image/svg+xml" />
+
       <Link href={`/${locale}`} style={{ fontWeight: 800, fontSize: '1.1rem', textDecoration: 'none', color: 'inherit' }}>
         🎮 {site('brand')}
       </Link>
