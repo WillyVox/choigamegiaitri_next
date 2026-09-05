@@ -105,7 +105,7 @@ export default function SkyStrike() {
     spread: false,
   });
 
-  // Game Engine Mutable Refs (để đảm bảo hiệu năng 60fps không bị dính React State Lag)
+  // Engine Mutable Refs
   const gameStateRef = useRef<GameState>('start');
   const scoreRef = useRef<number>(0);
   const comboRef = useRef<number>(0);
@@ -154,12 +154,10 @@ export default function SkyStrike() {
   const cloudsRef = useRef<Cloud[]>([]);
   const starsRef = useRef<Star[]>([]);
 
-  // Đồng bộ State với Ref
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  // Load HighScore
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -168,7 +166,7 @@ export default function SkyStrike() {
         setHighScore(parsed);
       }
     } catch {
-      // Ignore storage errors
+      // Ignore
     }
   }, []);
 
@@ -204,7 +202,6 @@ export default function SkyStrike() {
     }
   };
 
-  // Khởi tạo phông nền Cloud/Stars
   const initBackground = () => {
     cloudsRef.current = [];
     for (let i = 0; i < 10; i++) {
@@ -417,7 +414,6 @@ export default function SkyStrike() {
     }
   };
 
-  // Cập nhật logic Game Loop
   const update = (dt: number) => {
     elapsedRef.current += dt;
     difficultyRef.current = 1 + elapsedRef.current / 28;
@@ -425,7 +421,6 @@ export default function SkyStrike() {
     const p = playerRef.current;
     const keys = inputRef.current.keys;
 
-    // Lái bằng phím
     const kx = (keys['arrowright'] || keys['d'] ? 1 : 0) - (keys['arrowleft'] || keys['a'] ? 1 : 0);
     const ky = (keys['arrowdown'] || keys['s'] ? 1 : 0) - (keys['arrowup'] || keys['w'] ? 1 : 0);
 
@@ -464,7 +459,6 @@ export default function SkyStrike() {
       if (comboTimerRef.current <= 0) comboRef.current = 0;
     }
 
-    // Quản lý đợt quái (Wave/Spawn)
     waveTimerRef.current += dt;
     spawnTimerRef.current -= dt;
 
@@ -483,21 +477,18 @@ export default function SkyStrike() {
       updateHUD();
     }
 
-    // Cập nhật Đạn Player
     bulletsRef.current.forEach((b) => {
       b.x += b.vx;
       b.y += b.vy;
     });
     bulletsRef.current = bulletsRef.current.filter((b) => b.y > -20 && b.x > -20 && b.x < VW + 20);
 
-    // Cập nhật Đạn Địch
     ebulletsRef.current.forEach((b) => {
       b.x += b.vx;
       b.y += b.vy;
     });
     ebulletsRef.current = ebulletsRef.current.filter((b) => b.y < VH + 20 && b.y > -20);
 
-    // Cập nhật Kẻ Địch
     enemiesRef.current.forEach((e) => {
       if (e.type === 'scout') {
         e.y += e.vy;
@@ -534,13 +525,11 @@ export default function SkyStrike() {
     });
     enemiesRef.current = enemiesRef.current.filter((e) => e.y < VH + 60);
 
-    // Cập nhật Powerups
     powerupsRef.current.forEach((pu) => {
       pu.y += pu.vy;
     });
     powerupsRef.current = powerupsRef.current.filter((pu) => pu.y < VH + 20);
 
-    // Cập nhật Particles
     particlesRef.current.forEach((pt) => {
       pt.t += dt;
       pt.x += pt.vx * dt;
@@ -548,7 +537,6 @@ export default function SkyStrike() {
     });
     particlesRef.current = particlesRef.current.filter((pt) => pt.t < pt.life);
 
-    // Va chạm: Đạn người chơi vs Kẻ địch
     for (const e of enemiesRef.current) {
       for (const b of bulletsRef.current) {
         if (b.hit) continue;
@@ -580,7 +568,6 @@ export default function SkyStrike() {
       return !e.dead;
     });
 
-    // Va chạm: Đạn địch vs Người chơi
     for (const b of ebulletsRef.current) {
       if (b.hit) continue;
       if (dist2(b.x, b.y, p.x, p.y) < (p.r * 0.6 + b.r) * (p.r * 0.6 + b.r)) {
@@ -590,7 +577,6 @@ export default function SkyStrike() {
     }
     ebulletsRef.current = ebulletsRef.current.filter((b) => !b.hit);
 
-    // Va chạm: Kẻ địch va chạm trực tiếp với Người chơi
     for (const e of enemiesRef.current) {
       if (dist2(e.x, e.y, p.x, p.y) < (p.r * 0.7 + e.r * 0.7) * (p.r * 0.7 + e.r * 0.7)) {
         if (e.type !== 'boss') {
@@ -602,7 +588,6 @@ export default function SkyStrike() {
     }
     enemiesRef.current = enemiesRef.current.filter((e) => !e.dead);
 
-    // Va chạm: Nhặt Powerups
     for (const pu of powerupsRef.current) {
       if (pu.hit) continue;
       if (dist2(pu.x, pu.y, p.x, p.y) < (p.r + pu.r) * (p.r + pu.r)) {
@@ -619,7 +604,6 @@ export default function SkyStrike() {
     updateHUD();
   };
 
-  // Canvas Drawing Functions
   const drawPlayer = (ctx: CanvasRenderingContext2D, p: Player) => {
     ctx.save();
     ctx.translate(p.x, p.y);
@@ -682,7 +666,6 @@ export default function SkyStrike() {
       ctx.beginPath();
       ctx.arc(0, 0, 10, 0, 7);
       ctx.fill();
-      // Boss Healthbar
       ctx.restore();
       const w = 90;
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
@@ -736,7 +719,6 @@ export default function SkyStrike() {
       );
     }
 
-    // Sky Background Gradient
     const g = ctx.createLinearGradient(0, 0, 0, VH);
     g.addColorStop(0, '#0b1026');
     g.addColorStop(0.55, '#1d2951');
@@ -744,7 +726,6 @@ export default function SkyStrike() {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, VW, VH);
 
-    // Stars
     for (const s of starsRef.current) {
       s.y += s.s * dt;
       if (s.y > VH * 0.55) s.y = -2;
@@ -757,7 +738,6 @@ export default function SkyStrike() {
     }
     ctx.globalAlpha = 1;
 
-    // Clouds
     for (const c of cloudsRef.current) {
       c.y += c.s * dt;
       if (c.y - c.r > VH) {
@@ -775,7 +755,6 @@ export default function SkyStrike() {
     if (gameStateRef.current === 'playing' || gameStateRef.current === 'paused') {
       const p = playerRef.current;
 
-      // Trail
       for (let i = 0; i < p.trail.length; i++) {
         const t = p.trail[i];
         ctx.globalAlpha = (i / p.trail.length) * 0.5;
@@ -786,7 +765,6 @@ export default function SkyStrike() {
       }
       ctx.globalAlpha = 1;
 
-      // Player
       const blink = p.invuln > 0 && Math.floor(p.invuln * 10) % 2 === 0;
       if (!blink) {
         drawPlayer(ctx, p);
@@ -799,7 +777,6 @@ export default function SkyStrike() {
         ctx.stroke();
       }
 
-      // Bullets
       ctx.fillStyle = '#bff3fb';
       for (const b of bulletsRef.current) {
         ctx.beginPath();
@@ -807,7 +784,6 @@ export default function SkyStrike() {
         ctx.fill();
       }
 
-      // Enemy Bullets
       ctx.fillStyle = '#ffb27a';
       for (const b of ebulletsRef.current) {
         ctx.beginPath();
@@ -815,17 +791,14 @@ export default function SkyStrike() {
         ctx.fill();
       }
 
-      // Enemies
       for (const e of enemiesRef.current) {
         drawEnemy(ctx, e);
       }
 
-      // Powerups
       for (const pu of powerupsRef.current) {
         drawPowerup(ctx, pu);
       }
 
-      // Particles
       for (const pt of particlesRef.current) {
         ctx.globalAlpha = 1 - pt.t / pt.life;
         ctx.fillStyle = pt.color;
@@ -839,7 +812,6 @@ export default function SkyStrike() {
     ctx.restore();
   };
 
-  // Tương tác điều khiển Canvas & Vòng lặp Render
   useEffect(() => {
     initBackground();
 
@@ -919,7 +891,6 @@ export default function SkyStrike() {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
-    // Main Game Loop
     let animId: number;
     let lastT = performance.now();
 
@@ -960,22 +931,24 @@ export default function SkyStrike() {
 
   return (
     <div id="app">
-      {/* Top Banner Ad */}
+      {/* Import Rajdhani font dynamically */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap"
+        rel="stylesheet"
+      />
+
       <div className="ad-slot ad-top" data-ad-slot="top-banner" aria-hidden="true">
         Vị trí quảng cáo 728×90 / responsive
       </div>
 
       <div className="game-shell">
-        {/* Left Side Ad */}
         <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
           Quảng cáo 160×600
         </div>
 
-        {/* Canvas Stage Wrapper */}
         <div className="stage-wrap" ref={stageWrapRef}>
           <canvas ref={canvasRef} id="game" />
 
-          {/* HUD Overlay */}
           <div className="hud">
             <div className="hud-top">
               <div className="hud-block">
@@ -1022,7 +995,6 @@ export default function SkyStrike() {
             </div>
           </div>
 
-          {/* Start Screen */}
           {gameState === 'start' && (
             <div className="screen">
               <div className="logo">
@@ -1041,7 +1013,6 @@ export default function SkyStrike() {
             </div>
           )}
 
-          {/* Pause Screen */}
           {gameState === 'paused' && (
             <div className="screen">
               <div className="logo" style={{ fontSize: 30 }}>
@@ -1056,7 +1027,6 @@ export default function SkyStrike() {
             </div>
           )}
 
-          {/* Game Over Screen */}
           {gameState === 'over' && (
             <div className="screen">
               <div className="final-label">ĐIỂM SỐ</div>
@@ -1073,18 +1043,15 @@ export default function SkyStrike() {
           )}
         </div>
 
-        {/* Right Side Ad */}
         <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
           Quảng cáo 160×600
         </div>
       </div>
 
-      {/* Bottom Banner Ad */}
       <div className="ad-slot ad-bottom" data-ad-slot="bottom-banner" aria-hidden="true">
         Vị trí quảng cáo 320×50 / responsive
       </div>
 
-      {/* SEO Content Section */}
       <div className="about">
         <h1>Sky Strike – Game bắn máy bay online miễn phí</h1>
         <p>
@@ -1100,7 +1067,7 @@ export default function SkyStrike() {
         </p>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         :root {
           --sky-deep: #0b1026;
           --sky-mid: #1d2951;
@@ -1118,6 +1085,11 @@ export default function SkyStrike() {
           --font-body: 'Rajdhani', system-ui, sans-serif;
         }
 
+        #app * {
+          box-sizing: border-box;
+          -webkit-tap-highlight-color: transparent;
+        }
+
         #app {
           min-height: 100vh;
           display: flex;
@@ -1131,6 +1103,7 @@ export default function SkyStrike() {
           );
           font-family: var(--font-body);
           color: var(--cloud);
+          overflow-x: hidden;
         }
 
         .ad-slot {
