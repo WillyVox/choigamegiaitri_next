@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Candy Snake – Game Rắn Săn Kẹo Online Miễn Phí | Chơi Ngay Trên Trình Duyệt</title>
+<meta name="description" content="Candy Snake – game rắn săn kẹo ngọt ngào, chơi miễn phí ngay trên trình duyệt, không cần cài đặt. Điều khiển đơn giản bằng vuốt hoặc phím mũi tên, đồ họa dễ thương, phù hợp mọi lứa tuổi, chơi trên máy tính và điện thoại.">
+<meta name="keywords" content="game rắn săn mồi, candy snake, game rắn ăn kẹo, game con rắn, game arcade online, game miễn phí, game giải trí, game thư giãn, chơi game trên trình duyệt">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Candy Snake">
+<link rel="canonical" href="https://example.com/candy-snake">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Candy Snake – Game Rắn Săn Kẹo Online Miễn Phí">
+<meta property="og:description" content="Điều khiển chú rắn kẹo, ăn thật nhiều kẹo ngọt, phá kỷ lục chiều dài. Chơi ngay trên trình duyệt, không cần tải về.">
+<meta property="og:url" content="https://example.com/candy-snake">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Candy Snake – Game Rắn Săn Kẹo Online Miễn Phí">
+<meta name="twitter:description" content="Điều khiển chú rắn kẹo, ăn thật nhiều kẹo ngọt, phá kỷ lục chiều dài. Chơi ngay trên trình duyệt.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Candy Snake",
+  "description": "Game rắn săn kẹo arcade chơi trực tuyến trên trình duyệt, điều khiển đơn giản, phù hợp mọi lứa tuổi.",
+  "genre": ["Arcade", "Puzzle"],
+  "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
+  "applicationCategory": "Game",
+  "operatingSystem": "Any"
+}
+</script>
+<style>
+  :root{
+    --cream:#FFF8EF;
+    --cream-deep:#FFEDD8;
+    --pink:#FF6FA0;
+    --pink-deep:#E24C82;
+    --mint:#4FDBA6;
+    --mint-deep:#2FB688;
+    --lemon:#FFD34D;
+    --grape:#9B6FD6;
+    --choco:#4A2E2A;
+    --choco-soft:#7A5A52;
+    --panel:rgba(255,255,255,0.85);
+    --panel-border:rgba(74,46,42,0.12);
+    --font-display:'Baloo 2','Fredoka',system-ui,sans-serif;
+    --font-body:'Nunito',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--cream);
+    font-family:var(--font-body);
+    color:var(--choco);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--cream-deep) 0%, var(--cream) 55%),
+      repeating-linear-gradient(135deg, rgba(255,111,160,0.035) 0 26px, rgba(155,111,214,0.035) 26px 52px);
+  }
+  /* ---------- Ad slots ---------- */
+  .ad-slot{
+    display:flex;align-items:center;justify-content:center;
+    width:100%;
+    color:rgba(74,46,42,0.35);
+    font-size:11px;letter-spacing:0.04em;
+    background:repeating-linear-gradient(135deg, rgba(74,46,42,0.03) 0 10px, rgba(74,46,42,0.01) 10px 20px);
+    border-top:1px dashed rgba(74,46,42,0.16);
+    border-bottom:1px dashed rgba(74,46,42,0.16);
+    flex-shrink:0;
+  }
+  /* AdSense (hoặc mạng quảng cáo khác) sẽ được chèn vào các div .ad-slot bên dưới.
+     Mỗi slot có data-ad-slot để map với ID quảng cáo thật khi tích hợp. */
+  .ad-top{ min-height:60px; max-height:90px; }
+  .ad-bottom{ min-height:50px; max-height:90px; margin-top:8px; }
+  .ad-side{ width:160px; min-width:160px; height:600px; writing-mode:vertical-rl; }
+  @media (max-width: 900px){ .ad-side{ display:none; } }
+
+  /* ---------- Layout ---------- */
+  .game-shell{
+    display:flex;align-items:flex-start;justify-content:center;gap:16px;
+    padding:16px;width:100%;max-width:1200px;
+  }
+  .stage-wrap{
+    position:relative;
+    width:100%;max-width:440px;
+    aspect-ratio:1/1;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(74,46,42,0.1), 0 20px 50px rgba(74,46,42,0.18), 0 0 0 8px #fff inset;
+    background:var(--cream-deep);
+    touch-action:none;user-select:none;
+  }
+  canvas{display:block;width:100%;height:100%;}
+
+  /* ---------- HUD ---------- */
+  .hud{position:absolute;inset:0;pointer-events:none;font-family:var(--font-display);}
+  .hud-top{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:flex-start;justify-content:space-between;
+    padding:10px 12px;
+  }
+  .hud-block{
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:14px;padding:6px 12px;
+    box-shadow:0 3px 10px rgba(74,46,42,0.08);
+  }
+  .score-label{font-size:10px;letter-spacing:0.06em;color:var(--pink-deep);font-weight:700;}
+  .score-value{font-size:22px;font-weight:800;line-height:1;color:var(--choco);}
+  .combo{font-size:11px;color:var(--mint-deep);height:14px;font-weight:700;}
+  .pause-btn{
+    pointer-events:auto;width:36px;height:36px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    color:var(--choco);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 10px rgba(74,46,42,0.08);
+  }
+  .powerup-bar{position:absolute;top:56px;right:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+  .pu-chip{
+    display:flex;align-items:center;gap:5px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700;
+    box-shadow:0 3px 8px rgba(74,46,42,0.08);
+  }
+  .pu-dot{width:8px;height:8px;border-radius:50%;}
+
+  /* D-pad */
+  .dpad{
+    position:absolute;bottom:14px;right:14px;
+    display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,34px);
+    gap:4px;pointer-events:auto;opacity:0.85;
+  }
+  .dpad button{
+    border:none;border-radius:10px;background:var(--panel);
+    border:1px solid var(--panel-border);
+    color:var(--choco-soft);font-size:15px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px rgba(74,46,42,0.12);
+    cursor:pointer;
+  }
+  .dpad button:active{background:var(--pink);color:#fff;}
+  .dpad .up{grid-column:2;grid-row:1;}
+  .dpad .left{grid-column:1;grid-row:2;}
+  .dpad .right{grid-column:3;grid-row:2;}
+  .dpad .down{grid-column:2;grid-row:3;}
+
+  /* ---------- Screens ---------- */
+  .screen{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;text-align:center;padding:24px;
+    background:linear-gradient(180deg, rgba(255,248,239,0.96), rgba(255,237,216,0.98));
+  }
+  .screen.hidden{display:none;}
+  .logo{
+    font-family:var(--font-display);font-weight:800;font-size:42px;
+    letter-spacing:0.01em;color:var(--choco);line-height:1;
+  }
+  .logo span{color:var(--pink);}
+  .tagline{color:var(--choco-soft);font-size:14px;max-width:280px;font-weight:700;}
+  .hint{font-size:12px;color:var(--choco-soft);max-width:260px;line-height:1.5;}
+  .hiscore-pill{
+    font-size:12px;color:var(--pink-deep);font-weight:800;
+    border:1px solid var(--panel-border);padding:4px 14px;border-radius:20px;
+    background:#fff;
+  }
+  .btn{
+    font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:0.02em;
+    color:#fff;background:linear-gradient(180deg, var(--pink), var(--pink-deep));
+    border:none;border-radius:16px;padding:14px 40px;cursor:pointer;
+    box-shadow:0 6px 0 var(--pink-deep), 0 10px 22px rgba(226,76,130,0.35);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--pink-deep);}
+  .btn.secondary{
+    background:transparent;color:var(--choco-soft);
+    border:1px solid var(--panel-border);box-shadow:none;padding:10px 28px;font-size:14px;
+  }
+  .final-score{font-size:40px;font-weight:800;color:var(--choco);}
+  .final-label{font-size:11px;letter-spacing:0.08em;color:var(--pink-deep);font-weight:700;}
+  .record-badge{
+    font-size:12px;color:#4A2E2A;background:var(--lemon);
+    padding:3px 12px;border-radius:20px;font-weight:800;
+  }
+  .interstitial{
+    width:100%;max-width:280px;min-height:70px;
+    border:1px dashed rgba(74,46,42,0.22);border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    color:rgba(74,46,42,0.35);font-size:11px;
+  }
+
+  /* ---------- SEO content below fold ---------- */
+  .about{max-width:640px;width:100%;padding:28px 20px 40px;color:var(--choco-soft);font-size:13px;line-height:1.7;}
+  .about h1{font-size:15px;color:var(--choco);font-weight:800;margin:0 0 8px;}
+  .about h2{font-size:13px;color:var(--pink-deep);font-weight:800;margin:18px 0 6px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="ad-slot ad-top" data-ad-slot="top-banner" aria-hidden="true">Vị trí quảng cáo 728×90 / responsive</div>
+
+  <div class="game-shell">
+    <div class="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">Quảng cáo 160×600</div>
+
+    <div class="stage-wrap" id="stageWrap">
+      <canvas id="game"></canvas>
+
+      <div class="hud">
+        <div class="hud-top">
+          <div class="hud-block">
+            <div class="score-label">ĐIỂM</div>
+            <div class="score-value" id="scoreVal">0</div>
+            <div class="combo" id="comboVal"></div>
+          </div>
+          <button class="pause-btn" id="pauseBtn" aria-label="Tạm dừng">⏸</button>
+        </div>
+        <div class="powerup-bar" id="powerupBar"></div>
+        <div class="dpad" id="dpad">
+          <button class="up" data-dir="up">▲</button>
+          <button class="left" data-dir="left">◀</button>
+          <button class="right" data-dir="right">▶</button>
+          <button class="down" data-dir="down">▼</button>
+        </div>
+      </div>
+
+      <!-- Start screen -->
+      <div class="screen" id="startScreen">
+        <div class="logo">CANDY<span>SNAKE</span></div>
+        <div class="tagline">Dẫn đường cho chú rắn kẹo ăn thật nhiều kẹo ngọt</div>
+        <div class="hiscore-pill" id="hiscorePillStart">Kỷ lục: 0</div>
+        <button class="btn" id="playBtn">CHƠI NGAY</button>
+        <div class="hint" id="controlHint">Máy tính: dùng phím mũi tên / WASD.<br>Điện thoại: vuốt theo hướng muốn đi, hoặc dùng nút điều hướng.</div>
+      </div>
+
+      <!-- Pause screen -->
+      <div class="screen hidden" id="pauseScreen">
+        <div class="logo" style="font-size:30px;">TẠM DỪNG</div>
+        <button class="btn" id="resumeBtn">TIẾP TỤC</button>
+        <button class="btn secondary" id="restartFromPauseBtn">Chơi lại từ đầu</button>
+      </div>
+
+      <!-- Game over screen -->
+      <div class="screen hidden" id="overScreen">
+        <div class="final-label">ĐIỂM SỐ</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="record-badge hidden" id="recordBadge">🏆 KỶ LỤC MỚI!</div>
+        <div class="hiscore-pill" id="hiscorePillOver">Kỷ lục: 0</div>
+        <button class="btn" id="retryBtn">CHƠI LẠI</button>
+        <div class="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">Quảng cáo (khi kết thúc lượt chơi)</div>
+      </div>
+    </div>
+
+    <div class="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">Quảng cáo 160×600</div>
+  </div>
+
+  <div class="ad-slot ad-bottom" data-ad-slot="bottom-banner" aria-hidden="true">Vị trí quảng cáo 320×50 / responsive</div>
+
+  <div class="about">
+    <h1>Candy Snake – Game rắn săn kẹo online miễn phí</h1>
+    <p>Candy Snake là phiên bản game rắn săn mồi cổ điển khoác lên mình lớp áo kẹo ngọt đầy màu sắc, chơi trực tiếp trên trình duyệt mà không cần tải hay cài đặt. Dẫn đường cho chú rắn ăn thật nhiều loại kẹo khác nhau, mỗi loại mang một hiệu ứng thú vị, để kéo dài thân rắn và ghi điểm thật cao.</p>
+    <h2>Cách chơi</h2>
+    <p>Trên máy tính, dùng phím mũi tên hoặc WASD để đổi hướng di chuyển. Trên điện thoại, vuốt tay theo hướng muốn rẽ hoặc bấm vào nút điều hướng ở góc màn hình. Rắn tự động di chuyển liên tục, bạn chỉ cần chọn đúng hướng đi để ăn kẹo và né va vào chính thân mình.</p>
+    <h2>Thư giãn mọi lúc, mọi nơi</h2>
+    <p>Mỗi ván chơi chỉ mất vài phút, độ khó tăng dần nhẹ nhàng theo điểm số nên vừa sức cho người mới lẫn thử thách cho người chơi lâu năm. Kỷ lục điểm số được lưu lại để bạn quay lại thử sức bất cứ khi nào rảnh rỗi.</p>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   CANDY SNAKE — single-file browser game
+   ========================================================= */
+(function(){
+  "use strict";
+
+  const COLS = 20, ROWS = 20, CELL = 22;
+  const VW = COLS*CELL, VH = ROWS*CELL;
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const stageWrap = document.getElementById('stageWrap');
+
+  const scoreValEl = document.getElementById('scoreVal');
+  const comboValEl = document.getElementById('comboVal');
+  const powerupBarEl = document.getElementById('powerupBar');
+
+  const startScreen = document.getElementById('startScreen');
+  const pauseScreen = document.getElementById('pauseScreen');
+  const overScreen  = document.getElementById('overScreen');
+  const playBtn = document.getElementById('playBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const restartFromPauseBtn = document.getElementById('restartFromPauseBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const finalScoreEl = document.getElementById('finalScore');
+  const recordBadgeEl = document.getElementById('recordBadge');
+  const hiscorePillStart = document.getElementById('hiscorePillStart');
+  const hiscorePillOver = document.getElementById('hiscorePillOver');
+  const dpad = document.getElementById('dpad');
+
+  // ---------- Persistent high score ----------
+  let highScore = 0;
+  async function loadHighScore(){
+    try{
+      const res = await window.storage.get('candysnake_highscore', false);
+      if(res && res.value){ highScore = parseInt(res.value,10) || 0; }
+    }catch(e){ highScore = 0; }
+    hiscorePillStart.textContent = 'Kỷ lục: ' + highScore;
+  }
+  async function saveHighScore(val){
+    highScore = val;
+    try{ await window.storage.set('candysnake_highscore', String(val), false); }catch(e){}
+  }
+  loadHighScore();
+
+  // ---------- Resize / DPR ----------
+  function resize(){
+    const rect = stageWrap.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio||1, 2.5);
+    canvas.width = Math.round(VW*dpr);
+    canvas.height = Math.round(VH*dpr);
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', ()=>setTimeout(resize,50));
+  resize();
+
+  if('ontouchstart' in window){
+    document.getElementById('controlHint').innerHTML = 'Vuốt theo hướng muốn rẽ, hoặc bấm nút điều hướng ở góc màn hình.';
+  }
+
+  // ---------- Utility ----------
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+  function chance(p){ return Math.random()<p; }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+  const DIRS = {
+    up:{x:0,y:-1}, down:{x:0,y:1}, left:{x:-1,y:0}, right:{x:1,y:0}
+  };
+  const OPPOSITE = {up:'down',down:'up',left:'right',right:'left'};
+
+  // ---------- Game state ----------
+  let state = 'start'; // start | playing | paused | over
+  let snake, dir, nextDirQueue, growPending;
+  let candies, particles;
+  let score, combo, comboTimer;
+  let tickAcc, tickInterval;
+  let ghostT, slowT, slowFactor;
+  let shakeT;
+
+  function resetGame(){
+    const cx = Math.floor(COLS/2), cy = Math.floor(ROWS/2);
+    snake = [
+      {x:cx-2,y:cy},{x:cx-1,y:cy},{x:cx,y:cy},{x:cx+1,y:cy}
+    ];
+    dir = 'right';
+    nextDirQueue = [];
+    growPending = 0;
+    candies = [];
+    particles = [];
+    score = 0; combo=0; comboTimer=0;
+    tickAcc = 0; tickInterval = 0.14;
+    ghostT = 0; slowT = 0; slowFactor = 1;
+    shakeT = 0;
+    spawnCandy(); spawnCandy();
+    updateHUD();
+  }
+
+  function occupied(x,y){
+    return snake.some(s=>s.x===x&&s.y===y) || candies.some(c=>c.x===x&&c.y===y);
+  }
+
+  function spawnCandy(){
+    let x,y,tries=0;
+    do{ x=randInt(0,COLS-1); y=randInt(0,ROWS-1); tries++; }
+    while(occupied(x,y) && tries<200);
+    const roll = Math.random();
+    let type;
+    if(roll<0.58) type='normal';
+    else if(roll<0.75) type='golden';
+    else if(roll<0.86) type='rainbow';
+    else if(roll<0.95) type='mint';
+    else type='freeze';
+    const hue = ['#FF6FA0','#FFD34D','#4FDBA6','#9B6FD6','#FF9B54'][randInt(0,4)];
+    candies.push({x,y,type,color:hue,bob:Math.random()*Math.PI*2});
+  }
+
+  function updateHUD(){
+    scoreValEl.textContent = Math.floor(score);
+    comboValEl.textContent = combo>1 ? ('x'+combo+' liên tiếp') : '';
+    powerupBarEl.innerHTML = '';
+    function chip(label,color){
+      const c = document.createElement('div'); c.className='pu-chip';
+      c.innerHTML = '<span class="pu-dot" style="background:'+color+'"></span>'+label;
+      powerupBarEl.appendChild(c);
+    }
+    if(ghostT>0) chip('Xuyên thân','#9B6FD6');
+    if(slowT>0) chip('Chậm thời gian','#4FDBA6');
+  }
+
+  function gameOver(){
+    state='over';
+    finalScoreEl.textContent = Math.floor(score);
+    const isRecord = Math.floor(score) > highScore;
+    recordBadgeEl.classList.toggle('hidden', !isRecord);
+    if(isRecord) saveHighScore(Math.floor(score));
+    hiscorePillOver.textContent = 'Kỷ lục: ' + Math.max(highScore, Math.floor(score));
+    overScreen.classList.remove('hidden');
+  }
+
+  function queueDir(d){
+    const last = nextDirQueue.length ? nextDirQueue[nextDirQueue.length-1] : dir;
+    if(d===OPPOSITE[last]) return;
+    if(nextDirQueue.length<2) nextDirQueue.push(d);
+  }
+
+  // ---------- Input ----------
+  window.addEventListener('keydown', e=>{
+    const k = e.key.toLowerCase();
+    const map = {arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+    if(map[k]){ e.preventDefault(); if(state==='playing') queueDir(map[k]); }
+    if(k==='p'){ pauseBtn.click(); }
+  });
+
+  dpad.addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-dir]');
+    if(!btn) return;
+    if(state==='playing') queueDir(btn.dataset.dir);
+  });
+
+  let touchStart = null;
+  stageWrap.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t = e.touches[0];
+    touchStart = {x:t.clientX,y:t.clientY};
+  }, {passive:false});
+  stageWrap.addEventListener('touchmove', e=>{ e.preventDefault(); }, {passive:false});
+  stageWrap.addEventListener('touchend', e=>{
+    e.preventDefault();
+    if(!touchStart) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX-touchStart.x, dy = t.clientY-touchStart.y;
+    touchStart = null;
+    if(Math.max(Math.abs(dx),Math.abs(dy)) < 18) return;
+    if(state!=='playing') return;
+    if(Math.abs(dx)>Math.abs(dy)) queueDir(dx>0?'right':'left');
+    else queueDir(dy>0?'down':'up');
+  }, {passive:false});
+
+  // ---------- Main loop ----------
+  let lastT = performance.now();
+  function loop(now){
+    let dt = (now-lastT)/1000;
+    lastT = now;
+    dt = Math.min(dt, 0.05);
+    if(state==='playing') update(dt);
+    render(dt);
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt){
+    if(ghostT>0) ghostT -= dt;
+    if(slowT>0){ slowT -= dt; slowFactor = 0.55; if(slowT<=0) slowFactor=1; }
+    if(comboTimer>0){ comboTimer-=dt; if(comboTimer<=0) combo=0; }
+    if(shakeT>0) shakeT -= dt;
+
+    for(const c of candies){ c.bob += dt*4; }
+    for(const p of particles){ p.t+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
+    particles = particles.filter(p=>p.t<p.life);
+
+    tickAcc += dt;
+    const targetInterval = tickInterval * slowFactor;
+    if(tickAcc >= targetInterval){
+      tickAcc -= targetInterval;
+      step();
+    }
+    updateHUD();
+  }
+
+  function step(){
+    if(nextDirQueue.length){ dir = nextDirQueue.shift(); }
+    const d = DIRS[dir];
+    const head = snake[snake.length-1];
+    let nx = head.x + d.x, ny = head.y + d.y;
+    // wrap around edges (relaxing, forgiving for all ages)
+    if(nx<0) nx=COLS-1; if(nx>COLS-1) nx=0;
+    if(ny<0) ny=ROWS-1; if(ny>ROWS-1) ny=0;
+
+    // self collision
+    const bodyToCheck = growPending>0 ? snake : snake.slice(1);
+    const hitSelf = bodyToCheck.some(s=>s.x===nx&&s.y===ny);
+    if(hitSelf && ghostT<=0){
+      gameOver();
+      return;
+    }
+
+    snake.push({x:nx,y:ny});
+    if(growPending>0){ growPending--; }
+    else { snake.shift(); }
+
+    // eat candy?
+    const ci = candies.findIndex(c=>c.x===nx&&c.y===ny);
+    if(ci>=0){
+      const c = candies[ci];
+      candies.splice(ci,1);
+      eatCandy(c);
+      spawnCandy();
+      if(candies.length<2) spawnCandy();
+    }
+  }
+
+  function eatCandy(c){
+    combo += 1; comboTimer = 2.2;
+    const mult = 1 + combo*0.08;
+    burst(c.x*CELL+CELL/2, c.y*CELL+CELL/2, c.color, 12);
+    if(c.type==='normal'){
+      score += Math.round(10*mult);
+      growPending += 1;
+      tickInterval = clamp(tickInterval - 0.0015, 0.075, 0.2);
+    } else if(c.type==='golden'){
+      score += Math.round(30*mult);
+      growPending += 2;
+      shakeT = 0.15;
+    } else if(c.type==='rainbow'){
+      score += Math.round(15*mult);
+      growPending += 1;
+      ghostT = 5;
+    } else if(c.type==='mint'){
+      score += Math.round(12*mult);
+      const removeN = Math.min(2, Math.max(0, snake.length-3));
+      for(let i=0;i<removeN;i++) snake.shift();
+    } else if(c.type==='freeze'){
+      score += Math.round(12*mult);
+      growPending += 1;
+      slowT = 4;
+    }
+  }
+
+  function burst(x,y,color,n){
+    for(let i=0;i<n;i++){
+      const a = rand(0,Math.PI*2), sp = rand(30,90);
+      particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rand(0.3,0.6),t:0,color,r:rand(1.5,3)});
+    }
+  }
+
+  // ---------- Render ----------
+  function render(dt){
+    ctx.clearRect(0,0,VW,VH);
+    ctx.save();
+    if(shakeT>0){
+      ctx.translate(rand(-3,3), rand(-3,3));
+    }
+
+    // board background
+    ctx.fillStyle = '#FFEDD8';
+    ctx.fillRect(0,0,VW,VH);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        if((x+y)%2===0) ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
+      }
+    }
+
+    if(state==='playing'||state==='paused'){
+      // candies
+      for(const c of candies){ drawCandy(c); }
+
+      // snake
+      const ghost = ghostT>0;
+      for(let i=0;i<snake.length;i++){
+        const s = snake[i];
+        const isHead = i===snake.length-1;
+        const px = s.x*CELL+CELL/2, py = s.y*CELL+CELL/2;
+        ctx.globalAlpha = ghost ? 0.65 + Math.sin(performance.now()/80)*0.15 : 1;
+        if(isHead){
+          ctx.fillStyle = ghost ? '#B98CF0' : '#FF6FA0';
+        } else {
+          const t = i/snake.length;
+          ctx.fillStyle = i%2===0 ? '#FFD34D' : (ghost ? '#C9A6F5' : '#FF9BBE');
+        }
+        ctx.beginPath();
+        ctx.arc(px,py,CELL*0.42,0,7);
+        ctx.fill();
+        if(isHead){
+          // eyes
+          ctx.fillStyle = '#4A2E2A';
+          const d = DIRS[dir];
+          const ex = px + d.x*5, ey = py + d.y*5;
+          const perpx = -d.y*4, perpy = d.x*4;
+          ctx.beginPath(); ctx.arc(ex+perpx, ey+perpy, 2, 0, 7); ctx.fill();
+          ctx.beginPath(); ctx.arc(ex-perpx, ey-perpy, 2, 0, 7); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // particles
+      for(const p of particles){
+        ctx.globalAlpha = 1-(p.t/p.life);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.restore();
+  }
+
+  function drawCandy(c){
+    const px = c.x*CELL+CELL/2, py = c.y*CELL+CELL/2 + Math.sin(c.bob)*1.5;
+    ctx.save();
+    ctx.translate(px,py);
+    if(c.type==='normal'){
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.arc(0,0,CELL*0.34,0,7); ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.beginPath(); ctx.arc(-3,-3,2.4,0,7); ctx.fill();
+    } else if(c.type==='golden'){
+      ctx.fillStyle = '#FFD34D';
+      ctx.save(); ctx.rotate(Math.PI/4);
+      ctx.fillRect(-CELL*0.3,-CELL*0.3,CELL*0.6,CELL*0.6);
+      ctx.restore();
+      ctx.strokeStyle='#E2A93A'; ctx.lineWidth=1.5;
+      ctx.save(); ctx.rotate(Math.PI/4);
+      ctx.strokeRect(-CELL*0.3,-CELL*0.3,CELL*0.6,CELL*0.6);
+      ctx.restore();
+    } else if(c.type==='rainbow'){
+      const cols = ['#FF6FA0','#FFD34D','#4FDBA6','#9B6FD6','#5FB6FF'];
+      for(let i=0;i<cols.length;i++){
+        ctx.strokeStyle = cols[i]; ctx.lineWidth=2.4;
+        ctx.beginPath(); ctx.arc(0,0,CELL*0.36 - i*1.8, i*0.6, i*0.6+4.5); ctx.stroke();
+      }
+    } else if(c.type==='mint'){
+      ctx.fillStyle = '#4FDBA6';
+      ctx.beginPath();
+      for(let i=0;i<8;i++){
+        const a = i*Math.PI/4;
+        const r = i%2===0 ? CELL*0.36 : CELL*0.2;
+        ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+      }
+      ctx.closePath(); ctx.fill();
+    } else if(c.type==='freeze'){
+      ctx.strokeStyle = '#5FD0E0'; ctx.lineWidth=2.4;
+      for(let i=0;i<3;i++){
+        ctx.save(); ctx.rotate(i*Math.PI/3);
+        ctx.beginPath(); ctx.moveTo(0,-CELL*0.34); ctx.lineTo(0,CELL*0.34); ctx.stroke();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
+  // ---------- Screen transitions ----------
+  function showScreen(el){ el.classList.remove('hidden'); }
+  function hideScreen(el){ el.classList.add('hidden'); }
+
+  playBtn.addEventListener('click', ()=>{
+    resetGame(); hideScreen(startScreen); state='playing';
+  });
+  pauseBtn.addEventListener('click', ()=>{
+    if(state==='playing'){ state='paused'; showScreen(pauseScreen); }
+    else if(state==='paused'){ state='playing'; hideScreen(pauseScreen); }
+  });
+  resumeBtn.addEventListener('click', ()=>{ state='playing'; hideScreen(pauseScreen); });
+  restartFromPauseBtn.addEventListener('click', ()=>{
+    resetGame(); hideScreen(pauseScreen); state='playing';
+  });
+  retryBtn.addEventListener('click', ()=>{
+    resetGame(); hideScreen(overScreen); state='playing';
+  });
+
+  resetGame();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

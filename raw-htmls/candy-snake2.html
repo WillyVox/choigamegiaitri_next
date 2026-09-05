@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Candy Snake – Game Rắn Săn Kẹo 1-2 Người Chơi Online Miễn Phí</title>
+<meta name="description" content="Candy Snake – game rắn săn kẹo ngọt ngào, chơi một mình hoặc rủ bạn bè chơi 2 người (cùng máy hoặc online từ xa), miễn phí ngay trên trình duyệt, không cần cài đặt. Điều khiển đơn giản, đồ họa dễ thương, phù hợp mọi lứa tuổi, mượt mà trên cả máy tính và điện thoại.">
+<meta name="keywords" content="game rắn săn mồi, candy snake, game rắn ăn kẹo, game rắn 2 người, game rắn chơi cùng bạn bè, game rắn online, game con rắn, game arcade online, game miễn phí, game giải trí, game thư giãn, chơi game trên trình duyệt">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Candy Snake">
+<link rel="canonical" href="https://example.com/candy-snake">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Candy Snake – Game Rắn Săn Kẹo, Chơi 1 Hoặc 2 Người Online Miễn Phí">
+<meta property="og:description" content="Điều khiển chú rắn kẹo, ăn thật nhiều kẹo ngọt, phá kỷ lục chiều dài — chơi một mình hoặc thách đấu bạn bè 2 người, cùng máy hoặc online. Chơi ngay trên trình duyệt, không cần tải về.">
+<meta property="og:url" content="https://example.com/candy-snake">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Candy Snake – Game Rắn Săn Kẹo, Chơi 1 Hoặc 2 Người Online Miễn Phí">
+<meta name="twitter:description" content="Điều khiển chú rắn kẹo, ăn thật nhiều kẹo ngọt, thách đấu bạn bè 2 người cùng máy hoặc online. Chơi ngay trên trình duyệt.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Candy Snake",
+  "description": "Game rắn săn kẹo arcade chơi trực tuyến trên trình duyệt, chơi một mình hoặc hai người (cùng máy hoặc online), điều khiển đơn giản, phù hợp mọi lứa tuổi.",
+  "genre": ["Arcade", "Puzzle", "Multiplayer"],
+  "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
+  "applicationCategory": "Game",
+  "numberOfPlayers": "1-2",
+  "operatingSystem": "Any"
+}
+</script>
+<style>
+  :root{
+    --cream:#FFF8EF;
+    --cream-deep:#FFEDD8;
+    --pink:#FF6FA0;
+    --pink-deep:#E24C82;
+    --mint:#4FDBA6;
+    --mint-deep:#2FB688;
+    --lemon:#FFD34D;
+    --grape:#9B6FD6;
+    --blue:#5FB6FF;
+    --blue-deep:#2E8FD1;
+    --choco:#4A2E2A;
+    --choco-soft:#7A5A52;
+    --panel:rgba(255,255,255,0.85);
+    --panel-border:rgba(74,46,42,0.12);
+    --font-display:'Baloo 2','Fredoka',system-ui,sans-serif;
+    --font-body:'Nunito',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  .hidden{display:none !important;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--cream);
+    font-family:var(--font-body);
+    color:var(--choco);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--cream-deep) 0%, var(--cream) 55%),
+      repeating-linear-gradient(135deg, rgba(255,111,160,0.035) 0 26px, rgba(155,111,214,0.035) 26px 52px);
+  }
+  /* ---------- Ad slots ---------- */
+  .ad-slot{
+    display:flex;align-items:center;justify-content:center;
+    width:100%;
+    color:rgba(74,46,42,0.35);
+    font-size:11px;letter-spacing:0.04em;
+    background:repeating-linear-gradient(135deg, rgba(74,46,42,0.03) 0 10px, rgba(74,46,42,0.01) 10px 20px);
+    border-top:1px dashed rgba(74,46,42,0.16);
+    border-bottom:1px dashed rgba(74,46,42,0.16);
+    flex-shrink:0;
+  }
+  /* AdSense (hoặc mạng quảng cáo khác) sẽ được chèn vào các div .ad-slot bên dưới.
+     Mỗi slot có data-ad-slot để map với ID quảng cáo thật khi tích hợp. */
+  .ad-top{ min-height:60px; max-height:90px; }
+  .ad-bottom{ min-height:50px; max-height:90px; margin-top:8px; }
+  .ad-side{ width:160px; min-width:160px; height:600px; writing-mode:vertical-rl; }
+  @media (max-width: 900px){ .ad-side{ display:none; } }
+
+  /* ---------- Layout ---------- */
+  .game-shell{
+    display:flex;align-items:flex-start;justify-content:center;gap:16px;
+    padding:16px;width:100%;max-width:1200px;
+  }
+  .stage-wrap{
+    position:relative;
+    width:100%;max-width:440px;
+    aspect-ratio:1/1;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(74,46,42,0.1), 0 20px 50px rgba(74,46,42,0.18), 0 0 0 8px #fff inset;
+    background:var(--cream-deep);
+    touch-action:none;user-select:none;
+  }
+  canvas{display:block;width:100%;height:100%;}
+
+  /* ---------- HUD ---------- */
+  .hud{position:absolute;inset:0;pointer-events:none;font-family:var(--font-display);}
+  .hud-top{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:flex-start;justify-content:space-between;
+    padding:10px 12px;gap:8px;
+  }
+  .hud-block{
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:14px;padding:6px 12px;
+    box-shadow:0 3px 10px rgba(74,46,42,0.08);
+  }
+  .hud-block.p2{ border-color:rgba(46,143,209,0.35); }
+  .score-label{font-size:10px;letter-spacing:0.06em;color:var(--pink-deep);font-weight:700;}
+  .hud-block.p2 .score-label{ color:var(--blue-deep); }
+  .score-value{font-size:22px;font-weight:800;line-height:1;color:var(--choco);}
+  .combo{font-size:11px;color:var(--mint-deep);height:14px;font-weight:700;}
+  .pause-btn{
+    pointer-events:auto;width:36px;height:36px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    color:var(--choco);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 10px rgba(74,46,42,0.08);
+    flex-shrink:0;
+  }
+  .hud-scores{display:flex;gap:8px;align-items:flex-start;}
+  .powerup-bar{position:absolute;top:56px;right:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+  .pu-chip{
+    display:flex;align-items:center;gap:5px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    padding:3px 9px;border-radius:10px;font-size:11px;font-weight:700;
+    box-shadow:0 3px 8px rgba(74,46,42,0.08);
+  }
+  .pu-dot{width:8px;height:8px;border-radius:50%;}
+
+  /* D-pad */
+  .dpad{
+    position:absolute;bottom:14px;
+    display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);
+    gap:4px;pointer-events:auto;opacity:0.85;
+  }
+  .dpad.dpad-single{ right:14px; }
+  .dpad.dpad-p1{ left:10px; }
+  .dpad.dpad-p2{ right:10px; }
+  .dpad button{
+    border:none;border-radius:9px;background:var(--panel);
+    border:1px solid var(--panel-border);
+    color:var(--choco-soft);font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px rgba(74,46,42,0.12);
+    cursor:pointer;
+  }
+  .dpad button:active{background:var(--pink);color:#fff;}
+  .dpad.dpad-p2 button:active{background:var(--blue);color:#fff;}
+  .dpad .up{grid-column:2;grid-row:1;}
+  .dpad .left{grid-column:1;grid-row:2;}
+  .dpad .right{grid-column:3;grid-row:2;}
+  .dpad .down{grid-column:2;grid-row:3;}
+
+  /* ---------- Screens ---------- */
+  .screen{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;text-align:center;padding:24px;
+    background:linear-gradient(180deg, rgba(255,248,239,0.97), rgba(255,237,216,0.99));
+    overflow-y:auto;
+  }
+  .screen.hidden{display:none;}
+  .logo{
+    font-family:var(--font-display);font-weight:800;font-size:42px;
+    letter-spacing:0.01em;color:var(--choco);line-height:1;
+  }
+  .logo span{color:var(--pink);}
+  .tagline{color:var(--choco-soft);font-size:14px;max-width:280px;font-weight:700;}
+  .hint{font-size:12px;color:var(--choco-soft);max-width:280px;line-height:1.5;}
+  .hiscore-pill{
+    font-size:12px;color:var(--pink-deep);font-weight:800;
+    border:1px solid var(--panel-border);padding:4px 14px;border-radius:20px;
+    background:#fff;
+  }
+  .btn{
+    font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:0.02em;
+    color:#fff;background:linear-gradient(180deg, var(--pink), var(--pink-deep));
+    border:none;border-radius:16px;padding:14px 40px;cursor:pointer;
+    box-shadow:0 6px 0 var(--pink-deep), 0 10px 22px rgba(226,76,130,0.35);
+    transition:transform .08s ease;
+    width:100%;max-width:260px;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--pink-deep);}
+  .btn.blue{
+    background:linear-gradient(180deg, var(--blue), var(--blue-deep));
+    box-shadow:0 6px 0 var(--blue-deep), 0 10px 22px rgba(46,143,209,0.35);
+  }
+  .btn.blue:active{ box-shadow:0 2px 0 var(--blue-deep); }
+  .btn.secondary{
+    background:transparent;color:var(--choco-soft);
+    border:1px solid var(--panel-border);box-shadow:none;padding:10px 28px;font-size:14px;
+  }
+  .btn.small{ font-size:14px;padding:10px 24px; }
+  .menu-stack{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;max-width:260px;}
+  .divider-text{font-size:11px;color:var(--choco-soft);opacity:0.7;letter-spacing:0.05em;}
+  .final-score{font-size:40px;font-weight:800;color:var(--choco);}
+  .final-label{font-size:11px;letter-spacing:0.08em;color:var(--pink-deep);font-weight:700;}
+  .record-badge{
+    font-size:12px;color:#4A2E2A;background:var(--lemon);
+    padding:3px 12px;border-radius:20px;font-weight:800;
+  }
+  .interstitial{
+    width:100%;max-width:280px;min-height:70px;
+    border:1px dashed rgba(74,46,42,0.22);border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    color:rgba(74,46,42,0.35);font-size:11px;
+  }
+
+  /* ---------- 2-player result screen ---------- */
+  .vs-result{display:flex;gap:16px;align-items:center;justify-content:center;margin:6px 0;}
+  .vs-card{
+    background:#fff;border:2px solid var(--panel-border);border-radius:16px;
+    padding:10px 18px;min-width:96px;
+  }
+  .vs-card.winner{border-color:var(--lemon);box-shadow:0 0 0 3px rgba(255,211,77,0.4);}
+  .vs-card .name{font-family:var(--font-display);font-weight:800;font-size:13px;}
+  .vs-card.p1 .name{color:var(--pink-deep);}
+  .vs-card.p2 .name{color:var(--blue-deep);}
+  .vs-card .pts{font-size:26px;font-weight:800;color:var(--choco);}
+  .vs-sep{font-family:var(--font-display);font-weight:800;color:var(--choco-soft);font-size:14px;}
+  .winner-tag{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--choco);}
+
+  /* ---------- Online room UI ---------- */
+  .room-code{
+    font-family:var(--font-display);font-weight:800;font-size:38px;letter-spacing:0.12em;
+    color:var(--choco);background:#fff;border:2px dashed var(--panel-border);
+    border-radius:16px;padding:10px 22px;
+  }
+  .room-input{
+    font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:0.18em;
+    text-align:center;text-transform:uppercase;
+    width:100%;max-width:220px;padding:10px;border-radius:14px;
+    border:2px solid var(--panel-border);color:var(--choco);
+  }
+  .status-text{font-size:13px;color:var(--choco-soft);min-height:18px;}
+  .status-text.err{color:var(--pink-deep);font-weight:700;}
+  .spinner{
+    width:26px;height:26px;border-radius:50%;
+    border:3px solid rgba(74,46,42,0.15);border-top-color:var(--pink);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .countdown-num{font-family:var(--font-display);font-weight:800;font-size:64px;color:var(--pink-deep);}
+
+  /* ---------- SEO content below fold ---------- */
+  .about{max-width:640px;width:100%;padding:28px 20px 40px;color:var(--choco-soft);font-size:13px;line-height:1.7;}
+  .about h1{font-size:15px;color:var(--choco);font-weight:800;margin:0 0 8px;}
+  .about h2{font-size:13px;color:var(--pink-deep);font-weight:800;margin:18px 0 6px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="ad-slot ad-top" data-ad-slot="top-banner" aria-hidden="true">Vị trí quảng cáo 728×90 / responsive</div>
+
+  <div class="game-shell">
+    <div class="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">Quảng cáo 160×600</div>
+
+    <div class="stage-wrap" id="stageWrap">
+      <canvas id="game"></canvas>
+
+      <div class="hud">
+        <div class="hud-top">
+          <div class="hud-scores" id="hudScores">
+            <div class="hud-block p1">
+              <div class="score-label" id="scoreLabelP1">ĐIỂM</div>
+              <div class="score-value" id="scoreValP1">0</div>
+              <div class="combo" id="comboValP1"></div>
+            </div>
+            <div class="hud-block p2 hidden" id="hudBlockP2">
+              <div class="score-label">P2</div>
+              <div class="score-value" id="scoreValP2">0</div>
+              <div class="combo" id="comboValP2"></div>
+            </div>
+          </div>
+          <button class="pause-btn" id="pauseBtn" aria-label="Tạm dừng">⏸</button>
+        </div>
+        <div class="powerup-bar" id="powerupBar"></div>
+        <div class="dpad dpad-single" id="dpadSingle">
+          <button class="up" data-dir="up">▲</button>
+          <button class="left" data-dir="left">◀</button>
+          <button class="right" data-dir="right">▶</button>
+          <button class="down" data-dir="down">▼</button>
+        </div>
+        <div class="dpad dpad-p1 hidden" id="dpadP1">
+          <button class="up" data-dir="up">▲</button>
+          <button class="left" data-dir="left">◀</button>
+          <button class="right" data-dir="right">▶</button>
+          <button class="down" data-dir="down">▼</button>
+        </div>
+        <div class="dpad dpad-p2 hidden" id="dpadP2">
+          <button class="up" data-dir="up">▲</button>
+          <button class="left" data-dir="left">◀</button>
+          <button class="right" data-dir="right">▶</button>
+          <button class="down" data-dir="down">▼</button>
+        </div>
+      </div>
+
+      <!-- Start / main menu screen -->
+      <div class="screen" id="startScreen">
+        <div class="logo">CANDY<span>SNAKE</span></div>
+        <div class="tagline">Dẫn đường cho chú rắn kẹo ăn thật nhiều kẹo ngọt</div>
+        <div class="hiscore-pill" id="hiscorePillStart">Kỷ lục: 0</div>
+        <div class="menu-stack">
+          <button class="btn" id="playSoloBtn">1 NGƯỜI CHƠI</button>
+          <button class="btn blue" id="playLocal2pBtn">2 NGƯỜI – CÙNG MÁY</button>
+          <button class="btn secondary" id="playOnlineBtn">2 NGƯỜI – CHƠI ONLINE</button>
+        </div>
+        <div class="hint" id="controlHint">Máy tính: dùng phím mũi tên / WASD.<br>Điện thoại: vuốt theo hướng muốn đi, hoặc dùng nút điều hướng.</div>
+      </div>
+
+      <!-- Online sub-menu -->
+      <div class="screen hidden" id="onlineMenuScreen">
+        <div class="logo" style="font-size:26px;">CHƠI ONLINE</div>
+        <div class="hint">Rủ một người bạn ở bất kỳ đâu, cùng vào một phòng để đối đầu trực tiếp.</div>
+        <div class="menu-stack">
+          <button class="btn blue" id="createRoomBtn">TẠO PHÒNG MỚI</button>
+          <button class="btn secondary" id="joinRoomShowBtn">NHẬP MÃ PHÒNG</button>
+        </div>
+        <button class="btn secondary small" id="onlineBackBtn">← Quay lại</button>
+      </div>
+
+      <!-- Create room / waiting for opponent -->
+      <div class="screen hidden" id="hostWaitScreen">
+        <div class="logo" style="font-size:22px;">MÃ PHÒNG CỦA BẠN</div>
+        <div class="room-code" id="roomCodeDisplay">----</div>
+        <button class="btn secondary small" id="copyCodeBtn">Sao chép mã</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="spinner" id="hostSpinner"></div>
+          <div class="status-text" id="hostStatusText">Đang chờ người chơi thứ 2 tham gia…</div>
+        </div>
+        <button class="btn secondary small" id="hostCancelBtn">Hủy phòng</button>
+      </div>
+
+      <!-- Join room -->
+      <div class="screen hidden" id="joinRoomScreen">
+        <div class="logo" style="font-size:22px;">NHẬP MÃ PHÒNG</div>
+        <input class="room-input" id="roomCodeInput" maxlength="5" placeholder="ABCD" autocomplete="off" autocapitalize="characters">
+        <button class="btn blue" id="joinConnectBtn">KẾT NỐI</button>
+        <div class="status-text" id="joinStatusText"></div>
+        <button class="btn secondary small" id="joinCancelBtn">Hủy</button>
+      </div>
+
+      <!-- Countdown -->
+      <div class="screen hidden" id="countdownScreen">
+        <div class="tagline">Trận đấu bắt đầu sau</div>
+        <div class="countdown-num" id="countdownNum">3</div>
+      </div>
+
+      <!-- Pause screen -->
+      <div class="screen hidden" id="pauseScreen">
+        <div class="logo" style="font-size:30px;">TẠM DỪNG</div>
+        <button class="btn" id="resumeBtn">TIẾP TỤC</button>
+        <button class="btn secondary" id="restartFromPauseBtn">Chơi lại từ đầu</button>
+        <button class="btn secondary small" id="quitToMenuBtn">Về menu chính</button>
+      </div>
+
+      <!-- Game over screen: solo -->
+      <div class="screen hidden" id="overScreen">
+        <div class="final-label">ĐIỂM SỐ</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="record-badge hidden" id="recordBadge">🏆 KỶ LỤC MỚI!</div>
+        <div class="hiscore-pill" id="hiscorePillOver">Kỷ lục: 0</div>
+        <button class="btn" id="retryBtn">CHƠI LẠI</button>
+        <button class="btn secondary small" id="overToMenuBtn">Về menu chính</button>
+        <div class="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">Quảng cáo (khi kết thúc lượt chơi)</div>
+      </div>
+
+      <!-- Game over screen: 2-player result -->
+      <div class="screen hidden" id="vsOverScreen">
+        <div class="winner-tag" id="winnerTag">P1 THẮNG!</div>
+        <div class="vs-result">
+          <div class="vs-card p1" id="vsCardP1">
+            <div class="name">P1</div>
+            <div class="pts" id="vsScoreP1">0</div>
+          </div>
+          <div class="vs-sep">VS</div>
+          <div class="vs-card p2" id="vsCardP2">
+            <div class="name">P2</div>
+            <div class="pts" id="vsScoreP2">0</div>
+          </div>
+        </div>
+        <div class="status-text" id="vsStatusText"></div>
+        <button class="btn" id="vsRetryBtn">CHƠI LẠI</button>
+        <button class="btn secondary small" id="vsToMenuBtn">Về menu chính</button>
+        <div class="interstitial" data-ad-slot="gameover-interstitial-2p" aria-hidden="true">Quảng cáo (khi kết thúc lượt chơi)</div>
+      </div>
+    </div>
+
+    <div class="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">Quảng cáo 160×600</div>
+  </div>
+
+  <div class="ad-slot ad-bottom" data-ad-slot="bottom-banner" aria-hidden="true">Vị trí quảng cáo 320×50 / responsive</div>
+
+  <div class="about">
+    <h1>Candy Snake – Game rắn săn kẹo online, chơi 1 hoặc 2 người miễn phí</h1>
+    <p>Candy Snake là phiên bản game rắn săn mồi cổ điển khoác lên mình lớp áo kẹo ngọt đầy màu sắc, chơi trực tiếp trên trình duyệt mà không cần tải hay cài đặt. Dẫn đường cho chú rắn ăn thật nhiều loại kẹo khác nhau, mỗi loại mang một hiệu ứng thú vị, để kéo dài thân rắn và ghi điểm thật cao.</p>
+    <h2>Chơi một mình hoặc rủ bạn bè</h2>
+    <p>Ngoài chế độ 1 người chơi quen thuộc, Candy Snake còn có chế độ 2 người: chơi cùng máy (chia đôi bàn phím, một người dùng WASD, một người dùng phím mũi tên) hoặc chơi online bằng cách tạo phòng và gửi mã cho bạn bè ở bất kỳ đâu cùng tham gia.</p>
+    <h2>Cách chơi</h2>
+    <p>Trên máy tính, dùng phím mũi tên hoặc WASD để đổi hướng di chuyển. Trên điện thoại, vuốt tay theo hướng muốn rẽ hoặc bấm vào nút điều hướng ở góc màn hình. Rắn tự động di chuyển liên tục, bạn chỉ cần chọn đúng hướng đi để ăn kẹo và né va vào chính thân mình hoặc thân đối thủ.</p>
+    <h2>Thư giãn mọi lúc, mọi nơi</h2>
+    <p>Mỗi ván chơi chỉ mất vài phút, độ khó tăng dần nhẹ nhàng theo điểm số nên vừa sức cho người mới lẫn thử thách cho người chơi lâu năm. Kỷ lục điểm số được lưu lại để bạn quay lại thử sức bất cứ khi nào rảnh rỗi.</p>
+  </div>
+
+</div>
+
+<!--
+  GHI CHÚ TÍCH HỢP QUẢNG CÁO:
+  Mỗi phần tử .ad-slot ở trên là vị trí giữ chỗ. Để chạy Google AdSense, thay nội dung
+  từng .ad-slot bằng đơn vị quảng cáo thật, ví dụ:
+
+  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-slot="YOUR_AD_SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+  và nạp script loader của AdSense một lần trong <head>:
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+-->
+
+<script>
+/* =========================================================
+   CANDY SNAKE — single-file browser game
+   Hỗ trợ: 1 người chơi, 2 người cùng máy, 2 người online (WebRTC/PeerJS)
+   ========================================================= */
+(function(){
+  "use strict";
+
+  const COLS = 20, ROWS = 20, CELL = 22;
+  const VW = COLS*CELL, VH = ROWS*CELL;
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const stageWrap = document.getElementById('stageWrap');
+
+  // ---------- DOM refs ----------
+  const hudBlockP2 = document.getElementById('hudBlockP2');
+  const scoreValP1El = document.getElementById('scoreValP1');
+  const scoreValP2El = document.getElementById('scoreValP2');
+  const comboValP1El = document.getElementById('comboValP1');
+  const comboValP2El = document.getElementById('comboValP2');
+  const powerupBarEl = document.getElementById('powerupBar');
+
+  const startScreen = document.getElementById('startScreen');
+  const onlineMenuScreen = document.getElementById('onlineMenuScreen');
+  const hostWaitScreen = document.getElementById('hostWaitScreen');
+  const joinRoomScreen = document.getElementById('joinRoomScreen');
+  const countdownScreen = document.getElementById('countdownScreen');
+  const pauseScreen = document.getElementById('pauseScreen');
+  const overScreen  = document.getElementById('overScreen');
+  const vsOverScreen = document.getElementById('vsOverScreen');
+
+  const playSoloBtn = document.getElementById('playSoloBtn');
+  const playLocal2pBtn = document.getElementById('playLocal2pBtn');
+  const playOnlineBtn = document.getElementById('playOnlineBtn');
+  const onlineBackBtn = document.getElementById('onlineBackBtn');
+  const createRoomBtn = document.getElementById('createRoomBtn');
+  const joinRoomShowBtn = document.getElementById('joinRoomShowBtn');
+  const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+  const copyCodeBtn = document.getElementById('copyCodeBtn');
+  const hostSpinner = document.getElementById('hostSpinner');
+  const hostStatusText = document.getElementById('hostStatusText');
+  const hostCancelBtn = document.getElementById('hostCancelBtn');
+  const roomCodeInput = document.getElementById('roomCodeInput');
+  const joinConnectBtn = document.getElementById('joinConnectBtn');
+  const joinStatusText = document.getElementById('joinStatusText');
+  const joinCancelBtn = document.getElementById('joinCancelBtn');
+  const countdownNum = document.getElementById('countdownNum');
+
+  const resumeBtn = document.getElementById('resumeBtn');
+  const restartFromPauseBtn = document.getElementById('restartFromPauseBtn');
+  const quitToMenuBtn = document.getElementById('quitToMenuBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const overToMenuBtn = document.getElementById('overToMenuBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const finalScoreEl = document.getElementById('finalScore');
+  const recordBadgeEl = document.getElementById('recordBadge');
+  const hiscorePillStart = document.getElementById('hiscorePillStart');
+  const hiscorePillOver = document.getElementById('hiscorePillOver');
+
+  const winnerTag = document.getElementById('winnerTag');
+  const vsCardP1 = document.getElementById('vsCardP1');
+  const vsCardP2 = document.getElementById('vsCardP2');
+  const vsScoreP1 = document.getElementById('vsScoreP1');
+  const vsScoreP2 = document.getElementById('vsScoreP2');
+  const vsStatusText = document.getElementById('vsStatusText');
+  const vsRetryBtn = document.getElementById('vsRetryBtn');
+  const vsToMenuBtn = document.getElementById('vsToMenuBtn');
+
+  const dpadSingle = document.getElementById('dpadSingle');
+  const dpadP1 = document.getElementById('dpadP1');
+  const dpadP2 = document.getElementById('dpadP2');
+
+  // ---------- Persistent high score (per browser, localStorage) ----------
+  const HS_KEY = 'candysnake_highscore';
+  let highScore = 0;
+  function loadHighScore(){
+    try{ highScore = parseInt(localStorage.getItem(HS_KEY),10) || 0; }catch(e){ highScore = 0; }
+    hiscorePillStart.textContent = 'Kỷ lục: ' + highScore;
+  }
+  function saveHighScore(val){
+    highScore = val;
+    try{ localStorage.setItem(HS_KEY, String(val)); }catch(e){}
+  }
+  loadHighScore();
+
+  // ---------- Resize / DPR ----------
+  function resize(){
+    const rect = stageWrap.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio||1, 2.5);
+    canvas.width = Math.round(VW*dpr);
+    canvas.height = Math.round(VH*dpr);
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', ()=>setTimeout(resize,50));
+  resize();
+
+  const isTouch = 'ontouchstart' in window;
+  if(isTouch){
+    document.getElementById('controlHint').innerHTML = 'Vuốt theo hướng muốn rẽ, hoặc bấm nút điều hướng ở góc màn hình.';
+  }
+
+  // ---------- Utility ----------
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+  const DIRS = {
+    up:{x:0,y:-1}, down:{x:0,y:1}, left:{x:-1,y:0}, right:{x:1,y:0}
+  };
+  const OPPOSITE = {up:'down',down:'up',left:'right',right:'left'};
+
+  // ---------- Modes ----------
+  // 'solo'          : 1 người, mọi input đều điều khiển players[0]
+  // 'local2p'       : 2 người cùng máy, WASD -> P0, phím mũi tên -> P1
+  // 'online-host'   : máy này là chủ phòng, chạy mô phỏng cho cả 2, gửi state cho khách
+  // 'online-guest'  : máy này là khách, chỉ gửi input, nhận state từ chủ phòng để vẽ lại
+  let mode = 'solo';
+
+  const PALETTE = [
+    { head:'#FF6FA0', bodyA:'#FFD34D', bodyB:'#FF9BBE', label:'P1' },
+    { head:'#5FB6FF', bodyA:'#FFD34D', bodyB:'#9FD9FF', label:'P2' }
+  ];
+
+  // ---------- Game state ----------
+  let state = 'start'; // start | playing | paused | over
+  let players = [];     // mảng player, xem makePlayer()
+  let candies, particles;
+  let tickAcc, tickInterval;
+  let slowT, slowFactor;
+  let shakeT;
+  let roundWinner = null; // 0, 1, null(hòa) — chỉ dùng ở chế độ 2 người
+
+  function makePlayer(idx, startCells, startDir){
+    return {
+      idx, palette: PALETTE[idx],
+      snake: startCells.slice(), dir: startDir, nextDirQueue: [],
+      growPending: 0, ghostT: 0,
+      score: 0, combo: 0, comboTimer: 0,
+      alive: true
+    };
+  }
+
+  function resetGame(newMode){
+    mode = newMode || mode;
+    const cx = Math.floor(COLS/2), cy = Math.floor(ROWS/2);
+    if(mode === 'solo'){
+      players = [ makePlayer(0, [{x:cx-2,y:cy},{x:cx-1,y:cy},{x:cx,y:cy},{x:cx+1,y:cy}], 'right') ];
+    } else {
+      // 2 người: xuất phát 2 góc chéo nhau của bàn cờ
+      players = [
+        makePlayer(0, [{x:2,y:2},{x:3,y:2},{x:4,y:2}], 'right'),
+        makePlayer(1, [{x:COLS-5,y:ROWS-3},{x:COLS-4,y:ROWS-3},{x:COLS-3,y:ROWS-3}], 'left')
+      ];
+    }
+    candies = []; particles = [];
+    tickAcc = 0; tickInterval = 0.14;
+    slowT = 0; slowFactor = 1; shakeT = 0;
+    roundWinner = null;
+    spawnCandy(); spawnCandy();
+    if(players.length>1) spawnCandy();
+    updateHUD();
+    hudBlockP2.classList.toggle('hidden', players.length<2);
+    // D-pad hiển thị theo chế độ: solo/online dùng 1 bộ; local2p dùng 2 bộ riêng
+    const showSingleDpad = (mode==='solo' || mode==='online-host' || mode==='online-guest');
+    dpadSingle.classList.toggle('hidden', !showSingleDpad);
+    dpadP1.classList.toggle('hidden', mode!=='local2p');
+    dpadP2.classList.toggle('hidden', mode!=='local2p');
+  }
+
+  function occupied(x,y){
+    for(const p of players){ if(p.snake.some(s=>s.x===x&&s.y===y)) return true; }
+    return candies.some(c=>c.x===x&&c.y===y);
+  }
+
+  function spawnCandy(){
+    let x,y,tries=0;
+    do{ x=randInt(0,COLS-1); y=randInt(0,ROWS-1); tries++; }
+    while(occupied(x,y) && tries<200);
+    const roll = Math.random();
+    let type;
+    if(roll<0.58) type='normal';
+    else if(roll<0.75) type='golden';
+    else if(roll<0.86) type='rainbow';
+    else if(roll<0.95) type='mint';
+    else type='freeze';
+    const hue = ['#FF6FA0','#FFD34D','#4FDBA6','#9B6FD6','#FF9B54'][randInt(0,4)];
+    candies.push({x,y,type,color:hue,bob:Math.random()*Math.PI*2});
+  }
+
+  function updateHUD(){
+    const p0 = players[0], p1 = players[1];
+    scoreValP1El.textContent = Math.floor(p0.score);
+    comboValP1El.textContent = p0.combo>1 ? ('x'+p0.combo) : '';
+    if(p1){
+      scoreValP2El.textContent = Math.floor(p1.score);
+      comboValP2El.textContent = p1.combo>1 ? ('x'+p1.combo) : '';
+    }
+    powerupBarEl.innerHTML = '';
+    function chip(label,color){
+      const c = document.createElement('div'); c.className='pu-chip';
+      c.innerHTML = '<span class="pu-dot" style="background:'+color+'"></span>'+label;
+      powerupBarEl.appendChild(c);
+    }
+    if(p0.ghostT>0) chip(players.length>1 ? 'P1 xuyên thân' : 'Xuyên thân','#9B6FD6');
+    if(p1 && p1.ghostT>0) chip('P2 xuyên thân','#2E8FD1');
+    if(slowT>0) chip('Chậm thời gian','#4FDBA6');
+  }
+
+  function endSolo(){
+    state='over';
+    const p0 = players[0];
+    finalScoreEl.textContent = Math.floor(p0.score);
+    const isRecord = Math.floor(p0.score) > highScore;
+    recordBadgeEl.classList.toggle('hidden', !isRecord);
+    if(isRecord) saveHighScore(Math.floor(p0.score));
+    hiscorePillOver.textContent = 'Kỷ lục: ' + Math.max(highScore, Math.floor(p0.score));
+    showScreen(overScreen);
+  }
+
+  function endVersus(winnerIdx, statusMsg){
+    state='over';
+    roundWinner = winnerIdx;
+    const p0 = players[0], p1 = players[1];
+    vsScoreP1.textContent = Math.floor(p0.score);
+    vsScoreP2.textContent = Math.floor(p1.score);
+    vsCardP1.classList.toggle('winner', winnerIdx===0);
+    vsCardP2.classList.toggle('winner', winnerIdx===1);
+    winnerTag.textContent = winnerIdx===null ? 'HÒA!' : (winnerIdx===0?'P1 THẮNG!':'P2 THẮNG!');
+    vsStatusText.textContent = statusMsg || '';
+    vsRetryBtn.classList.remove('hidden');
+    // Trong chế độ online, chỉ chủ phòng có quyền bấm "Chơi lại" khởi động lại thật sự
+    vsRetryBtn.textContent = (mode==='online-guest') ? 'YÊU CẦU CHƠI LẠI' : 'CHƠI LẠI';
+    showScreen(vsOverScreen);
+    if(mode==='online-host') sendState(true);
+  }
+
+  function queueDirFor(player, d){
+    const last = player.nextDirQueue.length ? player.nextDirQueue[player.nextDirQueue.length-1] : player.dir;
+    if(d===OPPOSITE[last]) return;
+    if(player.nextDirQueue.length<2) player.nextDirQueue.push(d);
+  }
+
+  // ---------- Input ----------
+  window.addEventListener('keydown', e=>{
+    const k = e.key.toLowerCase();
+    if(k==='p'){ pauseBtn.click(); return; }
+    if(state!=='playing') return;
+    if(mode==='online-guest'){
+      // Khách chỉ điều khiển rắn của chính mình (players[1] trên máy chủ phòng),
+      // nhưng để hiển thị mượt, ta coi rắn của khách luôn là players[0] cục bộ.
+      const mapG = {arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+      if(mapG[k]){ e.preventDefault(); sendInput(mapG[k]); }
+      return;
+    }
+    if(mode==='local2p'){
+      const mapP1 = {w:'up',s:'down',a:'left',d:'right'};
+      const mapP2 = {arrowup:'up',arrowdown:'down',arrowleft:'left',arrowright:'right'};
+      if(mapP1[k]){ e.preventDefault(); queueDirFor(players[0], mapP1[k]); }
+      if(mapP2[k]){ e.preventDefault(); queueDirFor(players[1], mapP2[k]); }
+      return;
+    }
+    // solo hoặc online-host điều khiển players[0] bằng cả 2 bộ phím
+    const mapAll = {arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};
+    if(mapAll[k]){
+      e.preventDefault();
+      queueDirFor(players[0], mapAll[k]);
+    }
+  });
+
+  function bindDpad(el, handler){
+    el.addEventListener('click', e=>{
+      const btn = e.target.closest('button[data-dir]');
+      if(!btn || state!=='playing') return;
+      handler(btn.dataset.dir);
+    });
+  }
+  bindDpad(dpadSingle, d=>{
+    if(mode==='online-guest') sendInput(d);
+    else queueDirFor(players[0], d);
+  });
+  bindDpad(dpadP1, d=> queueDirFor(players[0], d));
+  bindDpad(dpadP2, d=> queueDirFor(players[1], d));
+
+  let touchStart = null;
+  stageWrap.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t = e.touches[0];
+    touchStart = {x:t.clientX,y:t.clientY};
+  }, {passive:false});
+  stageWrap.addEventListener('touchmove', e=>{ e.preventDefault(); }, {passive:false});
+  stageWrap.addEventListener('touchend', e=>{
+    e.preventDefault();
+    if(!touchStart || state!=='playing' || mode==='local2p') { touchStart=null; return; }
+    const t = e.changedTouches[0];
+    const dx = t.clientX-touchStart.x, dy = t.clientY-touchStart.y;
+    touchStart = null;
+    if(Math.max(Math.abs(dx),Math.abs(dy)) < 18) return;
+    let d;
+    if(Math.abs(dx)>Math.abs(dy)) d = dx>0?'right':'left';
+    else d = dy>0?'down':'up';
+    if(mode==='online-guest') sendInput(d);
+    else queueDirFor(players[0], d);
+  }, {passive:false});
+
+  // ---------- Main loop ----------
+  let lastT = performance.now();
+  function loop(now){
+    let dt = (now-lastT)/1000;
+    lastT = now;
+    dt = Math.min(dt, 0.05);
+    if(state==='playing'){
+      if(mode==='online-guest'){
+        // Khách không mô phỏng — chỉ nội suy hoạt ảnh nhẹ (bob kẹo, hạt) để mượt mắt
+        for(const c of candies){ c.bob += dt*4; }
+        for(const p of particles){ p.t+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
+        particles = particles.filter(p=>p.t<p.life);
+      } else {
+        update(dt);
+      }
+    }
+    render(dt);
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt){
+    for(const p of players){
+      if(p.ghostT>0) p.ghostT -= dt;
+      if(p.comboTimer>0){ p.comboTimer-=dt; if(p.comboTimer<=0) p.combo=0; }
+    }
+    if(slowT>0){ slowT -= dt; slowFactor = 0.55; if(slowT<=0) slowFactor=1; }
+    if(shakeT>0) shakeT -= dt;
+
+    for(const c of candies){ c.bob += dt*4; }
+    for(const p of particles){ p.t+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; }
+    particles = particles.filter(p=>p.t<p.life);
+
+    tickAcc += dt;
+    const targetInterval = tickInterval * slowFactor;
+    if(tickAcc >= targetInterval){
+      tickAcc -= targetInterval;
+      step();
+    }
+    updateHUD();
+    if(mode==='online-host') sendState(false);
+  }
+
+  function step(){
+    const tickEvents = [];
+    const isVersus = players.length>1;
+    const proposedHeads = [];
+
+    for(const p of players){
+      if(!p.alive){ proposedHeads.push(null); continue; }
+      if(p.idx===1 && mode==='online-host' && hostRemoteDir){ queueDirFor(p, hostRemoteDir); hostRemoteDir=null; }
+      if(p.nextDirQueue.length){ p.dir = p.nextDirQueue.shift(); }
+      const d = DIRS[p.dir];
+      const head = p.snake[p.snake.length-1];
+      let nx = head.x + d.x, ny = head.y + d.y;
+      if(nx<0) nx=COLS-1; if(nx>COLS-1) nx=0;
+      if(ny<0) ny=ROWS-1; if(ny>ROWS-1) ny=0;
+      proposedHeads.push({x:nx,y:ny});
+    }
+
+    // Va chạm đầu-đối-đầu (2 người): cả hai cùng tiến vào 1 ô hoặc đổi chỗ cho nhau
+    if(isVersus && players[0].alive && players[1].alive){
+      const h0 = proposedHeads[0], h1 = proposedHeads[1];
+      if(h0.x===h1.x && h0.y===h1.y){
+        players[0].alive = false; players[1].alive = false;
+      }
+    }
+
+    for(const p of players){
+      if(!p.alive) continue;
+      const nx = proposedHeads[p.idx].x, ny = proposedHeads[p.idx].y;
+
+      const bodyToCheck = p.growPending>0 ? p.snake : p.snake.slice(1);
+      let hit = bodyToCheck.some(s=>s.x===nx&&s.y===ny);
+      if(!hit && isVersus){
+        for(const other of players){
+          if(other.idx===p.idx || !other.alive) continue;
+          if(other.snake.some(s=>s.x===nx&&s.y===ny)){ hit = true; break; }
+        }
+      }
+      if(hit && p.ghostT<=0){ p.alive = false; continue; }
+
+      p.snake.push({x:nx,y:ny});
+      if(p.growPending>0){ p.growPending--; } else { p.snake.shift(); }
+
+      const ci = candies.findIndex(c=>c.x===nx&&c.y===ny);
+      if(ci>=0){
+        const c = candies[ci];
+        candies.splice(ci,1);
+        eatCandy(p, c);
+        tickEvents.push({type:'eat', x:c.x*CELL+CELL/2, y:c.y*CELL+CELL/2, color:c.color});
+        spawnCandy();
+        if(candies.length < (isVersus?3:2)) spawnCandy();
+      }
+    }
+
+    for(const ev of tickEvents){ burst(ev.x, ev.y, ev.color, 12); }
+
+    if(isVersus){
+      const alive0 = players[0].alive, alive1 = players[1].alive;
+      if(!alive0 || !alive1){
+        let winner;
+        if(!alive0 && !alive1) winner = players[0].score===players[1].score ? null : (players[0].score>players[1].score?0:1);
+        else winner = alive0 ? 0 : 1;
+        endVersus(winner, !alive0 && !alive1 ? 'Cả hai cùng va chạm!' : '');
+      }
+    } else {
+      if(!players[0].alive) endSolo();
+    }
+  }
+
+  function eatCandy(p, c){
+    p.combo += 1; p.comboTimer = 2.2;
+    const mult = 1 + p.combo*0.08;
+    if(c.type==='normal'){
+      p.score += Math.round(10*mult);
+      p.growPending += 1;
+      tickInterval = clamp(tickInterval - 0.0015, 0.075, 0.2);
+    } else if(c.type==='golden'){
+      p.score += Math.round(30*mult);
+      p.growPending += 2;
+      shakeT = 0.15;
+    } else if(c.type==='rainbow'){
+      p.score += Math.round(15*mult);
+      p.growPending += 1;
+      p.ghostT = 5;
+    } else if(c.type==='mint'){
+      p.score += Math.round(12*mult);
+      const removeN = Math.min(2, Math.max(0, p.snake.length-3));
+      for(let i=0;i<removeN;i++) p.snake.shift();
+    } else if(c.type==='freeze'){
+      p.score += Math.round(12*mult);
+      p.growPending += 1;
+      slowT = 4;
+    }
+  }
+
+  function burst(x,y,color,n){
+    for(let i=0;i<n;i++){
+      const a = rand(0,Math.PI*2), sp = rand(30,90);
+      particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rand(0.3,0.6),t:0,color,r:rand(1.5,3)});
+    }
+  }
+
+  // ---------- Render ----------
+  function render(dt){
+    ctx.clearRect(0,0,VW,VH);
+    ctx.save();
+    if(shakeT>0){ ctx.translate(rand(-3,3), rand(-3,3)); }
+
+    ctx.fillStyle = '#FFEDD8';
+    ctx.fillRect(0,0,VW,VH);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        if((x+y)%2===0) ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
+      }
+    }
+
+    if(state==='playing'||state==='paused'){
+      for(const c of candies){ drawCandy(c); }
+      for(const p of players){ if(p.alive!==false) drawSnake(p); }
+
+      for(const p of particles){
+        ctx.globalAlpha = 1-(p.t/p.life);
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  function drawSnake(p){
+    const ghost = p.ghostT>0;
+    const pal = p.palette;
+    for(let i=0;i<p.snake.length;i++){
+      const s = p.snake[i];
+      const isHead = i===p.snake.length-1;
+      const px = s.x*CELL+CELL/2, py = s.y*CELL+CELL/2;
+      ctx.globalAlpha = ghost ? 0.65 + Math.sin(performance.now()/80)*0.15 : 1;
+      if(isHead){
+        ctx.fillStyle = ghost ? '#B98CF0' : pal.head;
+      } else {
+        ctx.fillStyle = i%2===0 ? pal.bodyA : (ghost ? '#C9A6F5' : pal.bodyB);
+      }
+      ctx.beginPath();
+      ctx.arc(px,py,CELL*0.42,0,7);
+      ctx.fill();
+      if(isHead){
+        ctx.fillStyle = '#4A2E2A';
+        const d = DIRS[p.dir];
+        const ex = px + d.x*5, ey = py + d.y*5;
+        const perpx = -d.y*4, perpy = d.x*4;
+        ctx.beginPath(); ctx.arc(ex+perpx, ey+perpy, 2, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(ex-perpx, ey-perpy, 2, 0, 7); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawCandy(c){
+    const px = c.x*CELL+CELL/2, py = c.y*CELL+CELL/2 + Math.sin(c.bob)*1.5;
+    ctx.save();
+    ctx.translate(px,py);
+    if(c.type==='normal'){
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.arc(0,0,CELL*0.34,0,7); ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.beginPath(); ctx.arc(-3,-3,2.4,0,7); ctx.fill();
+    } else if(c.type==='golden'){
+      ctx.fillStyle = '#FFD34D';
+      ctx.save(); ctx.rotate(Math.PI/4);
+      ctx.fillRect(-CELL*0.3,-CELL*0.3,CELL*0.6,CELL*0.6);
+      ctx.restore();
+      ctx.strokeStyle='#E2A93A'; ctx.lineWidth=1.5;
+      ctx.save(); ctx.rotate(Math.PI/4);
+      ctx.strokeRect(-CELL*0.3,-CELL*0.3,CELL*0.6,CELL*0.6);
+      ctx.restore();
+    } else if(c.type==='rainbow'){
+      const cols = ['#FF6FA0','#FFD34D','#4FDBA6','#9B6FD6','#5FB6FF'];
+      for(let i=0;i<cols.length;i++){
+        ctx.strokeStyle = cols[i]; ctx.lineWidth=2.4;
+        ctx.beginPath(); ctx.arc(0,0,CELL*0.36 - i*1.8, i*0.6, i*0.6+4.5); ctx.stroke();
+      }
+    } else if(c.type==='mint'){
+      ctx.fillStyle = '#4FDBA6';
+      ctx.beginPath();
+      for(let i=0;i<8;i++){
+        const a = i*Math.PI/4;
+        const r = i%2===0 ? CELL*0.36 : CELL*0.2;
+        ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+      }
+      ctx.closePath(); ctx.fill();
+    } else if(c.type==='freeze'){
+      ctx.strokeStyle = '#5FD0E0'; ctx.lineWidth=2.4;
+      for(let i=0;i<3;i++){
+        ctx.save(); ctx.rotate(i*Math.PI/3);
+        ctx.beginPath(); ctx.moveTo(0,-CELL*0.34); ctx.lineTo(0,CELL*0.34); ctx.stroke();
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
+  // =========================================================
+  // ONLINE 2-PLAYER (WebRTC qua PeerJS)
+  //
+  // Kiến trúc: máy TẠO PHÒNG (host) là nguồn sự thật duy nhất — chạy toàn bộ
+  // mô phỏng game (cho cả 2 rắn), rồi phát ("state") trạng thái mới nhất cho
+  // máy khách mỗi tick. Máy KHÁCH (guest) không tự mô phỏng; nó chỉ gửi
+  // hướng đi của mình cho host, và vẽ lại đúng những gì host gửi về.
+  // Cách này tránh lệch trạng thái (desync) giữa 2 máy — độ trễ 50-150ms
+  // gần như không cảm nhận được vì mỗi bước rắn đi đã mất 75-200ms.
+  //
+  // Lưu ý triển khai thực tế: đoạn này dùng PeerJS và máy chủ báo hiệu
+  // (signaling) miễn phí do PeerJS cung cấp (0.peerjs.com). Máy chủ này
+  // KHÔNG do bạn kiểm soát, không có cam kết uptime — phù hợp để chơi cho
+  // vui với bạn bè, nhưng nếu triển khai sản phẩm nghiêm túc, nên tự host
+  // PeerServer riêng (gói "peer" trên npm) hoặc dùng dịch vụ tương đương.
+  // Ngoài ra một số mạng công ty/trường học chặn WebRTC — nếu không kết
+  // nối được, hãy thử mạng khác hoặc dùng chế độ "2 người cùng máy".
+  // =========================================================
+  const ROOM_PREFIX = 'candysnake-';
+  const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // bỏ ký tự dễ nhầm 0/O/1/I/L
+
+  let peer = null;
+  let conn = null;
+  let hostRemoteDir = null; // hướng đi mới nhất mà host nhận được từ khách
+  let peerJsLoadPromise = null;
+
+  function loadPeerJs(){
+    if(window.Peer) return Promise.resolve();
+    if(peerJsLoadPromise) return peerJsLoadPromise;
+    peerJsLoadPromise = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+      s.onload = ()=> resolve();
+      s.onerror = ()=> reject(new Error('Không tải được thư viện kết nối online. Kiểm tra Internet và thử lại.'));
+      document.head.appendChild(s);
+    });
+    return peerJsLoadPromise;
+  }
+
+  function randomRoomCode(){
+    let s = '';
+    for(let i=0;i<4;i++) s += CODE_CHARS[randInt(0,CODE_CHARS.length-1)];
+    return s;
+  }
+
+  function teardownPeer(){
+    if(conn){ try{ conn.close(); }catch(e){} conn=null; }
+    if(peer){ try{ peer.destroy(); }catch(e){} peer=null; }
+  }
+
+  // ---- HOST: tạo phòng ----
+  function startHostFlow(){
+    showScreen(hostWaitScreen);
+    hostSpinner.classList.remove('hidden');
+    hostStatusText.textContent = 'Đang kết nối tới máy chủ tiếp sóng…';
+    hostStatusText.classList.remove('err');
+    roomCodeDisplay.textContent = '----';
+
+    loadPeerJs().then(()=>{
+      const code = randomRoomCode();
+      peer = new Peer(ROOM_PREFIX + code.toLowerCase());
+
+      peer.on('open', ()=>{
+        roomCodeDisplay.textContent = code;
+        hostStatusText.textContent = 'Đang chờ người chơi thứ 2 tham gia…';
+      });
+
+      peer.on('connection', c=>{
+        if(conn){ c.close(); return; } // đã có khách rồi, từ chối người thứ 3
+        conn = c;
+        conn.on('open', ()=>{
+          hostSpinner.classList.add('hidden');
+          hostStatusText.textContent = 'Đã kết nối! Chuẩn bị bắt đầu…';
+          runCountdownThenStart('online-host');
+        });
+        conn.on('data', handleHostReceiveData);
+        conn.on('close', ()=> handlePeerLeft());
+      });
+
+      peer.on('error', err=>{
+        hostSpinner.classList.add('hidden');
+        hostStatusText.textContent = 'Lỗi kết nối: ' + (err && err.type ? err.type : 'không xác định') + '. Vui lòng thử lại.';
+        hostStatusText.classList.add('err');
+      });
+    }).catch(err=>{
+      hostSpinner.classList.add('hidden');
+      hostStatusText.textContent = err.message;
+      hostStatusText.classList.add('err');
+    });
+  }
+
+  function handleHostReceiveData(msg){
+    if(!msg) return;
+    if(msg.t==='dir') hostRemoteDir = msg.d;
+    if(msg.t==='rematch'){
+      vsStatusText.textContent = '';
+      if(state==='over') runCountdownThenStart('online-host');
+    }
+  }
+
+  // ---- GUEST: vào phòng ----
+  function startJoinFlow(codeRaw){
+    const code = (codeRaw||'').trim().toUpperCase();
+    if(code.length<4){ joinStatusText.textContent = 'Mã phòng gồm 4 ký tự.'; joinStatusText.classList.add('err'); return; }
+    joinStatusText.textContent = 'Đang kết nối…';
+    joinStatusText.classList.remove('err');
+    joinConnectBtn.disabled = true;
+
+    loadPeerJs().then(()=>{
+      peer = new Peer();
+      peer.on('open', ()=>{
+        conn = peer.connect(ROOM_PREFIX + code.toLowerCase(), {reliable:true});
+        conn.on('open', ()=>{
+          joinConnectBtn.disabled = false;
+          runCountdownThenStart('online-guest');
+        });
+        conn.on('data', handleGuestReceiveData);
+        conn.on('close', ()=> handlePeerLeft());
+        conn.on('error', ()=>{
+          joinConnectBtn.disabled = false;
+          joinStatusText.textContent = 'Không tìm thấy phòng. Kiểm tra lại mã.';
+          joinStatusText.classList.add('err');
+        });
+        // Phòng khi timeout không mở được (host không tồn tại)
+        setTimeout(()=>{
+          if(conn && !conn.open){
+            joinConnectBtn.disabled = false;
+            joinStatusText.textContent = 'Không tìm thấy phòng. Kiểm tra lại mã.';
+            joinStatusText.classList.add('err');
+          }
+        }, 8000);
+      });
+      peer.on('error', err=>{
+        joinConnectBtn.disabled = false;
+        joinStatusText.textContent = 'Lỗi kết nối: ' + (err && err.type ? err.type : 'không xác định');
+        joinStatusText.classList.add('err');
+      });
+    }).catch(err=>{
+      joinConnectBtn.disabled = false;
+      joinStatusText.textContent = err.message;
+      joinStatusText.classList.add('err');
+    });
+  }
+
+  function sendInput(dir){
+    if(conn && conn.open) conn.send({t:'dir', d:dir});
+  }
+
+  function sendState(isOver){
+    if(!conn || !conn.open) return;
+    conn.send({
+      t: isOver ? 'over' : 'state',
+      snakes: players.map(p=>({cells:p.snake, dir:p.dir, ghost:p.ghostT>0, alive:p.alive, palette:p.idx})),
+      candies: candies.map(c=>({x:c.x,y:c.y,type:c.type,color:c.color,bob:c.bob})),
+      scores: players.map(p=>Math.floor(p.score)),
+      combos: players.map(p=>p.combo),
+      winner: roundWinner
+    });
+  }
+
+  function handleGuestReceiveData(msg){
+    if(!msg) return;
+    if(msg.t==='state' || msg.t==='over'){
+      // Vẽ lại chính xác trạng thái mà host gửi về. Màu sắc gắn theo VAI TRÒ,
+      // không theo máy đang xem: host luôn là P1 (hồng), khách luôn là P2
+      // (xanh) trên cả hai màn hình, để tránh nhầm lẫn khi so kết quả.
+      players = msg.snakes.map((s,i)=> Object.assign(makePlayer(i, s.cells, s.dir), {
+        ghostT: s.ghost?1:0, alive: s.alive
+      }));
+      players[0].score = msg.scores[0]; players[1].score = msg.scores[1];
+      players[0].combo = msg.combos[0]; players[1].combo = msg.combos[1];
+      candies = msg.candies.map(c=>({...c}));
+      updateHUD();
+      if(msg.t==='state' && state!=='playing'){
+        // Host đã bắt đầu ván mới (ví dụ sau khi đồng ý yêu cầu chơi lại)
+        // nhưng máy khách vẫn đang ở màn hình kết quả cũ — tự chuyển sang chơi.
+        hideAllScreens();
+        state = 'playing';
+      }
+      if(msg.t==='over' && state!=='over'){
+        endVersus(msg.winner, msg.winner===null ? 'Cả hai cùng va chạm!' : '');
+      }
+    }
+  }
+
+  function handlePeerLeft(){
+    if(state==='playing' || state==='paused'){
+      state='over';
+      winnerTag.textContent = 'ĐÃ NGẮT KẾT NỐI';
+      vsScoreP1.textContent = Math.floor(players[0] ? players[0].score : 0);
+      vsScoreP2.textContent = Math.floor(players[1] ? players[1].score : 0);
+      vsCardP1.classList.remove('winner'); vsCardP2.classList.remove('winner');
+      vsStatusText.textContent = 'Đối thủ đã rời phòng.';
+      showScreen(vsOverScreen);
+      vsRetryBtn.classList.add('hidden');
+    } else if(state==='over'){
+      vsStatusText.textContent = 'Đối thủ đã rời phòng.';
+      vsRetryBtn.classList.add('hidden');
+    }
+  }
+
+  function runCountdownThenStart(nextMode){
+    resetGame(nextMode);
+    hideAllScreens();
+    showScreen(countdownScreen);
+    let n = 3;
+    countdownNum.textContent = n;
+    const iv = setInterval(()=>{
+      n -= 1;
+      if(n<=0){
+        clearInterval(iv);
+        hideAllScreens();
+        state='playing';
+      } else {
+        countdownNum.textContent = n;
+      }
+    }, 700);
+  }
+
+  // ---------- Screen transitions ----------
+  const allScreens = [startScreen, onlineMenuScreen, hostWaitScreen, joinRoomScreen, countdownScreen, pauseScreen, overScreen, vsOverScreen];
+  function hideAllScreens(){ allScreens.forEach(s=>s.classList.add('hidden')); }
+  function showScreen(el){ hideAllScreens(); el.classList.remove('hidden'); }
+
+  playSoloBtn.addEventListener('click', ()=>{
+    resetGame('solo'); hideAllScreens(); state='playing';
+  });
+  playLocal2pBtn.addEventListener('click', ()=>{
+    resetGame('local2p'); hideAllScreens(); state='playing';
+  });
+  playOnlineBtn.addEventListener('click', ()=> showScreen(onlineMenuScreen));
+  onlineBackBtn.addEventListener('click', ()=> showScreen(startScreen));
+  createRoomBtn.addEventListener('click', startHostFlow);
+  joinRoomShowBtn.addEventListener('click', ()=>{ roomCodeInput.value=''; joinStatusText.textContent=''; joinStatusText.classList.remove('err'); showScreen(joinRoomScreen); roomCodeInput.focus(); });
+  hostCancelBtn.addEventListener('click', ()=>{ teardownPeer(); showScreen(onlineMenuScreen); });
+  joinCancelBtn.addEventListener('click', ()=>{ teardownPeer(); showScreen(onlineMenuScreen); });
+  joinConnectBtn.addEventListener('click', ()=> startJoinFlow(roomCodeInput.value));
+  roomCodeInput.addEventListener('keydown', e=>{ if(e.key==='Enter') startJoinFlow(roomCodeInput.value); });
+  copyCodeBtn.addEventListener('click', ()=>{
+    const code = roomCodeDisplay.textContent;
+    if(navigator.clipboard) navigator.clipboard.writeText(code).catch(()=>{});
+    copyCodeBtn.textContent = 'Đã sao chép!';
+    setTimeout(()=> copyCodeBtn.textContent='Sao chép mã', 1500);
+  });
+
+  pauseBtn.addEventListener('click', ()=>{
+    if(mode==='online-guest') return; // khách không điều khiển tạm dừng (do host quản lý luồng chính)
+    if(state==='playing'){ state='paused'; showScreen(pauseScreen); }
+    else if(state==='paused'){ state='playing'; hideAllScreens(); }
+  });
+  resumeBtn.addEventListener('click', ()=>{ state='playing'; hideAllScreens(); });
+  restartFromPauseBtn.addEventListener('click', ()=>{
+    resetGame(mode); hideAllScreens(); state='playing';
+  });
+  quitToMenuBtn.addEventListener('click', ()=>{
+    teardownPeer();
+    showScreen(startScreen);
+    state = 'start';
+  });
+  retryBtn.addEventListener('click', ()=>{
+    resetGame(mode); hideAllScreens(); state='playing';
+  });
+  overToMenuBtn.addEventListener('click', ()=> showScreen(startScreen));
+  vsRetryBtn.addEventListener('click', ()=>{
+    if(mode==='online-guest'){
+      if(conn && conn.open){ conn.send({t:'rematch'}); vsStatusText.textContent = 'Đã gửi yêu cầu, đang chờ chủ phòng…'; }
+      return;
+    }
+    if(mode==='online-host'){
+      resetGame('online-host'); runCountdownThenStart('online-host');
+      return;
+    }
+    resetGame(mode); hideAllScreens(); state='playing';
+  });
+  vsToMenuBtn.addEventListener('click', ()=>{
+    teardownPeer();
+    showScreen(startScreen);
+    state = 'start';
+  });
+
+  resetGame('solo');
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

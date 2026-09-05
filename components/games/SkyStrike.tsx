@@ -93,7 +93,6 @@ export default function SkyStrike() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageWrapRef = useRef<HTMLDivElement | null>(null);
 
-  // React states
   const [gameState, setGameState] = useState<GameState>('start');
   const [score, setScore] = useState<number>(0);
   const [highScore, setHighScore] = useState<number>(0);
@@ -107,7 +106,6 @@ export default function SkyStrike() {
     spread: false,
   });
 
-  // Engine Mutable Refs
   const gameStateRef = useRef<GameState>('start');
   const scoreRef = useRef<number>(0);
   const comboRef = useRef<number>(0);
@@ -434,8 +432,11 @@ export default function SkyStrike() {
     inputRef.current.targetX = clamp(inputRef.current.targetX, 20, VW - 20);
     inputRef.current.targetY = clamp(inputRef.current.targetY, VH * 0.35, VH - 30);
 
-    p.x += (inputRef.current.targetX - p.x) * Math.min(1, dt * 10);
-    p.y += (inputRef.current.targetY - p.y) * Math.min(1, dt * 10);
+    // Frame-rate independent easing. Using exponential smoothing keeps the
+    // aircraft responsive at 30/60/120Hz instead of changing feel with FPS.
+    const follow = 1 - Math.exp(-dt * 18);
+    p.x += (inputRef.current.targetX - p.x) * follow;
+    p.y += (inputRef.current.targetY - p.y) * follow;
 
     p.trail.push({ x: p.x, y: p.y + 16, t: 0 });
     if (p.trail.length > 10) p.trail.shift();
@@ -539,6 +540,7 @@ export default function SkyStrike() {
     });
     particlesRef.current = particlesRef.current.filter((pt) => pt.t < pt.life);
 
+    let needsHudUpdate = false;
     for (const e of enemiesRef.current) {
       for (const b of bulletsRef.current) {
         if (b.hit) continue;
@@ -549,6 +551,7 @@ export default function SkyStrike() {
           burst(b.x, b.y, '#ffb27a', 4);
           if (e.hp <= 0) {
             e.dead = true;
+            needsHudUpdate = true;
             comboRef.current += 1;
             comboTimerRef.current = 1.6;
             const gained = e.score * (1 + comboRef.current * 0.12);
@@ -565,10 +568,7 @@ export default function SkyStrike() {
       }
     }
     bulletsRef.current = bulletsRef.current.filter((b) => !b.hit);
-    enemiesRef.current = enemiesRef.current.filter((e) => {
-      if (e.dead) updateHUD();
-      return !e.dead;
-    });
+    enemiesRef.current = enemiesRef.current.filter((e) => !e.dead);
 
     for (const b of ebulletsRef.current) {
       if (b.hit) continue;
@@ -603,7 +603,9 @@ export default function SkyStrike() {
       shakeRef.current = Math.max(0, shakeRef.current - dt * 40);
     }
 
-    updateHUD();
+    if (needsHudUpdate) {
+      updateHUD();
+    }
   };
 
   const drawPlayer = (ctx: CanvasRenderingContext2D, p: Player) => {
@@ -837,33 +839,68 @@ export default function SkyStrike() {
     handleResize();
     window.addEventListener('resize', handleResize);
 
+    // Convert a screen coordinate to the game's fixed 480x800 coordinate system.
+    // Keeping this conversion in one place prevents CSS scaling/DPR from making
+    // pointer movement feel offset or appear not to work.
     const stageToVirtual = (clientX: number, clientY: number) => {
       const rect = stageWrap.getBoundingClientRect();
-      const x = ((clientX - rect.left) / rect.width) * VW;
-      const y = ((clientY - rect.top) / rect.height) * VH;
-      return { x, y };
+
+      if (!rect.width || !rect.height) {
+        return { x: VW / 2, y: VH * 0.8 };
+      }
+
+      return {
+        x: ((clientX - rect.left) / rect.width) * VW,
+        y: ((clientY - rect.top) / rect.height) * VH,
+      };
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
+    const updatePointerTarget = (clientX: number, clientY: number) => {
+      if (gameStateRef.current !== 'playing') return;
+
+      const point = stageToVirtual(clientX, clientY);
+
+      // The playable area intentionally starts below the HUD/header area.
+      inputRef.current.targetX = clamp(point.x, 20, VW - 20);
+      inputRef.current.targetY = clamp(point.y, VH * 0.35, VH - 30);
+    };
+
+    // Pointer Events handle mouse, touch and pen consistently. The previous
+    // implementation mixed window touch events with stage mouse events, which
+    // made input fragile on responsive/mobile layouts.
+    const handlePointerDown = (e: PointerEvent) => {
+      if (gameStateRef.current !== 'playing') return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+
       e.preventDefault();
-      const t = e.touches[0];
-      const p = stageToVirtual(t.clientX, t.clientY);
-      inputRef.current.targetX = p.x;
-      inputRef.current.targetY = p.y - 40;
+      try {
+        stageWrap.setPointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture is optional; movement still works without it.
+      }
+
+      updatePointerTarget(e.clientX, e.clientY);
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (gameStateRef.current !== 'playing') return;
+
+      // On touch/pen, only move while the pointer is actively dragging.
+      // Mouse movement remains active whenever the cursor is over the game.
+      if (e.pointerType !== 'mouse' && e.buttons === 0) return;
+
       e.preventDefault();
-      const t = e.touches[0];
-      const p = stageToVirtual(t.clientX, t.clientY);
-      inputRef.current.targetX = p.x;
-      inputRef.current.targetY = p.y - 40;
+      updatePointerTarget(e.clientX, e.clientY);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const p = stageToVirtual(e.clientX, e.clientY);
-      inputRef.current.targetX = p.x;
-      inputRef.current.targetY = p.y;
+    const handlePointerUp = (e: PointerEvent) => {
+      try {
+        if (stageWrap.hasPointerCapture(e.pointerId)) {
+          stageWrap.releasePointerCapture(e.pointerId);
+        }
+      } catch {
+        // Ignore browsers that do not support pointer capture fully.
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -887,9 +924,11 @@ export default function SkyStrike() {
       inputRef.current.keys[e.key.toLowerCase()] = false;
     };
 
-    stageWrap.addEventListener('touchstart', handleTouchStart, { passive: false });
-    stageWrap.addEventListener('touchmove', handleTouchMove, { passive: false });
-    stageWrap.addEventListener('mousemove', handleMouseMove);
+    stageWrap.addEventListener('pointerdown', handlePointerDown, { passive: false });
+    stageWrap.addEventListener('pointermove', handlePointerMove, { passive: false });
+    stageWrap.addEventListener('pointerup', handlePointerUp);
+    stageWrap.addEventListener('pointercancel', handlePointerUp);
+    stageWrap.addEventListener('pointerleave', handlePointerUp);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
@@ -914,9 +953,11 @@ export default function SkyStrike() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', handleResize);
-      stageWrap.removeEventListener('touchstart', handleTouchStart);
-      stageWrap.removeEventListener('touchmove', handleTouchMove);
-      stageWrap.removeEventListener('mousemove', handleMouseMove);
+      stageWrap.removeEventListener('pointerdown', handlePointerDown);
+      stageWrap.removeEventListener('pointermove', handlePointerMove);
+      stageWrap.removeEventListener('pointerup', handlePointerUp);
+      stageWrap.removeEventListener('pointercancel', handlePointerUp);
+      stageWrap.removeEventListener('pointerleave', handlePointerUp);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
@@ -933,7 +974,6 @@ export default function SkyStrike() {
 
   return (
     <div id="app">
-      {/* Import Rajdhani font dynamically */}
       <link
         href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap"
         rel="stylesheet"
@@ -951,51 +991,52 @@ export default function SkyStrike() {
         <div className="stage-wrap" ref={stageWrapRef}>
           <canvas ref={canvasRef} id="game" />
 
-          <div className="hud">
-            <div className="hud-top">
-              <div className="hud-block">
-                <div className="score-label">{t('scoreLabel')}</div>
-                <div className="score-value">{score}</div>
-                <div className="combo">{combo > 1 ? `x${combo} combo` : ''}</div>
-                <div className="lives">
-                  {Array.from({ length: maxLives }).map((_, idx) => (
-                    <div key={idx} className={`life-dot ${idx < lives ? '' : 'lost'}`} />
-                  ))}
+          {gameState === 'playing' && (
+            <div className="hud">
+              <div className="hud-top">
+                <div className="hud-block">
+                  <div className="score-label">{t('scoreLabel')}</div>
+                  <div className="score-value">{score}</div>
+                  <div className="combo">{combo > 1 ? `x${combo} combo` : ''}</div>
+                  <div className="lives">
+                    {Array.from({ length: maxLives }).map((_, idx) => (
+                      <div key={idx} className={`life-dot ${idx < lives ? '' : 'lost'}`} />
+                    ))}
+                  </div>
                 </div>
+                <button
+                  className="pause-btn"
+                  onClick={handleTogglePause}
+                  aria-label="Tạm dừng"
+                >
+                  ⏸
+                </button>
               </div>
-              <button
-                className="pause-btn"
-                onClick={handleTogglePause}
-                aria-label="Tạm dừng"
-                style={{ pointerEvents: 'auto' }}
-              >
-                ⏸
-              </button>
-            </div>
 
-            <div className="wave-tag">{t('waveTag', { wave })}</div>
+              <div className="wave-tag">{t('waveTag', { wave })}</div>
 
-            <div className="powerup-bar">
-              {activePowerups.shield && (
-                <div className="pu-chip">
-                  <span className="pu-dot" style={{ background: '#4fd8eb' }} />
-                  {t('shield')}
-                </div>
-              )}
-              {activePowerups.rapid && (
-                <div className="pu-chip">
-                  <span className="pu-dot" style={{ background: '#ffb27a' }} />
-                  {t('rapid')}
-                </div>
-              )}
-              {activePowerups.spread && (
-                <div className="pu-chip">
-                  <span className="pu-dot" style={{ background: '#ff4365' }} />
-                  {t('spread')}
-                </div>
-              )}
+              <div className="powerup-bar">
+                {activePowerups.shield && (
+                  <div className="pu-chip">
+                    <span className="pu-dot" style={{ background: '#4fd8eb' }} />
+                    {t('shield')}
+                  </div>
+                )}
+                {activePowerups.rapid && (
+                  <div className="pu-chip">
+                    <span className="pu-dot" style={{ background: '#ffb27a' }} />
+                    {t('rapid')}
+                  </div>
+                )}
+                {activePowerups.spread && (
+                  <div className="pu-chip">
+                    <span className="pu-dot" style={{ background: '#ff4365' }} />
+                    {t('spread')}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {gameState === 'start' && (
             <div className="screen">
@@ -1004,7 +1045,7 @@ export default function SkyStrike() {
               </div>
               <div className="tagline">{t('tagline')}</div>
               <div className="hiscore-pill">{t('hiscorePill', { score: highScore })}</div>
-              <button className="btn" onClick={handlePlay}>
+              <button className="btn" onClick={handlePlay} type="button">
                 {t('playButton')}
               </button>
               <div
@@ -1019,10 +1060,10 @@ export default function SkyStrike() {
               <div className="logo" style={{ fontSize: 30 }}>
                 {t('pauseTitle')}
               </div>
-              <button className="btn" onClick={() => setGameState('playing')}>
+              <button className="btn" onClick={() => setGameState('playing')} type="button">
                 {t('resumeButton')}
               </button>
-              <button className="btn secondary" onClick={handlePlay}>
+              <button className="btn secondary" onClick={handlePlay} type="button">
                 {t('restartButton')}
               </button>
             </div>
@@ -1036,7 +1077,7 @@ export default function SkyStrike() {
               <div className="hiscore-pill">
                 {t('hiscorePill', { score: Math.max(highScore, score) })}
               </div>
-              <button className="btn" onClick={handlePlay}>
+              <button className="btn" onClick={handlePlay} type="button">
                 {t('replayButton')}
               </button>
               <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
@@ -1163,14 +1204,26 @@ export default function SkyStrike() {
           box-shadow: 0 0 0 1px rgba(79, 216, 235, 0.22), 0 20px 60px rgba(0, 0, 0, 0.55),
             0 0 40px rgba(79, 216, 235, 0.08) inset;
           background: var(--sky-deep);
-          touch-action: none;
           user-select: none;
+          touch-action: none;
         }
 
         canvas {
           display: block;
           width: 100%;
           height: 100%;
+          touch-action: none;
+          pointer-events: auto;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          cursor: crosshair;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+          canvas {
+            cursor: default;
+          }
         }
 
         .hud {
@@ -1178,6 +1231,7 @@ export default function SkyStrike() {
           inset: 0;
           pointer-events: none;
           font-family: var(--font-display);
+          z-index: 5;
         }
 
         .hud-top {
@@ -1264,6 +1318,7 @@ export default function SkyStrike() {
           display: flex;
           align-items: center;
           justify-content: center;
+          z-index: 20;
         }
 
         .powerup-bar {
@@ -1305,6 +1360,7 @@ export default function SkyStrike() {
           background: linear-gradient(180deg, rgba(11, 16, 38, 0.92), rgba(11, 16, 38, 0.97));
           backdrop-filter: blur(2px);
           z-index: 10;
+          pointer-events: auto;
         }
 
         .logo {
@@ -1354,6 +1410,7 @@ export default function SkyStrike() {
           border-radius: 12px;
           padding: 14px 40px;
           cursor: pointer;
+          pointer-events: auto;
           box-shadow: 0 6px 0 var(--cyan-dim), 0 10px 24px rgba(79, 216, 235, 0.35);
           transition: transform 0.08s ease;
         }
