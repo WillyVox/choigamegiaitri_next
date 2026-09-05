@@ -74,29 +74,35 @@
     "footerNote": "Dragon's Gate — Game Vui Online"
   },
   "bubbleBurst": {
-    "title": "Nổ Bong Bóng",
-    "subtitle": "Bong Bóng Tan Vỡ",
+    "title": "BẮN BÓNG 🫧",
+    "subtitle": "Chạm/Click để nổ bóng!<br />Đừng để bóng trôi chạm vạch trên.",
     "instructions": "Chạm để vỡ càng nhiều bóng bọt kỳ diệu càng tốt trước khi chúng biến mất.",
-    "playButton": "Bắt Đầu",
+    "playButton": "CHƠI NGAY",
     "tapHint": "Chạm hoặc nhấp vào các bóng bọt",
-    "gameOverScore": "Điểm Của Bạn",
-    "best": "Kỷ Lục",
-    "retryButton": "Chơi Lại",
-    "footerNote": "Trò chơi đập bóng bọt thư giãn"
-    },
-    "mergeMeadow": {
-      "score": "điểm",
-      "best": "tốt nhất",
-      "next": "tiếp theo",
-      "hint": "Di chuyển để nhắm, chạm hoặc nhấn Space để thả. Ghép hai trái cây giống nhau để chúng lớn hơn.",
-      "gameOverEyebrow": "Lọ đã tràn",
-      "newBest": "Kỷ lục mới!",
-      "playAgain": "Chơi lại",
-      "shareScore": "Sao chép điểm của tôi",
-      "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
-      "colossalFusion": "hợp nhất khổng lồ!"
-    },
-    "chaosOrNah": {
+    "gameOverScore": "Điểm của bạn: {score}",
+    "gameOverTitle": "THUA RỒI!",
+    "best": "Kỷ lục: {score}",
+    "retryButton": "CHƠI LẠI",
+    "footerNote": "Trò chơi đập bóng bọt thư giãn",
+    "adTop": "[QC Top Banner 728x90 / 320x50]",
+    "adGameOver": "[QC Game Over 300x250]",
+    "adBottom": "[QC Bottom Banner]",
+    "aboutTitle": "Nổ Bong Bóng – Game giải trí online miễn phí",
+    "aboutP1": "Game bắn bóng thư giãn trên trình duyệt. Phá vỡ bong bóng, tích điểm combo và vượt qua kỷ lục của chính mình."
+  },
+  "mergeMeadow": {
+    "score": "điểm",
+    "best": "tốt nhất",
+    "next": "tiếp theo",
+    "hint": "Di chuyển để nhắm, chạm hoặc nhấn Space để thả. Ghép hai trái cây giống nhau để chúng lớn hơn.",
+    "gameOverEyebrow": "Lọ đã tràn",
+    "newBest": "Kỷ lục mới!",
+    "playAgain": "Chơi lại",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+    "colossalFusion": "hợp nhất khổng lồ!"
+  },
+  "chaosOrNah": {
     "modeEndless": "Vô tận",
     "modeDaily": "Hằng ngày",
     "streak": "chuỗi",

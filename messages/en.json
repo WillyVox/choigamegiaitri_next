@@ -101,14 +101,20 @@
     "colossalFusion": "colossal fusion!"
   },
   "bubbleBurst": {
-    "title": "Bubble Burst",
-    "subtitle": "Twilight Pop",
-    "instructions": "Pop as many magical bubbles as you can before they disappear.",
-    "playButton": "Start Popping",
-    "tapHint": "Tap or click the bubbles",
-    "gameOverScore": "Your Score",
-    "best": "Best",
-    "retryButton": "Play Again",
-    "footerNote": "A relaxing bubble-popping game"
+    "title": "BUBBLE BURST 🫧",
+    "subtitle": "Tap/Click to pop bubbles!<br />Don't let bubbles hit the top line.",
+    "instructions": "Tap to pop as many magical bubbles as you can before they disappear.",
+    "playButton": "PLAY NOW",
+    "tapHint": "Tap or click on the bubbles",
+    "gameOverScore": "Your Score: {score}",
+    "gameOverTitle": "GAME OVER!",
+    "best": "High Score: {score}",
+    "retryButton": "PLAY AGAIN",
+    "footerNote": "Relaxing bubble popping game",
+    "adTop": "[Ad Top Banner 728x90 / 320x50]",
+    "adGameOver": "[Ad Game Over 300x250]",
+    "adBottom": "[Ad Bottom Banner]",
+    "aboutTitle": "Bubble Burst – Free Online Casual Game",
+    "aboutP1": "A relaxing browser game where you pop floating bubbles, build up high combos, and break your highest score."
   }
 }

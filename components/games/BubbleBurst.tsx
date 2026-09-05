@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const STORAGE_KEY = 'bubble_pop_best_score';
 const COLORS = ['#ff4757', '#ffa502', '#2ed573', '#1e90ff', '#3742fa', '#e84393'];
@@ -33,6 +34,8 @@ interface TextProps {
 }
 
 export default function BubbleBurstGame() {
+
+  const t = useTranslations('bubbleBurst');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,7 +47,6 @@ export default function BubbleBurstGame() {
   const comboRef = useRef<number>(0);
   const gameStateRef = useRef<'IDLE' | 'RUNNING' | 'GAMEOVER'>('IDLE');
 
-  // Bộ nhớ đệm cho mảng phần tử game
   const bubblesRef = useRef<BubbleProps[]>([]);
   const particlesRef = useRef<ParticleProps[]>([]);
   const textsRef = useRef<TextProps[]>([]);
@@ -98,13 +100,12 @@ export default function BubbleBurstGame() {
       const width = wrapper.clientWidth;
       const height = wrapper.clientHeight;
 
-      // Giảm tốc độ di chuyển ban đầu để game thư giãn hơn
       bubblesRef.current.push({
         r,
         x: r + Math.random() * (width - r * 2),
         y: height + r,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: 0.6 + Math.random() * 0.6 + Math.min(scoreRef.current * 0.005, 1.2), // Giảm 50% tốc độ
+        speed: 0.6 + Math.random() * 0.6 + Math.min(scoreRef.current * 0.005, 1.2),
         wobble: Math.random() * Math.PI * 2,
       });
     };
@@ -193,19 +194,16 @@ export default function BubbleBurstGame() {
     canvas.addEventListener('mousedown', handlePointerDown);
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
 
-    // VÒNG LẶP CHÍNH CÓ ĐIỀU CHỈNH THỜI GIAN (DELTA TIME)
     const gameLoop = (time: number) => {
       const width = wrapper.clientWidth;
       const height = wrapper.clientHeight;
 
-      // Tính toán Delta Time để giữ nhịp game chuẩn trên mọi màn hình (60Hz / 120Hz / 144Hz)
       const deltaTime = Math.min((time - lastFrameTime) / 1000, 0.1);
       lastFrameTime = time;
 
       ctx.clearRect(0, 0, width, height);
 
       if (gameStateRef.current === 'RUNNING') {
-        // Vạch ranh giới thua
         ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
         ctx.setLineDash([8, 8]);
         ctx.beginPath();
@@ -214,18 +212,16 @@ export default function BubbleBurstGame() {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Tần suất tạo bóng dựa theo Mili-giây (Chậm rãi, nhịp nhàng hơn)
         const spawnDelay = Math.max(800, 1600 - Math.floor(scoreRef.current * 2));
         if (time - lastSpawnTimeRef.current >= spawnDelay) {
           spawnBubble();
           lastSpawnTimeRef.current = time;
         }
 
-        // Cập nhật & Vẽ Bong Bóng
         const bubbles = bubblesRef.current;
         for (let i = bubbles.length - 1; i >= 0; i--) {
           const b = bubbles[i];
-          b.y -= b.speed * deltaTime * 60; // Đồng bộ tốc độ theo chuẩn 60fps
+          b.y -= b.speed * deltaTime * 60;
           b.wobble += 0.03;
           b.x += Math.sin(b.wobble) * 0.5;
 
@@ -252,14 +248,12 @@ export default function BubbleBurstGame() {
           ctx.fill();
           ctx.restore();
 
-          // Kiểm tra thua
           if (b.y - b.r <= 50) {
             triggerGameOver();
             break;
           }
         }
 
-        // Cập nhật & Vẽ Hạt Nổ
         const particles = particlesRef.current;
         for (let i = particles.length - 1; i >= 0; i--) {
           const p = particles[i];
@@ -282,7 +276,6 @@ export default function BubbleBurstGame() {
           ctx.restore();
         }
 
-        // Cập nhật & Vẽ Chữ Nổi
         const texts = textsRef.current;
         for (let i = texts.length - 1; i >= 0; i--) {
           const t = texts[i];
@@ -317,9 +310,7 @@ export default function BubbleBurstGame() {
     };
   }, []);
 
-  // XỬ LÝ KHỞI TẠO MỚI / CHƠI LẠI
   const handleStartGame = () => {
-    // Reset hoàn toàn bộ nhớ lưu trữ
     bubblesRef.current = [];
     particlesRef.current = [];
     textsRef.current = [];
@@ -332,28 +323,31 @@ export default function BubbleBurstGame() {
 
   return (
     <div className="bubble-game-container">
-      {/* ADS PLACEHOLDER 1: BANNER TOP */}
+      {/* ADS PLACEHOLDER 1 */}
       <div className="ad-banner">
-        <span>[QC Top Banner 728x90 / 320x50]</span>
+        <span>{t('adTop')}</span>
       </div>
 
       {/* GAME CONTAINER */}
       <div ref={wrapperRef} className="game-wrapper">
-        {/* HUD - Điểm số */}
+        {/* HUD */}
         <div className="hud">
           <div className="score">{score}</div>
-          <div className="best-score">Kỷ lục: {bestScore}</div>
+          <div className="best-score">
+            {t('best', { score: bestScore })}
+          </div>
         </div>
 
         {/* START OVERLAY */}
         {gameState === 'IDLE' && (
           <div className="overlay">
-            <h1 className="title">BẮN BÓNG 🫧</h1>
-            <p className="subtitle">
-              Chạm/Click để nổ bóng!<br />Đừng để bóng trôi chạm vạch trên.
-            </p>
+            <h1 className="title">{t('title')}</h1>
+            <p
+              className="subtitle"
+              dangerouslySetInnerHTML={{ __html: t('subtitle') }}
+            />
             <button onClick={handleStartGame} className="btn-play">
-              CHƠI NGAY
+              {t('playButton')}
             </button>
           </div>
         )}
@@ -361,16 +355,20 @@ export default function BubbleBurstGame() {
         {/* GAME OVER OVERLAY */}
         {gameState === 'GAMEOVER' && (
           <div className="overlay">
-            <h2 className="title" style={{ color: '#f43f5e' }}>THUA RỒI!</h2>
-            <p className="subtitle">Điểm của bạn: {score}</p>
+            <h2 className="title" style={{ color: '#f43f5e' }}>
+              {t('gameOverTitle')}
+            </h2>
+            <p className="subtitle">
+              {t('gameOverScore', { score })}
+            </p>
 
-            {/* ADS PLACEHOLDER 2: RECTANGLE AD (300x250) IN GAME OVER */}
+            {/* ADS PLACEHOLDER 2 */}
             <div className="ad-rect">
-              <span>[QC Game Over 300x250]</span>
+              <span>{t('adGameOver')}</span>
             </div>
 
             <button onClick={handleStartGame} className="btn-play">
-              CHƠI LẠI
+              {t('retryButton')}
             </button>
           </div>
         )}
@@ -378,9 +376,9 @@ export default function BubbleBurstGame() {
         <canvas ref={canvasRef} className="game-canvas" />
       </div>
 
-      {/* ADS PLACEHOLDER 3: BANNER BOTTOM */}
+      {/* ADS PLACEHOLDER 3 */}
       <div className="ad-banner">
-        <span>[QC Bottom Banner]</span>
+        <span>{t('adBottom')}</span>
       </div>
 
       <style jsx>{`
