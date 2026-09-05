@@ -44,11 +44,17 @@ interface Spark {
   life: number;
 }
 
+interface CustomDivElement extends HTMLDivElement {
+  __startGame?: () => void;
+  __retryGame?: () => void;
+}
+
 export default function BubbleBurst() {
   const t = useTranslations('bubbleBurst');
+  const [timeLeft, setTimeLeft] = useState(100);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<CustomDivElement>(null);
   const rafRef = useRef<number | undefined>(undefined);
 
   const [started, setStarted] = useState(false);
@@ -93,6 +99,8 @@ export default function BubbleBurst() {
     let elapsed = 0;
 
     function resize() {
+      if (!wrap || !canvas || !ctx) return;
+
       DPR = window.devicePixelRatio || 1;
       W = wrap.clientWidth;
       H = wrap.clientHeight;
@@ -189,6 +197,7 @@ export default function BubbleBurst() {
     }
 
     function pointerPosition(event: PointerEvent) {
+      if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
 
       return {
@@ -310,6 +319,8 @@ export default function BubbleBurst() {
     }
 
     function drawBackground() {
+      if (!ctx) return;
+
       const gradient = ctx.createLinearGradient(0, 0, 0, H);
       gradient.addColorStop(0, '#2b1a4a');
       gradient.addColorStop(0.55, '#6b3d7a');
@@ -331,6 +342,8 @@ export default function BubbleBurst() {
     }
 
     function drawBubble(bubble: Bubble) {
+      if (!ctx) return;
+
       const alpha = Math.max(0.15, Math.min(1, bubble.life / 1.2));
 
       ctx.save();
@@ -377,6 +390,8 @@ export default function BubbleBurst() {
     }
 
     function draw() {
+      if (!ctx) return;
+
       ctx.clearRect(0, 0, W, H);
       drawBackground();
 
@@ -427,14 +442,14 @@ export default function BubbleBurst() {
       rafRef.current = requestAnimationFrame(loop);
     }
 
-    (wrap as any).__startGame = () => {
+    wrap.__startGame = () => {
       gameStarted = true;
       setStarted(true);
       setShowOver(false);
       resetRun();
     };
 
-    (wrap as any).__retryGame = () => {
+    wrap.__retryGame = () => {
       setShowOver(false);
       resetRun();
     };
@@ -487,7 +502,7 @@ export default function BubbleBurst() {
               className="play-btn"
               type="button"
               onClick={() =>
-                (wrapRef.current as any)?.__startGame?.()
+                wrapRef.current?.__startGame?.()
               }
             >
               {t('playButton')}
@@ -517,7 +532,7 @@ export default function BubbleBurst() {
               className="play-btn"
               type="button"
               onClick={() =>
-                (wrapRef.current as any)?.__retryGame?.()
+                wrapRef.current?.__retryGame?.()
               }
             >
               {t('retryButton')}
