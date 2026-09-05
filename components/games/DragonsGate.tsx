@@ -343,16 +343,10 @@ export default function DragonsGate() {
         rel="stylesheet"
       />
 
-      {/* ADS PLACEHOLDER 1 */}
-      <div className="ad-slot ad-top" data-ad-slot="top-banner" aria-hidden="true">
-        Vị trí quảng cáo 728×90 / responsive
-      </div>
+    
 
       <div className="game-shell">
-        {/* ADS SIDE LEFT */}
-        <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
-          Quảng cáo 160×600
-        </div>
+    
 
         {/* STAGE WRAPPER */}
         <div className="stage-wrap" ref={stageWrapRef}>
@@ -409,16 +403,6 @@ export default function DragonsGate() {
             </div>
           )}
         </div>
-
-        {/* ADS SIDE RIGHT */}
-        <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
-          Quảng cáo 160×600
-        </div>
-      </div>
-
-      {/* ADS PLACEHOLDER BOTTOM */}
-      <div className="ad-slot ad-bottom" data-ad-slot="bottom-banner" aria-hidden="true">
-        Vị trí quảng cáo 320×50 / responsive
       </div>
 
       <div className="about">

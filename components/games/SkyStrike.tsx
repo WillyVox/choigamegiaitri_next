@@ -979,15 +979,8 @@ export default function SkyStrike() {
         rel="stylesheet"
       />
 
-      <div className="ad-slot ad-top" data-ad-slot="top-banner" aria-hidden="true">
-        Vị trí quảng cáo 728×90 / responsive
-      </div>
-
       <div className="game-shell">
-        <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
-          Quảng cáo 160×600
-        </div>
-
+        
         <div className="stage-wrap" ref={stageWrapRef}>
           <canvas ref={canvasRef} id="game" />
 
@@ -1087,13 +1080,6 @@ export default function SkyStrike() {
           )}
         </div>
 
-        <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
-          Quảng cáo 160×600
-        </div>
-      </div>
-
-      <div className="ad-slot ad-bottom" data-ad-slot="bottom-banner" aria-hidden="true">
-        Vị trí quảng cáo 320×50 / responsive
       </div>
 
       <div className="about">
