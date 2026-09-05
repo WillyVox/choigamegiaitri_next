@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const VW = 480;
 const VH = 800;
@@ -88,6 +89,7 @@ interface Star {
 }
 
 export default function SkyStrike() {
+  const t = useTranslations('skyStrike');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageWrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -952,7 +954,7 @@ export default function SkyStrike() {
           <div className="hud">
             <div className="hud-top">
               <div className="hud-block">
-                <div className="score-label">ĐIỂM</div>
+                <div className="score-label">{t('scoreLabel')}</div>
                 <div className="score-value">{score}</div>
                 <div className="combo">{combo > 1 ? `x${combo} combo` : ''}</div>
                 <div className="lives">
@@ -971,25 +973,25 @@ export default function SkyStrike() {
               </button>
             </div>
 
-            <div className="wave-tag">CHẶNG {wave}</div>
+            <div className="wave-tag">{t('waveTag', { wave })}</div>
 
             <div className="powerup-bar">
               {activePowerups.shield && (
                 <div className="pu-chip">
                   <span className="pu-dot" style={{ background: '#4fd8eb' }} />
-                  Khiên
+                  {t('shield')}
                 </div>
               )}
               {activePowerups.rapid && (
                 <div className="pu-chip">
                   <span className="pu-dot" style={{ background: '#ffb27a' }} />
-                  Bắn nhanh
+                  {t('rapid')}
                 </div>
               )}
               {activePowerups.spread && (
                 <div className="pu-chip">
                   <span className="pu-dot" style={{ background: '#ff4365' }} />
-                  Đạn chùm
+                  {t('spread')}
                 </div>
               )}
             </div>
@@ -1000,41 +1002,42 @@ export default function SkyStrike() {
               <div className="logo">
                 SKY<span>STRIKE</span>
               </div>
-              <div className="tagline">Bắn hạ phi đội địch, sống sót càng lâu càng ghi nhiều điểm</div>
-              <div className="hiscore-pill">Kỷ lục: {highScore}</div>
+              <div className="tagline">{t('tagline')}</div>
+              <div className="hiscore-pill">{t('hiscorePill', { score: highScore })}</div>
               <button className="btn" onClick={handlePlay}>
-                CHƠI NGAY
+                {t('playButton')}
               </button>
-              <div className="hint">
-                Máy tính: dùng phím mũi tên / WASD hoặc di chuột để lái.
-                <br />
-                Điện thoại: chạm và kéo để lái. Máy bay tự động bắn.
-              </div>
+              <div
+                className="hint"
+                dangerouslySetInnerHTML={{ __html: t.raw('hint') }}
+              />
             </div>
           )}
 
           {gameState === 'paused' && (
             <div className="screen">
               <div className="logo" style={{ fontSize: 30 }}>
-                TẠM DƯNG
+                {t('pauseTitle')}
               </div>
               <button className="btn" onClick={() => setGameState('playing')}>
-                TIẾP TỤC
+                {t('resumeButton')}
               </button>
               <button className="btn secondary" onClick={handlePlay}>
-                Chơi lại từ đầu
+                {t('restartButton')}
               </button>
             </div>
           )}
 
           {gameState === 'over' && (
             <div className="screen">
-              <div className="final-label">ĐIỂM SỐ</div>
+              <div className="final-label">{t('finalLabel')}</div>
               <div className="final-score">{score}</div>
-              {isNewRecord && <div className="record-badge">🏆 KỶ LỤC MỚI!</div>}
-              <div className="hiscore-pill">Kỷ lục: {Math.max(highScore, score)}</div>
+              {isNewRecord && <div className="record-badge">{t('newRecord')}</div>}
+              <div className="hiscore-pill">
+                {t('hiscorePill', { score: Math.max(highScore, score) })}
+              </div>
               <button className="btn" onClick={handlePlay}>
-                CHƠI LẠI
+                {t('replayButton')}
               </button>
               <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
                 Quảng cáo (khi kết thúc lượt chơi)
@@ -1053,18 +1056,12 @@ export default function SkyStrike() {
       </div>
 
       <div className="about">
-        <h1>Sky Strike – Game bắn máy bay online miễn phí</h1>
-        <p>
-          Sky Strike là game bắn máy bay chơi trực tiếp trên trình duyệt, không cần tải hay cài đặt. Điều khiển phi cơ, né đạn và bắn hạ các phi đội địch để ghi điểm, thu thập vật phẩm hỗ trợ và cố gắng phá kỷ lục của chính mình sau mỗi lượt chơi.
-        </p>
-        <h2>Cách chơi</h2>
-        <p>
-          Trên máy tính, dùng phím mũi tên hoặc WASD để di chuyển, hoặc đơn giản là di chuyển chuột. Trên điện thoại, chạm vào màn hình và kéo theo hướng muốn bay. Máy bay tự động bắn liên tục nên bạn chỉ cần tập trung né đạn và thu thập vật phẩm.
-        </p>
-        <h2>Phù hợp thư giãn mọi lúc</h2>
-        <p>
-          Mỗi lượt chơi chỉ kéo dài vài phút, phù hợp để giải trí trong giờ nghỉ. Độ khó tăng dần tự nhiên theo thời gian sống sót, giữ cảm giác vừa sức cho người chơi mới lẫn thử thách cho người chơi quen tay.
-        </p>
+        <h1>{t('aboutTitle')}</h1>
+        <p>{t('aboutP1')}</p>
+        <h2>{t('aboutH2_1')}</h2>
+        <p>{t('aboutP2')}</p>
+        <h2>{t('aboutH2_2')}</h2>
+        <p>{t('aboutP3')}</p>
       </div>
 
       <style jsx global>{`
