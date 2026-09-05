@@ -10,15 +10,15 @@
     "allGames": "Tất cả game"
   },
   "home": {
-    "metaTitle": "Game Online Miễn Phí — Chơi Ngay, Không Cần Tải Về",
-    "metaDescription": "Khám phá và chơi game HTML5 miễn phí ngay trên trình duyệt: Dragon's Gate, Chaos or Nah, Merge Meadow. Game mới được cập nhật thường xuyên.",
+    "metaTitle": "Chơi Game Giải Trí - Game Online Miễn Phí — Chơi Ngay, Không Cần Tải Về",
+    "metaDescription": "Khám phá và chơi game HTML5 miễn phí ngay trên trình duyệt: Rồng bay, bong bóng bùng nổ. Game mới được cập nhật thường xuyên.",
     "heroTitle": "Chơi ngay một game thật vui",
     "heroSubtitle": "Game trình duyệt miễn phí. Không cần tải về, không cần tài khoản — chọn một game và chơi ngay.",
     "aboutHeading": "Về choigamegiaitri.com",
     "aboutBody": "choigamegiaitri.com là thư viện game trình duyệt miễn phí, ngày càng phát triển, có thể chơi ngay trên mọi thiết bị. Mỗi game chạy trực tiếp trên trình duyệt của bạn — không cần cài đặt, không cần đăng ký. Chúng tôi thường xuyên thêm game mới, hãy quay lại thường xuyên nhé."
   },
   "gamePage": {
-    "moreGames": "Thêm game để thử",
+    "moreGames": "Chơi thêm game khác",
     "playNow": "Chơi ngay"
   },
   "footer": {
@@ -39,7 +39,7 @@
     "body3": "Bạn có thể từ chối quảng cáo cá nhân hóa bằng cách truy cập trang cài đặt của mạng quảng cáo, ví dụ như trang Cài đặt Quảng cáo của Google."
   },
   "dragonsGate": {
-    "title": "Dragon's Gate",
+    "title": "Rồng bay",
     "subtitle": "Chơi Game Online Miễn Phí",
     "instructions": "Chạm màn hình hoặc nhấn phím Space để bay. Điều khiển rồng vượt qua các cổng thành!",
     "playButton": "Chơi Ngay",
@@ -50,7 +50,30 @@
     "retryButton": "Chơi Lại",
     "footerNote": "Dragon's Gate — Game Vui Online"
   },
-  "chaosOrNah": {
+  "bubbleBurst": {
+    "title": "Nổ Bong Bóng",
+    "subtitle": "Bong Bóng Tan Vỡ",
+    "instructions": "Chạm để vỡ càng nhiều bóng bọt kỳ diệu càng tốt trước khi chúng biến mất.",
+    "playButton": "Bắt Đầu",
+    "tapHint": "Chạm hoặc nhấp vào các bóng bọt",
+    "gameOverScore": "Điểm Của Bạn",
+    "best": "Kỷ Lục",
+    "retryButton": "Chơi Lại",
+    "footerNote": "Trò chơi đập bóng bọt thư giãn"
+    },
+    "mergeMeadow": {
+      "score": "điểm",
+      "best": "tốt nhất",
+      "next": "tiếp theo",
+      "hint": "Di chuyển để nhắm, chạm hoặc nhấn Space để thả. Ghép hai trái cây giống nhau để chúng lớn hơn.",
+      "gameOverEyebrow": "Lọ đã tràn",
+      "newBest": "Kỷ lục mới!",
+      "playAgain": "Chơi lại",
+      "shareScore": "Sao chép điểm của tôi",
+      "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+      "colossalFusion": "hợp nhất khổng lồ!"
+    },
+    "chaosOrNah": {
     "modeEndless": "Vô tận",
     "modeDaily": "Hằng ngày",
     "streak": "chuỗi",
@@ -64,28 +87,5 @@
     "dailyHint": "Cùng 10 tình huống với mọi người hôm nay. Chỉ chơi một lần.",
     "shareDaily": "Sao chép kết quả hôm nay",
     "dailyNote": "Thử thách hằng ngày mới sẽ mở khóa vào ngày mai."
-  },
-  "mergeMeadow": {
-    "score": "điểm",
-    "best": "tốt nhất",
-    "next": "tiếp theo",
-    "hint": "Di chuyển để nhắm, chạm hoặc nhấn Space để thả. Ghép hai trái cây giống nhau để chúng lớn hơn.",
-    "gameOverEyebrow": "Lọ đã tràn",
-    "newBest": "Kỷ lục mới!",
-    "playAgain": "Chơi lại",
-    "shareScore": "Sao chép điểm của tôi",
-    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
-    "colossalFusion": "hợp nhất khổng lồ!"
-  },
-  "bubbleBurst": {
-    "title": "Bóng Bọt Tan Vỡ",
-    "subtitle": "Hoàng Hôn Lung Linh",
-    "instructions": "Chạm để vỡ càng nhiều bóng bọt kỳ diệu càng tốt trước khi chúng biến mất.",
-    "playButton": "Bắt Đầu",
-    "tapHint": "Chạm hoặc nhấp vào các bóng bọt",
-    "gameOverScore": "Điểm Của Bạn",
-    "best": "Kỷ Lục",
-    "retryButton": "Chơi Lại",
-    "footerNote": "Trò chơi đập bóng bọt thư giãn"
-    }
+  }
 }

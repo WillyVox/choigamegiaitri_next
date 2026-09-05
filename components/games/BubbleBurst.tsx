@@ -1,705 +1,504 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import React, { useEffect, useRef, useState } from 'react';
 
-const STORAGE_KEY = 'dragons-gate:bubble-best';
+const STORAGE_KEY = 'bubble_pop_best_score';
+const COLORS = ['#ff4757', '#ffa502', '#2ed573', '#1e90ff', '#3742fa', '#e84393'];
 
-const COLORS = [
-  '#ff7a5c',
-  '#ffd166',
-  '#74d3ae',
-  '#71b7ff',
-  '#c58cff',
-  '#ff8fc7',
-];
-
-interface Bubble {
+interface BubbleProps {
   x: number;
   y: number;
   r: number;
   color: string;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  popped: boolean;
+  speed: number;
   wobble: number;
 }
 
-interface Particle {
+interface ParticleProps {
   x: number;
   y: number;
+  r: number;
+  color: string;
   vx: number;
   vy: number;
-  r: number;
-  life: number;
-  color: string;
+  alpha: number;
 }
 
-interface Spark {
+interface TextProps {
   x: number;
   y: number;
   text: string;
-  life: number;
+  color: string;
+  alpha: number;
 }
 
-interface CustomDivElement extends HTMLDivElement {
-  __startGame?: () => void;
-  __retryGame?: () => void;
-}
+export default function BubbleBurstGame() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-export default function BubbleBurst() {
-  const t = useTranslations('bubbleBurst');
-  const [timeLeft, setTimeLeft] = useState(100);
+  const [score, setScore] = useState<number>(0);
+  const [bestScore, setBestScore] = useState<number>(0);
+  const [gameState, setGameState] = useState<'IDLE' | 'RUNNING' | 'GAMEOVER'>('IDLE');
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<CustomDivElement>(null);
-  const rafRef = useRef<number | undefined>(undefined);
+  const scoreRef = useRef<number>(0);
+  const comboRef = useRef<number>(0);
+  const gameStateRef = useRef<'IDLE' | 'RUNNING' | 'GAMEOVER'>('IDLE');
 
-  const [started, setStarted] = useState(false);
-  const [showOver, setShowOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
-  const [finalScore, setFinalScore] = useState(0);
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) setBest(Number.parseInt(saved, 10) || 0);
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setBestScore(parseInt(saved, 10) || 0);
+      }
     } catch {
-      // Storage might be disabled.
+      // Ignore storage errors
     }
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const wrap = wrapRef.current;
-
-    if (!canvas || !wrap) return;
+    const wrapper = wrapperRef.current;
+    if (!canvas || !wrapper) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let W = 0;
-    let H = 0;
-    let DPR = 1;
-
-    let bubbles: Bubble[] = [];
-    let particles: Particle[] = [];
-    let sparks: Spark[] = [];
-
-    let running = false;
-    let gameStarted = false;
-    let runScore = 0;
-    let combo = 0;
-    let lastTime = 0;
-    let localBest = best;
+    let animId: number;
+    let bubbles: BubbleProps[] = [];
+    let particles: ParticleProps[] = [];
+    let texts: TextProps[] = [];
     let spawnTimer = 0;
-    let elapsed = 0;
+    const spawnInterval = 60;
 
-    function resize() {
-      if (!wrap || !canvas || !ctx) return;
+    const resizeCanvas = () => {
+      if (!canvas || !wrapper) return;
+      const rect = wrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
 
-      DPR = window.devicePixelRatio || 1;
-      W = wrap.clientWidth;
-      H = wrap.clientHeight;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
 
-      canvas.width = W * DPR;
-      canvas.height = H * DPR;
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    }
-
-    function randomColor() {
-      return COLORS[Math.floor(Math.random() * COLORS.length)];
-    }
-
-    function spawnBubble(initial = false) {
-      const r = 18 + Math.random() * 18;
+    const spawnBubble = () => {
+      const r = 20 + Math.random() * 18;
+      const width = wrapper.clientWidth;
+      const height = wrapper.clientHeight;
 
       bubbles.push({
-        x: r + Math.random() * Math.max(1, W - r * 2),
-        y: initial
-          ? 90 + Math.random() * Math.max(1, H - 170)
-          : H + r + Math.random() * 40,
         r,
-        color: randomColor(),
-        vx: (Math.random() - 0.5) * 20,
-        vy: -(24 + Math.random() * 38),
-        life: 10,
-        maxLife: 10,
-        popped: false,
+        x: r + Math.random() * (width - r * 2),
+        y: height + r,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        speed: 1.2 + Math.random() * 1.5 + scoreRef.current * 0.01,
         wobble: Math.random() * Math.PI * 2,
       });
-    }
+    };
 
-    function createInitialBubbles() {
-      bubbles = [];
+    const popBubble = (index: number, bubble: BubbleProps) => {
+      comboRef.current += 1;
+      const addedScore = 10 + Math.min(comboRef.current, 10) * 2;
+      
+      setScore((prev) => prev + addedScore);
 
-      const count = Math.max(12, Math.floor(W / 34));
-
-      for (let i = 0; i < count; i++) {
-        spawnBubble(true);
-      }
-    }
-
-    function resetRun() {
-      runScore = 0;
-      combo = 0;
-      elapsed = 0;
-      spawnTimer = 0;
-
-      particles = [];
-      sparks = [];
-
-      createInitialBubbles();
-
-      running = true;
-      setScore(0);
-    }
-
-    function addParticles(bubble: Bubble) {
-      for (let i = 0; i < 14; i++) {
+      for (let i = 0; i < 12; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 70 + Math.random() * 180;
-
+        const speed = 2 + Math.random() * 6;
         particles.push({
           x: bubble.x,
           y: bubble.y,
+          r: 2 + Math.random() * 4,
+          color: bubble.color,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          r: 2 + Math.random() * 3,
-          life: 0.45 + Math.random() * 0.35,
-          color: bubble.color,
+          alpha: 1,
         });
       }
-    }
 
-    function popBubble(bubble: Bubble) {
-      if (bubble.popped) return;
-
-      bubble.popped = true;
-      combo++;
-
-      const points = 10 + Math.min(combo, 10) * 2;
-      runScore += points;
-
-      setScore(runScore);
-      addParticles(bubble);
-
-      sparks.push({
+      const txt = comboRef.current > 2 ? `+${addedScore} (${comboRef.current}x)` : `+${addedScore}`;
+      texts.push({
         x: bubble.x,
         y: bubble.y,
-        text: `+${points}`,
-        life: 0.8,
+        text: txt,
+        color: comboRef.current > 2 ? '#fbbf24' : '#ffffff',
+        alpha: 1,
       });
-    }
 
-    function pointerPosition(event: PointerEvent) {
-      if (!canvas) return { x: 0, y: 0 };
+      bubbles.splice(index, 1);
+    };
+
+    const triggerGameOver = () => {
+      setGameState('GAMEOVER');
+      setBestScore((prevBest) => {
+        const currentScore = scoreRef.current;
+        if (currentScore > prevBest) {
+          try {
+            localStorage.setItem(STORAGE_KEY, currentScore.toString());
+          } catch {
+            // Ignore
+          }
+          return currentScore;
+        }
+        return prevBest;
+      });
+    };
+
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      if (gameStateRef.current !== 'RUNNING') return;
+
       const rect = canvas.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
 
-      return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-      };
-    }
+      const clickX = clientX - rect.left;
+      const clickY = clientY - rect.top;
 
-    function handlePointer(event: PointerEvent) {
-      if (!running) return;
-
-      event.preventDefault();
-
-      const point = pointerPosition(event);
       let hit = false;
-
-      // Check topmost bubbles first.
       for (let i = bubbles.length - 1; i >= 0; i--) {
-        const bubble = bubbles[i];
+        const b = bubbles[i];
+        const dist = Math.hypot(clickX - b.x, clickY - b.y);
 
-        if (bubble.popped) continue;
-
-        const dx = point.x - bubble.x;
-        const dy = point.y - bubble.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance <= bubble.r) {
-          popBubble(bubble);
+        if (dist < b.r + 10) {
+          popBubble(i, b);
           hit = true;
           break;
         }
       }
 
       if (!hit) {
-        combo = 0;
+        comboRef.current = 0;
       }
-    }
-
-    function endRun() {
-      if (!running) return;
-
-      running = false;
-
-      if (runScore > localBest) {
-        localBest = runScore;
-        setBest(localBest);
-
-        try {
-          window.localStorage.setItem(STORAGE_KEY, String(localBest));
-        } catch {
-          // Ignore storage errors.
-        }
-      }
-
-      setFinalScore(runScore);
-
-      window.setTimeout(() => {
-        setShowOver(true);
-      }, 350);
-    }
-
-    function update(dt: number) {
-      if (!running) return;
-
-      elapsed += dt;
-      spawnTimer += dt;
-
-      const spawnRate = Math.max(0.28, 0.75 - elapsed * 0.008);
-
-      if (spawnTimer >= spawnRate) {
-        spawnTimer = 0;
-        spawnBubble();
-      }
-
-      for (const bubble of bubbles) {
-        if (bubble.popped) continue;
-
-        bubble.x += bubble.vx * dt;
-        bubble.y += bubble.vy * dt;
-        bubble.wobble += dt * 2;
-
-        bubble.x += Math.sin(bubble.wobble) * 4 * dt;
-        bubble.life -= dt;
-
-        if (bubble.x - bubble.r < 0) {
-          bubble.x = bubble.r;
-          bubble.vx *= -1;
-        }
-
-        if (bubble.x + bubble.r > W) {
-          bubble.x = W - bubble.r;
-          bubble.vx *= -1;
-        }
-
-        if (bubble.life <= 0) {
-          endRun();
-        }
-      }
-
-      bubbles = bubbles.filter(
-        (bubble) => !bubble.popped && bubble.y + bubble.r > -40,
-      );
-
-      for (const particle of particles) {
-        particle.x += particle.vx * dt;
-        particle.y += particle.vy * dt;
-        particle.vy += 240 * dt;
-        particle.life -= dt;
-      }
-
-      particles = particles.filter((particle) => particle.life > 0);
-
-      for (const spark of sparks) {
-        spark.y -= 35 * dt;
-        spark.life -= dt;
-      }
-
-      sparks = sparks.filter((spark) => spark.life > 0);
-    }
-
-    function drawBackground() {
-      if (!ctx) return;
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, H);
-      gradient.addColorStop(0, '#2b1a4a');
-      gradient.addColorStop(0.55, '#6b3d7a');
-      gradient.addColorStop(1, '#b8567a');
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
-
-      for (let i = 0; i < 18; i++) {
-        const x = (i * 97 + elapsed * 8) % (W + 100) - 50;
-        const y = 80 + ((i * 71) % Math.max(100, H - 150));
-
-        ctx.beginPath();
-        ctx.arc(x, y, 1.5 + (i % 3), 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    function drawBubble(bubble: Bubble) {
-      if (!ctx) return;
-
-      const alpha = Math.max(0.15, Math.min(1, bubble.life / 1.2));
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-
-      const gradient = ctx.createRadialGradient(
-        bubble.x - bubble.r * 0.35,
-        bubble.y - bubble.r * 0.4,
-        2,
-        bubble.x,
-        bubble.y,
-        bubble.r,
-      );
-
-      gradient.addColorStop(0, '#ffffff');
-      gradient.addColorStop(0.16, bubble.color);
-      gradient.addColorStop(1, 'rgba(35, 14, 55, 0.9)');
-
-      ctx.fillStyle = gradient;
-      ctx.shadowColor = bubble.color;
-      ctx.shadowBlur = 18;
-
-      ctx.beginPath();
-      ctx.arc(bubble.x, bubble.y, bubble.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.beginPath();
-      ctx.arc(
-        bubble.x - bubble.r * 0.34,
-        bubble.y - bubble.r * 0.38,
-        bubble.r * 0.16,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    function draw() {
-      if (!ctx) return;
-
-      ctx.clearRect(0, 0, W, H);
-      drawBackground();
-
-      for (const bubble of bubbles) {
-        drawBubble(bubble);
-      }
-
-      for (const particle of particles) {
-        ctx.globalAlpha = Math.max(0, particle.life / 0.7);
-        ctx.fillStyle = particle.color;
-
-        ctx.beginPath();
-        ctx.arc(
-          particle.x,
-          particle.y,
-          particle.r,
-          0,
-          Math.PI * 2,
-        );
-        ctx.fill();
-      }
-
-      ctx.globalAlpha = 1;
-
-      for (const spark of sparks) {
-        ctx.globalAlpha = Math.max(0, spark.life);
-        ctx.fillStyle = '#fff4ba';
-        ctx.font = 'bold 16px Georgia';
-        ctx.textAlign = 'center';
-        ctx.fillText(spark.text, spark.x, spark.y);
-      }
-
-      ctx.globalAlpha = 1;
-
-      ctx.fillStyle = 'rgba(20,10,30,0.4)';
-      ctx.fillRect(0, H - 4, W, 4);
-    }
-
-    function loop(time: number) {
-      if (!lastTime) lastTime = time;
-
-      const dt = Math.min(0.033, (time - lastTime) / 1000);
-      lastTime = time;
-
-      update(dt);
-      draw();
-
-      rafRef.current = requestAnimationFrame(loop);
-    }
-
-    wrap.__startGame = () => {
-      gameStarted = true;
-      setStarted(true);
-      setShowOver(false);
-      resetRun();
     };
 
-    wrap.__retryGame = () => {
-      setShowOver(false);
-      resetRun();
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      handlePointerDown(e);
     };
 
-    canvas.addEventListener('pointerdown', handlePointer);
-    window.addEventListener('resize', resize);
+    canvas.addEventListener('mousedown', handlePointerDown);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
 
-    resize();
-    createInitialBubbles();
-    draw();
+    const gameLoop = () => {
+      const width = wrapper.clientWidth;
+      const height = wrapper.clientHeight;
 
-    rafRef.current = requestAnimationFrame(loop);
+      ctx.clearRect(0, 0, width, height);
+
+      if (gameStateRef.current === 'RUNNING') {
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.moveTo(0, 50);
+        ctx.lineTo(width, 50);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        spawnTimer++;
+        if (spawnTimer >= Math.max(20, spawnInterval - Math.floor(scoreRef.current / 50))) {
+          spawnBubble();
+          spawnTimer = 0;
+        }
+
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+          const b = bubbles[i];
+          b.y -= b.speed;
+          b.wobble += 0.05;
+          b.x += Math.sin(b.wobble) * 0.8;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+
+          const grad = ctx.createRadialGradient(
+            b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.1,
+            b.x, b.y, b.r
+          );
+          grad.addColorStop(0, '#ffffff');
+          grad.addColorStop(0.2, b.color);
+          grad.addColorStop(1, '#000000');
+
+          ctx.fillStyle = grad;
+          ctx.shadowColor = b.color;
+          ctx.shadowBlur = 10;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.fill();
+          ctx.restore();
+
+          if (b.y - b.r <= 50) {
+            triggerGameOver();
+            break;
+          }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          p.alpha -= 0.03;
+
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        for (let i = texts.length - 1; i >= 0; i--) {
+          const t = texts[i];
+          t.y -= 1.5;
+          t.alpha -= 0.02;
+
+          if (t.alpha <= 0) {
+            texts.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, t.alpha);
+          ctx.font = 'bold 20px system-ui';
+          ctx.fillStyle = t.color;
+          ctx.textAlign = 'center';
+          ctx.fillText(t.text, t.x, t.y);
+          ctx.restore();
+        }
+      }
+
+      animId = requestAnimationFrame(gameLoop);
+    };
+
+    animId = requestAnimationFrame(gameLoop);
 
     return () => {
-      canvas.removeEventListener('pointerdown', handlePointer);
-      window.removeEventListener('resize', resize);
-
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resizeCanvas);
+      canvas.removeEventListener('mousedown', handlePointerDown);
+      canvas.removeEventListener('touchstart', handleTouchStart);
     };
-  }, [best]);
+  }, []);
+
+  const handleStartGame = () => {
+    setScore(0);
+    comboRef.current = 0;
+    setGameState('RUNNING');
+  };
 
   return (
-    <div className="bubble-burst">
-      <div className="wrap" ref={wrapRef}>
-        <canvas ref={canvasRef} />
-
-        <div className="hud">{score}</div>
-
-        <div className="best-hud">
-          {t('best')}: {best}
-        </div>
-
-        {!started && (
-          <div className="start-screen">
-            <h1 className="title">
-              🫧 {t('title')}
-              <br />
-              <span className="subtitle-inline">
-                {t('subtitle')}
-              </span>
-            </h1>
-
-            <div className="subtitle">
-              {t('instructions')}
-            </div>
-
-            <button
-              className="play-btn"
-              type="button"
-              onClick={() =>
-                wrapRef.current?.__startGame?.()
-              }
-            >
-              {t('playButton')}
-            </button>
-
-            <div className="hint">
-              {t('tapHint')}
-            </div>
-          </div>
-        )}
-
-        {showOver && (
-          <div className="over-screen">
-            <div className="score-line">
-              {t('gameOverScore')}
-            </div>
-
-            <div className="score-big">
-              {finalScore}
-            </div>
-
-            <div className="best-line">
-              {t('best')}: {best}
-            </div>
-
-            <button
-              className="play-btn"
-              type="button"
-              onClick={() =>
-                wrapRef.current?.__retryGame?.()
-              }
-            >
-              {t('retryButton')}
-            </button>
-          </div>
-        )}
+    <div className="bubble-game-container">
+      {/* ADS PLACEHOLDER 1: BANNER TOP */}
+      <div className="ad-banner">
+        <span>[QC Top Banner 728x90 / 320x50]</span>
       </div>
 
-      <div className="footer-note">
-        {t('footerNote')}
+      {/* GAME CONTAINER */}
+      <div ref={wrapperRef} className="game-wrapper">
+        {/* HUD - Điểm số */}
+        <div className="hud">
+          <div className="score">{score}</div>
+          <div className="best-score">Kỷ lục: {bestScore}</div>
+        </div>
+
+        {/* START OVERLAY */}
+        {gameState === 'IDLE' && (
+          <div className="overlay">
+            <h1 className="title">BẮN BÓNG 🫧</h1>
+            <p className="subtitle">
+              Chạm/Click để nổ bóng!<br />Đừng để bóng trôi chạm vạch trên.
+            </p>
+            <button onClick={handleStartGame} className="btn-play">
+              CHƠI NGAY
+            </button>
+          </div>
+        )}
+
+        {/* GAME OVER OVERLAY */}
+        {gameState === 'GAMEOVER' && (
+          <div className="overlay">
+            <h2 className="title" style={{ color: '#f43f5e' }}>THUA RỒI!</h2>
+            <p className="subtitle">Điểm của bạn: {score}</p>
+
+            {/* ADS PLACEHOLDER 2: RECTANGLE AD (300x250) IN GAME OVER */}
+            <div className="ad-rect">
+              <span>[QC Game Over 300x250]</span>
+            </div>
+
+            <button onClick={handleStartGame} className="btn-play">
+              CHƠI LẠI
+            </button>
+          </div>
+        )}
+
+        <canvas ref={canvasRef} className="game-canvas" />
+      </div>
+
+      {/* ADS PLACEHOLDER 3: BANNER BOTTOM */}
+      <div className="ad-banner">
+        <span>[QC Bottom Banner]</span>
       </div>
 
       <style jsx>{`
-        .bubble-burst {
+        .bubble-game-container {
           display: flex;
           flex-direction: column;
           align-items: center;
-          font-family: Georgia, 'Times New Roman', serif;
+          justify-content: space-between;
+          min-height: 100vh;
+          background-color: #0f172a;
+          color: #f8fafc;
+          font-family: system-ui, -apple-system, sans-serif;
+          user-select: none;
+          overflow-x: hidden;
+          padding: 8px;
+          box-sizing: border-box;
         }
 
-        .wrap {
+        .ad-banner {
+          width: 100%;
+          max-width: 728px;
+          height: 90px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px dashed #475569;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #64748b;
+          font-size: 12px;
+          margin: 8px 0;
+          border-radius: 6px;
+        }
+
+        .game-wrapper {
           position: relative;
           width: 100%;
           max-width: 420px;
-          aspect-ratio: 9 / 16;
-          max-height: 70vh;
+          height: calc(100vh - 200px);
+          max-height: 750px;
+          min-height: 500px;
+          background: linear-gradient(180deg, #0f172a 0%, #311042 100%);
+          border-radius: 16px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 85, 247, 0.2);
           overflow: hidden;
-          border: 3px solid #4a3560;
-          border-radius: 8px;
-          background: #2b1a4a;
-          box-shadow: 0 0 60px rgba(120, 60, 200, 0.35);
-          touch-action: none;
-        }
-
-        canvas {
-          display: block;
-          width: 100%;
-          height: 100%;
-          cursor: pointer;
-          touch-action: none;
+          border: 2px solid #5b21b6;
         }
 
         .hud {
           position: absolute;
-          top: 14px;
+          top: 16px;
           left: 0;
           right: 0;
-          color: #fff8e8;
+          text-align: center;
+          pointer-events: none;
+          z-index: 10;
+        }
+
+        .score {
           font-size: 42px;
-          font-weight: bold;
-          text-align: center;
-          text-shadow:
-            0 3px 6px rgba(0, 0, 0, 0.6),
-            0 0 20px rgba(255, 200, 80, 0.3);
-          pointer-events: none;
+          font-weight: 900;
+          color: #fbbf24;
+          text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
-        .best-hud {
-          position: absolute;
-          top: 62px;
-          left: 0;
-          right: 0;
-          color: #e0c8ff;
-          font-size: 14px;
-          letter-spacing: 2px;
-          text-align: center;
+        .best-score {
+          font-size: 12px;
+          font-weight: 600;
+          color: #d8b4fe;
           text-transform: uppercase;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-          pointer-events: none;
+          letter-spacing: 1.5px;
+          margin-top: 4px;
         }
 
-        .start-screen,
-        .over-screen {
+        .overlay {
           position: absolute;
           inset: 0;
+          background: rgba(15, 23, 42, 0.9);
+          backdrop-filter: blur(8px);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           padding: 24px;
-          color: #fff8e8;
           text-align: center;
-          background: rgba(13, 7, 20, 0.82);
+          z-index: 20;
         }
 
         .title {
+          font-size: 32px;
+          font-weight: 800;
+          color: #f43f5e;
           margin-bottom: 8px;
-          color: #ffd479;
-          font-size: 28px;
-          line-height: 1.2;
-          text-shadow:
-            0 0 20px rgba(255, 180, 60, 0.6),
-            0 3px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .subtitle-inline {
-          color: #e0c8ff;
-          font-size: 16px;
-          font-weight: normal;
+          text-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
         }
 
         .subtitle {
-          max-width: 270px;
-          margin-bottom: 28px;
-          color: #d8c4ea;
           font-size: 14px;
+          color: #94a3b8;
+          margin-bottom: 24px;
           line-height: 1.5;
         }
 
-        .score-line {
-          margin-bottom: 4px;
-          color: #e0c8ff;
-          font-size: 15px;
-        }
-
-        .score-big {
-          margin-bottom: 4px;
-          color: #ffd479;
-          font-size: 46px;
-          font-weight: bold;
-          text-shadow: 0 0 20px rgba(255, 180, 60, 0.6);
-        }
-
-        .best-line {
-          margin-bottom: 24px;
-          color: #a99bc4;
-          font-size: 13px;
-        }
-
-        .play-btn {
-          padding: 14px 42px;
-          border: none;
-          border-radius: 30px;
-          color: #3a2410;
-          background: linear-gradient(#ffd479, #d99b3f);
-          box-shadow:
-            0 4px 0 #a86b1f,
-            0 8px 16px rgba(0, 0, 0, 0.4);
-          cursor: pointer;
-          font-family: inherit;
+        .btn-play {
+          padding: 14px 40px;
           font-size: 18px;
-          font-weight: bold;
-          letter-spacing: 1px;
+          font-weight: 700;
+          color: #0f172a;
+          background: linear-gradient(135deg, #38ef7d, #11998e);
+          border: none;
+          border-radius: 50px;
+          cursor: pointer;
+          box-shadow: 0 10px 25px rgba(56, 239, 125, 0.4);
+          transition: transform 0.15s ease, filter 0.15s ease;
         }
 
-        .play-btn:hover {
-          filter: brightness(1.08);
+        .btn-play:hover {
+          filter: brightness(1.1);
+          transform: scale(1.05);
         }
 
-        .play-btn:active {
-          transform: translateY(3px);
-          box-shadow:
-            0 1px 0 #a86b1f,
-            0 4px 8px rgba(0, 0, 0, 0.4);
+        .btn-play:active {
+          transform: scale(0.95);
         }
 
-        .hint {
-          margin-top: 18px;
-          color: #8a7aa0;
+        .ad-rect {
+          width: 100%;
+          height: 250px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px dashed #475569;
+          margin: 12px 0 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #64748b;
           font-size: 12px;
+          border-radius: 8px;
         }
 
-        .footer-note {
-          margin-top: 10px;
-          color: #8a7aa0;
-          font-size: 11px;
-          text-align: center;
+        .game-canvas {
+          width: 100%;
+          height: 100%;
+          display: block;
+          cursor: pointer;
         }
       `}</style>
     </div>
