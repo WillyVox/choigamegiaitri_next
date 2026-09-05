@@ -5,14 +5,16 @@ import { games, getGame, type Locale } from '@/lib/games';
 import { locales } from '@/src/routing';
 import AdSlot from '@/components/AdSlot';
 import GameCard from '@/components/GameCard';
+import SkyStrike from '@/components/games/SkyStrike';
 import DragonsGate from '@/components/games/DragonsGate';
-import ChaosOrNah from '@/components/games/ChaosOrNah';
-import MergeMeadow from '@/components/games/MergeMeadow';
 import BubbleBurst from '@/components/games/BubbleBurst';
+import MergeMeadow from '@/components/games/MergeMeadow';
+import ChaosOrNah from '@/components/games/ChaosOrNah';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
 const componentMap: Record<string, React.ComponentType> = {
+  'sky-strike': SkyStrike,
   'dragons-gate': DragonsGate,
   'chaos-or-nah': ChaosOrNah,
   'merge-meadow': MergeMeadow,

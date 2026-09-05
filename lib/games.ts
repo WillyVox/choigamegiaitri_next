@@ -20,6 +20,21 @@ export interface GameMeta {
  */
 export const games: GameMeta[] = [
   {
+    slug: 'sky-strike',
+    name: { en: 'Sky Strike', vi: 'Chiến Cơ Siêu Kích' },
+    tagline: {
+      en: 'Blast through enemy fleets and dodge incoming fire in the ultimate sky brawl.',
+      vi: 'Bắn hạ phi đội địch và né đạn trong trận chiến trên không đầy kịch tính.'
+    },
+    description: {
+      en: 'Take control of an advanced fighter jet in this fast-paced arcade shooter. Collect power-ups, defeat boss ships, and climb the high scores.',
+      vi: 'Chơi Game Giải Trí bắn máy bay arcade - Điều khiển chiến cơ hiện đại, thu thập vật phẩm hỗ trợ, tiêu diệt trùm và chinh phục kỷ lục điểm số.'
+    },
+    thumbnail: '/games/sky-strike/thumbnail.png',
+    genre: ['Arcade', 'Action']
+  },
+  
+  {
     slug: 'dragons-gate',
     name: { en: "Dragon's Gate", vi: "Rồng Bay Qua Cổng" },
     tagline: {

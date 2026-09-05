@@ -44,6 +44,12 @@ export default function BubbleBurstGame() {
   const comboRef = useRef<number>(0);
   const gameStateRef = useRef<'IDLE' | 'RUNNING' | 'GAMEOVER'>('IDLE');
 
+  // Bộ nhớ đệm cho mảng phần tử game
+  const bubblesRef = useRef<BubbleProps[]>([]);
+  const particlesRef = useRef<ParticleProps[]>([]);
+  const textsRef = useRef<TextProps[]>([]);
+  const lastSpawnTimeRef = useRef<number>(0);
+
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
@@ -72,11 +78,7 @@ export default function BubbleBurstGame() {
     if (!ctx) return;
 
     let animId: number;
-    let bubbles: BubbleProps[] = [];
-    let particles: ParticleProps[] = [];
-    let texts: TextProps[] = [];
-    let spawnTimer = 0;
-    const spawnInterval = 60;
+    let lastFrameTime = performance.now();
 
     const resizeCanvas = () => {
       if (!canvas || !wrapper) return;
@@ -92,16 +94,17 @@ export default function BubbleBurstGame() {
     window.addEventListener('resize', resizeCanvas);
 
     const spawnBubble = () => {
-      const r = 20 + Math.random() * 18;
+      const r = 22 + Math.random() * 16;
       const width = wrapper.clientWidth;
       const height = wrapper.clientHeight;
 
-      bubbles.push({
+      // Giảm tốc độ di chuyển ban đầu để game thư giãn hơn
+      bubblesRef.current.push({
         r,
         x: r + Math.random() * (width - r * 2),
         y: height + r,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        speed: 1.2 + Math.random() * 1.5 + scoreRef.current * 0.01,
+        speed: 0.6 + Math.random() * 0.6 + Math.min(scoreRef.current * 0.005, 1.2), // Giảm 50% tốc độ
         wobble: Math.random() * Math.PI * 2,
       });
     };
@@ -109,16 +112,16 @@ export default function BubbleBurstGame() {
     const popBubble = (index: number, bubble: BubbleProps) => {
       comboRef.current += 1;
       const addedScore = 10 + Math.min(comboRef.current, 10) * 2;
-      
+
       setScore((prev) => prev + addedScore);
 
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 10; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 2 + Math.random() * 6;
-        particles.push({
+        const speed = 1.5 + Math.random() * 4;
+        particlesRef.current.push({
           x: bubble.x,
           y: bubble.y,
-          r: 2 + Math.random() * 4,
+          r: 2 + Math.random() * 3,
           color: bubble.color,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
@@ -127,7 +130,7 @@ export default function BubbleBurstGame() {
       }
 
       const txt = comboRef.current > 2 ? `+${addedScore} (${comboRef.current}x)` : `+${addedScore}`;
-      texts.push({
+      textsRef.current.push({
         x: bubble.x,
         y: bubble.y,
         text: txt,
@@ -135,7 +138,7 @@ export default function BubbleBurstGame() {
         alpha: 1,
       });
 
-      bubbles.splice(index, 1);
+      bubblesRef.current.splice(index, 1);
     };
 
     const triggerGameOver = () => {
@@ -165,11 +168,12 @@ export default function BubbleBurstGame() {
       const clickY = clientY - rect.top;
 
       let hit = false;
+      const bubbles = bubblesRef.current;
       for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
         const dist = Math.hypot(clickX - b.x, clickY - b.y);
 
-        if (dist < b.r + 10) {
+        if (dist < b.r + 12) {
           popBubble(i, b);
           hit = true;
           break;
@@ -189,13 +193,19 @@ export default function BubbleBurstGame() {
     canvas.addEventListener('mousedown', handlePointerDown);
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
 
-    const gameLoop = () => {
+    // VÒNG LẶP CHÍNH CÓ ĐIỀU CHỈNH THỜI GIAN (DELTA TIME)
+    const gameLoop = (time: number) => {
       const width = wrapper.clientWidth;
       const height = wrapper.clientHeight;
+
+      // Tính toán Delta Time để giữ nhịp game chuẩn trên mọi màn hình (60Hz / 120Hz / 144Hz)
+      const deltaTime = Math.min((time - lastFrameTime) / 1000, 0.1);
+      lastFrameTime = time;
 
       ctx.clearRect(0, 0, width, height);
 
       if (gameStateRef.current === 'RUNNING') {
+        // Vạch ranh giới thua
         ctx.strokeStyle = 'rgba(244, 63, 94, 0.4)';
         ctx.setLineDash([8, 8]);
         ctx.beginPath();
@@ -204,17 +214,20 @@ export default function BubbleBurstGame() {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        spawnTimer++;
-        if (spawnTimer >= Math.max(20, spawnInterval - Math.floor(scoreRef.current / 50))) {
+        // Tần suất tạo bóng dựa theo Mili-giây (Chậm rãi, nhịp nhàng hơn)
+        const spawnDelay = Math.max(800, 1600 - Math.floor(scoreRef.current * 2));
+        if (time - lastSpawnTimeRef.current >= spawnDelay) {
           spawnBubble();
-          spawnTimer = 0;
+          lastSpawnTimeRef.current = time;
         }
 
+        // Cập nhật & Vẽ Bong Bóng
+        const bubbles = bubblesRef.current;
         for (let i = bubbles.length - 1; i >= 0; i--) {
           const b = bubbles[i];
-          b.y -= b.speed;
-          b.wobble += 0.05;
-          b.x += Math.sin(b.wobble) * 0.8;
+          b.y -= b.speed * deltaTime * 60; // Đồng bộ tốc độ theo chuẩn 60fps
+          b.wobble += 0.03;
+          b.x += Math.sin(b.wobble) * 0.5;
 
           ctx.save();
           ctx.beginPath();
@@ -230,7 +243,7 @@ export default function BubbleBurstGame() {
 
           ctx.fillStyle = grad;
           ctx.shadowColor = b.color;
-          ctx.shadowBlur = 10;
+          ctx.shadowBlur = 8;
           ctx.fill();
 
           ctx.beginPath();
@@ -239,18 +252,21 @@ export default function BubbleBurstGame() {
           ctx.fill();
           ctx.restore();
 
+          // Kiểm tra thua
           if (b.y - b.r <= 50) {
             triggerGameOver();
             break;
           }
         }
 
+        // Cập nhật & Vẽ Hạt Nổ
+        const particles = particlesRef.current;
         for (let i = particles.length - 1; i >= 0; i--) {
           const p = particles[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.1;
-          p.alpha -= 0.03;
+          p.x += p.vx * deltaTime * 60;
+          p.y += p.vy * deltaTime * 60;
+          p.vy += 0.08;
+          p.alpha -= 0.025;
 
           if (p.alpha <= 0) {
             particles.splice(i, 1);
@@ -266,9 +282,11 @@ export default function BubbleBurstGame() {
           ctx.restore();
         }
 
+        // Cập nhật & Vẽ Chữ Nổi
+        const texts = textsRef.current;
         for (let i = texts.length - 1; i >= 0; i--) {
           const t = texts[i];
-          t.y -= 1.5;
+          t.y -= 1.2 * deltaTime * 60;
           t.alpha -= 0.02;
 
           if (t.alpha <= 0) {
@@ -299,9 +317,16 @@ export default function BubbleBurstGame() {
     };
   }, []);
 
+  // XỬ LÝ KHỞI TẠO MỚI / CHƠI LẠI
   const handleStartGame = () => {
-    setScore(0);
+    // Reset hoàn toàn bộ nhớ lưu trữ
+    bubblesRef.current = [];
+    particlesRef.current = [];
+    textsRef.current = [];
     comboRef.current = 0;
+    lastSpawnTimeRef.current = performance.now();
+
+    setScore(0);
     setGameState('RUNNING');
   };
 
