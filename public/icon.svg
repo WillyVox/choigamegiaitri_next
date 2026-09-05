@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1026" />
+      <stop offset="100%" stop-color="#1d2951" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4fd8eb" />
+      <stop offset="100%" stop-color="#ff4365" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)" />
+  <rect width="480" height="480" x="16" y="16" rx="96" fill="none" stroke="url(#accent-grad)" stroke-width="12" stroke-opacity="0.4" />
+
+  <!-- D-Pad Base -->
+  <path d="M216 130h80v86h86v80h-86v86h-80v-86h-86v-80h86z" fill="#162244" stroke="#4fd8eb" stroke-width="12" stroke-linejoin="round" />
+
+  <!-- Center Glowing Play Triangle -->
+  <path d="M232 196l88 60-88 60z" fill="#ff4365" />
+  
+  <!-- Controller Action Dots -->
+  <circle cx="368" cy="170" r="18" fill="#4fd8eb" />
+  <circle cx="144" cy="342" r="18" fill="#ff7b54" />
+</svg>
