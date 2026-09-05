@@ -1,0 +1,91 @@
+{
+  "site": {
+    "brand": "choigamegiaitri.com",
+    "title": "Choi Game Giai Tri — Free Online Games, Play Instantly",
+    "description": "Play free online HTML5 games instantly, no download and no account needed. Dragon's Gate, Chaos or Nah, Merge Meadow and more, all in your browser.",
+    "keywords": "free online games, browser games, html5 games, play games online, no download games, casual games"
+  },
+  "nav": {
+    "home": "Home",
+    "allGames": "All Games"
+  },
+  "home": {
+    "metaTitle": "Free Online Games — Play Instantly, No Download",
+    "metaDescription": "Browse and play free HTML5 games instantly in your browser: Dragon's Gate, Chaos or Nah, Merge Meadow. New games added regularly.",
+    "heroTitle": "Play something fun right now",
+    "heroSubtitle": "Free browser games. No download, no account, no waiting — just pick one and play.",
+    "aboutHeading": "About choigamegiaitri.com",
+    "aboutBody": "choigamegiaitri.com is a small, growing library of free browser games you can play instantly on any device. Every game runs directly in your browser — no installs, no sign-ups. We add new games regularly, so check back often."
+  },
+  "gamePage": {
+    "moreGames": "More games to try",
+    "playNow": "Play now"
+  },
+  "footer": {
+    "about": "About",
+    "privacy": "Privacy Policy",
+    "tagline": "Free games, playable instantly in your browser.",
+    "rights": "All rights reserved."
+  },
+  "about": {
+    "title": "About choigamegiaitri.com",
+    "body1": "choigamegiaitri.com is a free browser gaming site. Every game on this site runs instantly in your browser using HTML5 — there's nothing to install and no account required.",
+    "body2": "We're actively growing our game library. If you'd like to suggest a game or report a bug, reach out through our social channels."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "body1": "This site may display advertisements served by third-party ad networks (such as Google AdSense). These networks may use cookies and similar technologies to serve ads based on your prior visits to this and other websites.",
+    "body2": "We store your language preference (English or Vietnamese) in a cookie so we can remember your choice on your next visit. This cookie is used only for that purpose.",
+    "body3": "You can opt out of personalized advertising by visiting your ad network's settings, such as Google's Ads Settings page."
+  },
+  "dragonsGate": {
+    "title": "Dragon's Gate",
+    "subtitle": "Play Dragon's Gate Free Online",
+    "instructions": "Tap the screen or press Space to fly. Guide the dragon through the castle gates!",
+    "playButton": "Play Now",
+    "tapHint": "Tap anywhere to fly",
+    "score": "Score",
+    "best": "Best",
+    "gameOverScore": "Score",
+    "retryButton": "Play Again",
+    "footerNote": "Dragon's Gate — Free Online Game"
+  },
+  "chaosOrNah": {
+    "modeEndless": "Endless",
+    "modeDaily": "Daily",
+    "streak": "streak",
+    "best": "best",
+    "roundLabel": "Round {round}",
+    "spicyLabel": "extra spicy pick",
+    "startHint": "Tap a side to start the chaos.",
+    "shareScore": "Copy my chaos score",
+    "shareCopied": "Copied! Paste it anywhere",
+    "dailyRoundLabel": "Daily #{day} — round {round}/10",
+    "dailyHint": "Same 10 dilemmas as everyone else today. One run only.",
+    "shareDaily": "Copy my daily result",
+    "dailyNote": "A new daily challenge unlocks tomorrow."
+  },
+  "mergeMeadow": {
+    "score": "score",
+    "best": "best",
+    "next": "next",
+    "hint": "Move to aim, tap or press space to drop. Merge two matching fruits to grow them.",
+    "gameOverEyebrow": "The jar overflowed",
+    "newBest": "New best score!",
+    "playAgain": "Play again",
+    "shareScore": "Copy my score",
+    "shareCopied": "Copied! Paste it anywhere",
+    "colossalFusion": "colossal fusion!"
+  },
+  "bubbleBurst": {
+    "title": "Bubble Burst",
+    "subtitle": "Twilight Pop",
+    "instructions": "Pop as many magical bubbles as you can before they disappear.",
+    "playButton": "Start Popping",
+    "tapHint": "Tap or click the bubbles",
+    "gameOverScore": "Your Score",
+    "best": "Best",
+    "retryButton": "Play Again",
+    "footerNote": "A relaxing bubble-popping game"
+  }
+}

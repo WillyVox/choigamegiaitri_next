@@ -1,0 +1,91 @@
+{
+  "site": {
+    "brand": "choigamegiaitri.com",
+    "title": "Choi Game Giai Tri — Game Online Miễn Phí, Chơi Ngay",
+    "description": "Chơi game HTML5 online miễn phí ngay lập tức, không cần tải về, không cần tài khoản. Dragon's Gate, Chaos or Nah, Merge Meadow và nhiều game khác, ngay trên trình duyệt.",
+    "keywords": "game online miễn phí, game trình duyệt, game html5, chơi game online, game không cần tải, game giải trí"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "allGames": "Tất cả game"
+  },
+  "home": {
+    "metaTitle": "Game Online Miễn Phí — Chơi Ngay, Không Cần Tải Về",
+    "metaDescription": "Khám phá và chơi game HTML5 miễn phí ngay trên trình duyệt: Dragon's Gate, Chaos or Nah, Merge Meadow. Game mới được cập nhật thường xuyên.",
+    "heroTitle": "Chơi ngay một game thật vui",
+    "heroSubtitle": "Game trình duyệt miễn phí. Không cần tải về, không cần tài khoản — chọn một game và chơi ngay.",
+    "aboutHeading": "Về choigamegiaitri.com",
+    "aboutBody": "choigamegiaitri.com là thư viện game trình duyệt miễn phí, ngày càng phát triển, có thể chơi ngay trên mọi thiết bị. Mỗi game chạy trực tiếp trên trình duyệt của bạn — không cần cài đặt, không cần đăng ký. Chúng tôi thường xuyên thêm game mới, hãy quay lại thường xuyên nhé."
+  },
+  "gamePage": {
+    "moreGames": "Thêm game để thử",
+    "playNow": "Chơi ngay"
+  },
+  "footer": {
+    "about": "Giới thiệu",
+    "privacy": "Chính sách bảo mật",
+    "tagline": "Game miễn phí, chơi ngay trên trình duyệt.",
+    "rights": "Đã đăng ký bản quyền."
+  },
+  "about": {
+    "title": "Về choigamegiaitri.com",
+    "body1": "choigamegiaitri.com là trang web game trình duyệt miễn phí. Mọi game trên trang đều chạy ngay lập tức bằng HTML5 — không cần cài đặt, không cần tài khoản.",
+    "body2": "Chúng tôi đang tích cực mở rộng thư viện game. Nếu bạn muốn đề xuất một game hoặc báo lỗi, hãy liên hệ qua các kênh mạng xã hội của chúng tôi."
+  },
+  "privacy": {
+    "title": "Chính Sách Bảo Mật",
+    "body1": "Trang web này có thể hiển thị quảng cáo từ các mạng quảng cáo bên thứ ba (như Google AdSense). Các mạng này có thể sử dụng cookie và công nghệ tương tự để hiển thị quảng cáo dựa trên lượt truy cập trước đó của bạn.",
+    "body2": "Chúng tôi lưu tùy chọn ngôn ngữ của bạn (Tiếng Việt hoặc Tiếng Anh) trong một cookie để ghi nhớ lựa chọn cho lần truy cập sau. Cookie này chỉ được dùng cho mục đích đó.",
+    "body3": "Bạn có thể từ chối quảng cáo cá nhân hóa bằng cách truy cập trang cài đặt của mạng quảng cáo, ví dụ như trang Cài đặt Quảng cáo của Google."
+  },
+  "dragonsGate": {
+    "title": "Dragon's Gate",
+    "subtitle": "Chơi Game Online Miễn Phí",
+    "instructions": "Chạm màn hình hoặc nhấn phím Space để bay. Điều khiển rồng vượt qua các cổng thành!",
+    "playButton": "Chơi Ngay",
+    "tapHint": "Chạm vào màn hình để bay",
+    "score": "Điểm",
+    "best": "Kỷ Lục",
+    "gameOverScore": "Điểm số",
+    "retryButton": "Chơi Lại",
+    "footerNote": "Dragon's Gate — Game Vui Online"
+  },
+  "chaosOrNah": {
+    "modeEndless": "Vô tận",
+    "modeDaily": "Hằng ngày",
+    "streak": "chuỗi",
+    "best": "tốt nhất",
+    "roundLabel": "Vòng {round}",
+    "spicyLabel": "lựa chọn siêu cấp",
+    "startHint": "Chạm vào một bên để bắt đầu.",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+    "dailyRoundLabel": "Ngày #{day} — vòng {round}/10",
+    "dailyHint": "Cùng 10 tình huống với mọi người hôm nay. Chỉ chơi một lần.",
+    "shareDaily": "Sao chép kết quả hôm nay",
+    "dailyNote": "Thử thách hằng ngày mới sẽ mở khóa vào ngày mai."
+  },
+  "mergeMeadow": {
+    "score": "điểm",
+    "best": "tốt nhất",
+    "next": "tiếp theo",
+    "hint": "Di chuyển để nhắm, chạm hoặc nhấn Space để thả. Ghép hai trái cây giống nhau để chúng lớn hơn.",
+    "gameOverEyebrow": "Lọ đã tràn",
+    "newBest": "Kỷ lục mới!",
+    "playAgain": "Chơi lại",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+    "colossalFusion": "hợp nhất khổng lồ!"
+  },
+  "bubbleBurst": {
+    "title": "Bóng Bọt Tan Vỡ",
+    "subtitle": "Hoàng Hôn Lung Linh",
+    "instructions": "Chạm để vỡ càng nhiều bóng bọt kỳ diệu càng tốt trước khi chúng biến mất.",
+    "playButton": "Bắt Đầu",
+    "tapHint": "Chạm hoặc nhấp vào các bóng bọt",
+    "gameOverScore": "Điểm Của Bạn",
+    "best": "Kỷ Lục",
+    "retryButton": "Chơi Lại",
+    "footerNote": "Trò chơi đập bóng bọt thư giãn"
+    }
+}
