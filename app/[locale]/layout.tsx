@@ -61,7 +61,7 @@ export async function generateMetadata({
     robots: { index: true, follow: true },
     verification: {
       // Drop your Google Search Console verification token here once you have one:
-      // google: 'YOUR_VERIFICATION_TOKEN'
+      google: 'HBF8-dO4e4hADTYCt8hkm0FzZa15xldK2SMfG-97H_4',
     }
   };
 }

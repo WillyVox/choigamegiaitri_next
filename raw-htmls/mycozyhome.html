@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozy Nook — Decorate Your Dream Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF1E7;
+    --card:#FFFDF9;
+    --blush:#F0C9C0;
+    --sage:#93A987;
+    --clay:#C1795A;
+    --charcoal:#4A3F3A;
+    --charcoal-soft:#7A6D64;
+    --line:#E7DCCC;
+    --shadow: 0 10px 24px rgba(74,63,58,0.10);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Quicksand',sans-serif;
+    background:var(--cream);
+    color:var(--charcoal);
+    min-height:100vh;
+  }
+  .app{
+    max-width:1180px;
+    margin:0 auto;
+    padding:20px 20px 40px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .logo .mark{
+    width:38px;height:38px;
+    background:var(--clay);
+    border-radius:11px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+    box-shadow:var(--shadow);
+    transform:rotate(-6deg);
+  }
+  .logo h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:26px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .logo p{
+    margin:0;
+    font-size:12.5px;
+    color:var(--charcoal-soft);
+  }
+
+  .room-tabs{
+    display:flex;
+    gap:6px;
+    background:var(--card);
+    padding:5px;
+    border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .room-tabs button{
+    border:none;
+    background:transparent;
+    padding:9px 14px;
+    border-radius:10px;
+    font-family:'Quicksand',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    color:var(--charcoal-soft);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:background .15s ease, color .15s ease;
+    white-space:nowrap;
+  }
+  .room-tabs button.active{
+    background:var(--sage);
+    color:#fff;
+  }
+  .room-tabs button:not(.active):hover{
+    background:var(--cream);
+  }
+
+  .score-box{
+    background:var(--card);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:10px 16px;
+    min-width:160px;
+  }
+  .score-box .label{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--charcoal-soft);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .score-track{
+    height:7px;
+    border-radius:6px;
+    background:var(--line);
+    overflow:hidden;
+  }
+  .score-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--blush),var(--clay));
+    transition:width .35s ease;
+  }
+
+  /* ---------- Main layout ---------- */
+  main{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+  }
+
+  .room-panel{
+    flex:1 1 640px;
+    min-width:0;
+  }
+
+  .room-stage-wrap{
+    background:var(--card);
+    border-radius:22px;
+    padding:14px;
+    box-shadow:var(--shadow);
+  }
+
+  .room-stage{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/10;
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+    touch-action:none;
+    cursor:default;
+    border:1px solid var(--line);
+  }
+  .wall{
+    position:absolute;
+    top:0;left:0;right:0;
+    height:58%;
+    transition:background .2s ease;
+  }
+  .wall::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:0;
+    height:6px;
+    background:rgba(0,0,0,0.08);
+  }
+  .floor{
+    position:absolute;
+    left:0;right:0;bottom:0;
+    height:42%;
+    transition:background .2s ease;
+    background-blend-mode:multiply;
+  }
+  .empty-hint{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--charcoal-soft);
+    font-weight:600;
+    font-size:14px;
+    pointer-events:none;
+    padding:0 30px;
+  }
+  .placed-item{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    user-select:none;
+    cursor:grab;
+    line-height:1;
+    filter:drop-shadow(0 7px 5px rgba(40,30,20,0.28));
+    transition:filter .15s ease;
+  }
+  .placed-item.dragging{
+    cursor:grabbing;
+    filter:drop-shadow(0 12px 10px rgba(40,30,20,0.32));
+  }
+  .placed-item.selected{
+    outline:2px dashed var(--clay);
+    outline-offset:6px;
+    border-radius:10px;
+  }
+  .placed-item .icon{
+    display:block;
+    pointer-events:none;
+  }
+  .placed-item.rug{
+    border-radius:50%;
+    filter:drop-shadow(0 4px 6px rgba(40,30,20,0.22));
+  }
+
+  .item-toolbar{
+    position:absolute;
+    transform:translate(-50%,calc(-100% - 14px));
+    display:flex;
+    gap:4px;
+    background:var(--charcoal);
+    padding:5px;
+    border-radius:10px;
+    box-shadow:var(--shadow);
+    z-index:999;
+  }
+  .item-toolbar button{
+    border:none;
+    background:transparent;
+    color:#fff;
+    width:26px;height:26px;
+    border-radius:7px;
+    font-size:13px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .item-toolbar button:hover{background:rgba(255,255,255,0.18);}
+  .item-toolbar button.danger:hover{background:#B44B3E;}
+
+  .stage-actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:12px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .swatch-groups{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .swatch-group{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .swatch-group span{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--charcoal-soft);
+    margin-right:2px;
+  }
+  .swatch{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 0 0 1px var(--line);
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.active{
+    box-shadow:0 0 0 2px var(--charcoal);
+  }
+  .ghost-btn{
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--charcoal-soft);
+    font-family:'Quicksand',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    padding:8px 13px;
+    border-radius:10px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .ghost-btn:hover{background:var(--cream);}
+  .primary-btn{
+    border:none;
+    background:var(--clay);
+    color:#fff;
+    font-family:'Quicksand',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:9px 15px;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .primary-btn:hover{filter:brightness(1.06);}
+
+  /* ---------- Catalog ---------- */
+  .catalog{
+    flex:0 0 320px;
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    max-height:640px;
+    display:flex;
+    flex-direction:column;
+  }
+  .catalog h2{
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    font-weight:600;
+    margin:2px 0 10px;
+  }
+  .cat-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:12px;
+  }
+  .cat-tabs button{
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--charcoal-soft);
+    font-family:'Quicksand',sans-serif;
+    font-weight:600;
+    font-size:11.5px;
+    padding:6px 10px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .cat-tabs button.active{
+    background:var(--charcoal);
+    color:#fff;
+    border-color:var(--charcoal);
+  }
+  .item-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:9px;
+    overflow-y:auto;
+    padding-right:2px;
+  }
+  .cat-item{
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:13px;
+    padding:10px 6px 8px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    cursor:pointer;
+    text-align:center;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .cat-item:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 12px rgba(74,63,58,0.12);
+  }
+  .cat-item .icon{
+    font-size:26px;
+    filter:drop-shadow(0 3px 2px rgba(40,30,20,0.18));
+  }
+  .cat-item .rug-swatch{
+    width:26px;height:16px;
+    border-radius:50%;
+  }
+  .cat-item .name{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--charcoal-soft);
+    line-height:1.2;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:11.5px;
+    color:var(--charcoal-soft);
+  }
+
+  @media (max-width:860px){
+    main{flex-direction:column;}
+    .catalog{flex:1 1 auto;width:100%;max-height:none;}
+    .item-grid{grid-template-columns:repeat(4,1fr);max-height:280px;}
+    .room-tabs{order:3;width:100%;overflow-x:auto;}
+    .score-box{order:2;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <div class="mark">🏡</div>
+      <div>
+        <h1>Cozy Nook</h1>
+        <p>build a little home that feels like you</p>
+      </div>
+    </div>
+
+    <div class="room-tabs" id="roomTabs"></div>
+
+    <div class="score-box">
+      <div class="label"><span id="scoreLabel">Empty canvas</span><span id="scoreCount">0 items</span></div>
+      <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="room-panel">
+      <div class="room-stage-wrap">
+        <div class="room-stage" id="roomStage">
+          <div class="wall" id="wallEl"></div>
+          <div class="floor" id="floorEl"></div>
+          <div class="empty-hint" id="emptyHint">Your room is empty — pick something from the catalog to get started ✨</div>
+        </div>
+      </div>
+
+      <div class="stage-actions">
+        <div class="swatch-groups">
+          <div class="swatch-group">
+            <span>Wall</span>
+            <div id="wallSwatches" style="display:flex;gap:6px;"></div>
+          </div>
+          <div class="swatch-group">
+            <span>Floor</span>
+            <div id="floorSwatches" style="display:flex;gap:6px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="ghost-btn" id="clearBtn">🗑 Clear room</button>
+          <button class="primary-btn" id="saveBtn">📸 Save photo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog">
+      <h2>Catalog</h2>
+      <div class="cat-tabs" id="catTabs"></div>
+      <div class="item-grid" id="itemGrid"></div>
+    </div>
+  </main>
+
+  <footer>Click any item to add it, then drag it into place. Click a placed item to flip, resize or remove it.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(function(){
+
+  /* ---------------- Data ---------------- */
+
+  const ROOMS = [
+    {id:'living',  name:'Living Room', tabIcon:'🛋️', wall:'#EAD9C8', floor:'#B98357'},
+    {id:'bedroom', name:'Bedroom',     tabIcon:'🛏️', wall:'#F0D9DC', floor:'#D9A679'},
+    {id:'kitchen', name:'Kitchen',     tabIcon:'🍳', wall:'#F4E9D8', floor:'#C7C2B4'},
+    {id:'bathroom',name:'Bathroom',    tabIcon:'🛁', wall:'#D8E3EC', floor:'#DCE3E0'},
+  ];
+
+  const WALL_COLORS  = ['#EAD9C8','#F0D9DC','#DCE8DD','#D8E3EC','#EAD9F0','#F4E9D8','#E4D3C4','#FBF1E7'];
+  const FLOOR_COLORS = ['#B98357','#C9A171','#8C6239','#D9A679','#C7C2B4','#DCE3E0','#E3D5C0','#9C8266'];
+
+  const CATALOG = [
+    {cat:'Seating', items:[
+      {name:'Sofa', icon:'🛋️', size:92},
+      {name:'Armchair', icon:'🪑', size:58},
+      {name:'Bed', icon:'🛏️', size:104},
+    ]},
+    {cat:'Storage', items:[
+      {name:'Cabinet', icon:'🗄️', size:68},
+      {name:'Bookshelf', icon:'📚', size:52},
+      {name:'Basket', icon:'🧺', size:44},
+    ]},
+    {cat:'Plants & Decor', items:[
+      {name:'Potted Plant', icon:'🪴', size:60},
+      {name:'Plant', icon:'🌿', size:48},
+      {name:'Framed Art', icon:'🖼️', size:54},
+      {name:'Mirror', icon:'🪞', size:54},
+      {name:'Clock', icon:'🕰️', size:48},
+      {name:'Teddy Bear', icon:'🧸', size:44},
+    ]},
+    {cat:'Lighting', items:[
+      {name:'Lamp', icon:'💡', size:44},
+      {name:'Candle', icon:'🕯️', size:34},
+    ]},
+    {cat:'Kitchen & Bath', items:[
+      {name:'Pot', icon:'🍲', size:44},
+      {name:'Pan', icon:'🍳', size:44},
+      {name:'Bathtub', icon:'🛁', size:82},
+      {name:'Toilet', icon:'🚽', size:54},
+      {name:'Shower', icon:'🚿', size:54},
+    ]},
+    {cat:'Extras', items:[
+      {name:'TV', icon:'📺', size:58},
+      {name:'Guitar', icon:'🎸', size:54},
+      {name:'Window', icon:'🪟', size:58},
+      {name:'Door', icon:'🚪', size:70},
+    ]},
+    {cat:'Rugs', items:[
+      {name:'Blush Rug', color:'#F0C9C0', size:60, rug:true},
+      {name:'Sage Rug', color:'#A9BFA0', size:60, rug:true},
+      {name:'Clay Rug', color:'#C1795A', size:60, rug:true},
+      {name:'Cream Rug', color:'#F4E9D8', size:60, rug:true},
+    ]},
+  ];
+
+  /* ---------------- State ---------------- */
+
+  const state = {};
+  ROOMS.forEach(r=>{
+    state[r.id] = {wall:r.wall, floor:r.floor, items:[]};
+  });
+  let currentRoom = 'living';
+  let currentCat = CATALOG[0].cat;
+  let selectedId = null;
+  let zTop = 1;
+  let idSeq = 1;
+
+  /* ---------------- DOM refs ---------------- */
+
+  const roomStage   = document.getElementById('roomStage');
+  const wallEl      = document.getElementById('wallEl');
+  const floorEl     = document.getElementById('floorEl');
+  const emptyHint   = document.getElementById('emptyHint');
+  const roomTabsEl  = document.getElementById('roomTabs');
+  const catTabsEl   = document.getElementById('catTabs');
+  const itemGridEl  = document.getElementById('itemGrid');
+  const wallSwEl    = document.getElementById('wallSwatches');
+  const floorSwEl   = document.getElementById('floorSwatches');
+  const scoreFill   = document.getElementById('scoreFill');
+  const scoreLabel  = document.getElementById('scoreLabel');
+  const scoreCount  = document.getElementById('scoreCount');
+
+  /* ---------------- Build static UI ---------------- */
+
+  function buildRoomTabs(){
+    roomTabsEl.innerHTML = '';
+    ROOMS.forEach(r=>{
+      const btn = document.createElement('button');
+      btn.textContent = r.tabIcon + ' ' + r.name;
+      btn.className = r.id === currentRoom ? 'active' : '';
+      btn.addEventListener('click', ()=>{
+        currentRoom = r.id;
+        selectedId = null;
+        buildRoomTabs();
+        renderRoom();
+      });
+      roomTabsEl.appendChild(btn);
+    });
+  }
+
+  function buildCatTabs(){
+    catTabsEl.innerHTML = '';
+    CATALOG.forEach(group=>{
+      const btn = document.createElement('button');
+      btn.textContent = group.cat;
+      btn.className = group.cat === currentCat ? 'active' : '';
+      btn.addEventListener('click', ()=>{
+        currentCat = group.cat;
+        buildCatTabs();
+        buildItemGrid();
+      });
+      catTabsEl.appendChild(btn);
+    });
+  }
+
+  function buildItemGrid(){
+    itemGridEl.innerHTML = '';
+    const group = CATALOG.find(g=>g.cat===currentCat);
+    group.items.forEach(def=>{
+      const card = document.createElement('div');
+      card.className = 'cat-item';
+      if(def.rug){
+        card.innerHTML = `<div class="rug-swatch" style="background:${def.color}"></div><div class="name">${def.name}</div>`;
+      }else{
+        card.innerHTML = `<div class="icon">${def.icon}</div><div class="name">${def.name}</div>`;
+      }
+      card.addEventListener('click', ()=> addItem(def));
+      itemGridEl.appendChild(card);
+    });
+  }
+
+  function buildSwatches(){
+    wallSwEl.innerHTML = '';
+    WALL_COLORS.forEach(c=>{
+      const b = document.createElement('button');
+      b.className = 'swatch';
+      b.style.background = c;
+      b.addEventListener('click', ()=>{
+        state[currentRoom].wall = c;
+        renderRoom();
+      });
+      wallSwEl.appendChild(b);
+    });
+    floorSwEl.innerHTML = '';
+    FLOOR_COLORS.forEach(c=>{
+      const b = document.createElement('button');
+      b.className = 'swatch';
+      b.style.background = c;
+      b.addEventListener('click', ()=>{
+        state[currentRoom].floor = c;
+        renderRoom();
+      });
+      floorSwEl.appendChild(b);
+    });
+  }
+
+  /* ---------------- Item logic ---------------- */
+
+  function addItem(def){
+    const room = state[currentRoom];
+    const item = {
+      id: 'it' + (idSeq++),
+      name: def.name,
+      icon: def.icon || null,
+      color: def.color || null,
+      rug: !!def.rug,
+      baseSize: def.size,
+      scale: 1,
+      flip: false,
+      x: 40 + Math.random()*20,
+      y: def.rug ? 78 : 55 + Math.random()*15,
+      z: zTop++,
+    };
+    room.items.push(item);
+    selectedId = item.id;
+    renderRoom();
+  }
+
+  function deleteItem(id){
+    const room = state[currentRoom];
+    room.items = room.items.filter(i=>i.id!==id);
+    if(selectedId===id) selectedId = null;
+    renderRoom();
+  }
+
+  function updateItem(id, patch){
+    const room = state[currentRoom];
+    const item = room.items.find(i=>i.id===id);
+    if(!item) return;
+    Object.assign(item, patch);
+    renderRoom();
+  }
+
+  /* ---------------- Render room ---------------- */
+
+  function renderRoom(){
+    const room = state[currentRoom];
+    wallEl.style.background = room.wall;
+    floorEl.style.background =
+      `repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 46px), ${room.floor}`;
+
+    // remove old item nodes + toolbar
+    roomStage.querySelectorAll('.placed-item, .item-toolbar').forEach(n=>n.remove());
+
+    emptyHint.style.display = room.items.length ? 'none' : 'flex';
+
+    room.items
+      .slice()
+      .sort((a,b)=>a.z-b.z)
+      .forEach(item=>{
+        const el = document.createElement('div');
+        el.className = 'placed-item' + (item.rug ? ' rug' : '') + (item.id===selectedId ? ' selected' : '');
+        el.style.left = item.x + '%';
+        el.style.top = item.y + '%';
+        el.style.zIndex = item.z;
+        el.dataset.id = item.id;
+
+        const px = item.baseSize * item.scale;
+        if(item.rug){
+          el.style.width = (px*1.7) + 'px';
+          el.style.height = (px*0.9) + 'px';
+          el.style.background = item.color;
+        }else{
+          const span = document.createElement('span');
+          span.className = 'icon';
+          span.textContent = item.icon;
+          span.style.fontSize = px + 'px';
+          span.style.display = 'inline-block';
+          span.style.transform = item.flip ? 'scaleX(-1)' : 'scaleX(1)';
+          el.appendChild(span);
+        }
+
+        el.addEventListener('pointerdown', onItemPointerDown);
+        roomStage.appendChild(el);
+      });
+
+    if(selectedId && room.items.some(i=>i.id===selectedId)){
+      buildToolbar(room.items.find(i=>i.id===selectedId));
+    }
+
+    updateScore();
+  }
+
+  function buildToolbar(item){
+    const bar = document.createElement('div');
+    bar.className = 'item-toolbar';
+    bar.style.left = item.x + '%';
+    bar.style.top = item.y + '%';
+
+    const mkBtn = (label, fn, danger)=>{
+      const b = document.createElement('button');
+      b.textContent = label;
+      if(danger) b.classList.add('danger');
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); fn(); });
+      return b;
+    };
+
+    if(!item.rug){
+      bar.appendChild(mkBtn('↔', ()=> updateItem(item.id, {flip: !item.flip})));
+    }
+    bar.appendChild(mkBtn('－', ()=> updateItem(item.id, {scale: Math.max(0.5, +(item.scale-0.15).toFixed(2))})));
+    bar.appendChild(mkBtn('＋', ()=> updateItem(item.id, {scale: Math.min(2, +(item.scale+0.15).toFixed(2))})));
+    bar.appendChild(mkBtn('🗑', ()=> deleteItem(item.id), true));
+
+    roomStage.appendChild(bar);
+  }
+
+  /* ---------------- Drag handling ---------------- */
+
+  let dragging = null;
+
+  function onItemPointerDown(e){
+    const el = e.currentTarget;
+    const id = el.dataset.id;
+    const room = state[currentRoom];
+    const item = room.items.find(i=>i.id===id);
+    if(!item) return;
+
+    item.z = zTop++;
+    selectedId = id;
+
+    dragging = {id, moved:false};
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+
+    const move = (ev)=>{
+      const rect = roomStage.getBoundingClientRect();
+      let px = ((ev.clientX - rect.left) / rect.width) * 100;
+      let py = ((ev.clientY - rect.top) / rect.height) * 100;
+      px = Math.max(4, Math.min(96, px));
+      py = Math.max(8, Math.min(96, py));
+      dragging.moved = true;
+      item.x = px; item.y = py;
+      el.style.left = px + '%';
+      el.style.top = py + '%';
+      const bar = roomStage.querySelector('.item-toolbar');
+      if(bar){ bar.style.left = px + '%'; bar.style.top = py + '%'; }
+    };
+
+    const up = (ev)=>{
+      el.classList.remove('dragging');
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      renderRoom();
+      dragging = null;
+    };
+
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+  }
+
+  roomStage.addEventListener('pointerdown', (e)=>{
+    if(e.target === roomStage || e.target === wallEl || e.target === floorEl || e.target===emptyHint){
+      if(selectedId){ selectedId = null; renderRoom(); }
+    }
+  });
+
+  /* ---------------- Score ---------------- */
+
+  function updateScore(){
+    const n = state[currentRoom].items.length;
+    const pct = Math.min(100, n*10);
+    scoreFill.style.width = pct + '%';
+    scoreCount.textContent = n + (n===1 ? ' item' : ' items');
+    let label = 'Empty canvas';
+    if(pct>0 && pct<30) label = 'Just started';
+    else if(pct>=30 && pct<60) label = 'Getting cozy';
+    else if(pct>=60 && pct<90) label = 'Looking lovely';
+    else if(pct>=90) label = 'Dream home! 🎉';
+    scoreLabel.textContent = label;
+  }
+
+  /* ---------------- Actions ---------------- */
+
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    if(!state[currentRoom].items.length) return;
+    if(confirm('Clear everything in this room?')){
+      state[currentRoom].items = [];
+      selectedId = null;
+      renderRoom();
+    }
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    selectedId = null;
+    renderRoom();
+    const btn = document.getElementById('saveBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Saving…';
+    html2canvas(roomStage, {backgroundColor:null, scale:2}).then(canvas=>{
+      const link = document.createElement('a');
+      link.download = 'cozy-nook-' + currentRoom + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      btn.textContent = original;
+    }).catch(()=>{ btn.textContent = original; });
+  });
+
+  /* ---------------- Init ---------------- */
+
+  buildRoomTabs();
+  buildCatTabs();
+  buildItemGrid();
+  buildSwatches();
+  renderRoom();
+
+})();
+</script>
+</body>
+</html>

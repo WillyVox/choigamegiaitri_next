@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<!-- Primary SEO Meta Tags -->
+<title>Dragon's Gate - Chơi Game Online Miễn Phí | choigamegiaitri.com</title>
+<meta name="description" content="Chơi Dragon's Gate miễn phí trên choigamegiaitri.com. Game HTML5 online cực hay, không cần cài đặt. Thử thách điều khiển rồng vượt qua cổng thành hấp dẫn 24h!">
+<meta name="keywords" content="choigamegiaitri.com, choigamegiaitri, Dragon's Gate, game vui, game hay, chơi game, game online, game html5, game 24h, tro choi hay, choi game mien phi, flappy dragon">
+<meta name="robots" content="index, follow">
+<meta name="author" content="choigamegiaitri.com">
+<link rel="canonical" href="https://choigamegiaitri.com/">
+<link rel="search" type="application/opensearchdescription+xml" title="Tìm kiếm - choigamegiaitri.com" href="/opensearch.xml">
+
+<!-- Facebook & Open Graph Meta Tags -->
+<meta property="fb:app_id" content="1202987593202146">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://choigamegiaitri.com/">
+<meta property="og:title" content="Dragon's Gate - Game Online Hay Nhất | choigamegiaitri.com">
+<meta property="og:description" content="Chơi Dragon's Gate online cực vui trên choigamegiaitri.com. Game HTML5 chơi ngay không cần cài đặt!">
+<meta property="og:image" content="https://choigamegiaitri.com/og-image.jpg">
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dragon's Gate - Game Online Hay Nhất | choigamegiaitri.com">
+<meta name="twitter:description" content="Chơi Dragon's Gate online cực vui trên choigamegiaitri.com. Game HTML5 chơi ngay không cần cài đặt!">
+<meta name="twitter:image" content="https://choigamegiaitri.com/og-image.jpg">
+
+<!-- Structured Data / JSON-LD for Google Rich Results -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Dragon's Gate",
+  "url": "https://choigamegiaitri.com/",
+  "description": "Chơi game Dragon's Gate online miễn phí trên choigamegiaitri.com. Trò chơi arcade lái rồng qua cổng thành hấp dẫn.",
+  "genre": ["Arcade", "Casual Game", "Browser Game", "Game HTML5"],
+  "inLanguage": ["vi", "en"],
+  "gamePlatform": "Web Browser",
+  "applicationCategory": "Game",
+  "publisher": {
+    "@type": "Organization",
+    "name": "choigamegiaitri.com"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "VND"
+  }
+}
+</script>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0d0714;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ===================== AD SLOT: TOP BANNER =====================
+     Replace this div's contents with your ad network's banner code
+     (e.g. Google AdSense 320x50 or 728x90 unit). Keep it above the
+     game so it's always visible without covering gameplay. */
+  #ad-banner-top {
+    width: 100%;
+    max-width: 480px;
+    min-height: 50px;
+    background: #1a1024;
+    color: #6b5a7a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #4a3560;
+    text-transform: uppercase;
+  }
+  /* ================================================================= */
+
+  #game-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 9 / 16;
+    max-height: 80vh;
+    box-shadow: 0 0 60px rgba(120, 60, 200, 0.35);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 3px solid #4a3560;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(#2b1a4a, #6b3d7a 55%, #b8567a 100%);
+  }
+
+  #hud {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff8e8;
+    font-size: 42px;
+    font-weight: bold;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.6), 0 0 20px rgba(255,200,80,0.3);
+    pointer-events: none;
+  }
+
+  #best-hud {
+    position: absolute;
+    top: 62px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #e0c8ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    pointer-events: none;
+  }
+
+  #start-screen, #over-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13, 7, 20, 0.82);
+    color: #fff8e8;
+    text-align: center;
+    padding: 24px;
+  }
+
+  #over-screen { display: none; }
+
+  .title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffd479;
+    text-shadow: 0 0 20px rgba(255,180,60,0.6), 0 3px 4px rgba(0,0,0,0.5);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #d8c4ea;
+    margin-bottom: 28px;
+    max-width: 260px;
+    line-height: 1.5;
+  }
+
+  .score-line {
+    font-size: 15px;
+    color: #e0c8ff;
+    margin-bottom: 4px;
+  }
+
+  .score-big {
+    font-size: 46px;
+    font-weight: bold;
+    color: #ffd479;
+    text-shadow: 0 0 20px rgba(255,180,60,0.6);
+    margin-bottom: 4px;
+  }
+
+  .best-line {
+    font-size: 13px;
+    color: #a99bc4;
+    margin-bottom: 24px;
+  }
+
+  button.play-btn {
+    background: linear-gradient(#ffd479, #d99b3f);
+    border: none;
+    color: #3a2410;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 14px 42px;
+    border-radius: 30px;
+    box-shadow: 0 4px 0 #a86b1f, 0 8px 16px rgba(0,0,0,0.4);
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: transform 0.06s ease;
+  }
+  button.play-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #a86b1f, 0 4px 8px rgba(0,0,0,0.4);
+  }
+
+  .hint {
+    margin-top: 18px;
+    font-size: 12px;
+    color: #8a7aa0;
+  }
+
+  /* ===================== AD SLOT: INTERSTITIAL =====================
+     Shown on the game-over screen. Replace this div's contents with
+     an interstitial/rectangle ad unit (e.g. 300x250). This is the
+     highest-value placement since players pause here between runs. */
+  #ad-interstitial {
+    width: 100%;
+    max-width: 280px;
+    min-height: 90px;
+    background: #1a1024;
+    color: #6b5a7a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px dashed #4a3560;
+    border-radius: 6px;
+    margin: 16px 0;
+  }
+  /* ================================================================= */
+
+  #footer-note {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #4a4058;
+    text-align: center;
+    max-width: 480px;
+    padding: 0 12px;
+  }
+</style>
+</head>
+<body>
+
+  <div id="ad-banner-top">Ad banner placeholder — 320x50 / 728x90</div>
+
+  <div id="game-wrap">
+    <canvas id="game"></canvas>
+    <div id="hud">0</div>
+    <div id="best-hud">Kỷ Lục: 0</div>
+
+    <div id="start-screen">
+      <!-- Optimized H1 for SEO keyword targeting -->
+      <h1 class="title">🐉 Dragon's Gate<br><span style="font-size: 16px; font-weight: normal; color: #e0c8ff;">Chơi Game Online Miễn Phí - choigamegiaitri.com</span></h1>
+      <div class="subtitle">Chạm màn hình hoặc nhấn phím Space để bay. Điều khiển rồng vượt qua các cổng thành!</div>
+      <button class="play-btn" id="start-btn">Chơi Ngay</button>
+      <div class="hint">Chạm vào màn hình để bay</div>
+    </div>
+
+    <div id="over-screen">
+      <div class="score-line">Điểm số</div>
+      <div class="score-big" id="final-score">0</div>
+      <div class="best-line" id="best-line">Kỷ Lục: 0</div>
+      <div id="ad-interstitial">Ad placeholder — 300x250 interstitial</div>
+      <button class="play-btn" id="retry-btn">Chơi Lại</button>
+    </div>
+  </div>
+
+  <div id="footer-note">Dragon's Gate — Game Vui Online Tại choigamegiaitri.com</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('game-wrap');
+  const hud = document.getElementById('hud');
+  const bestHud = document.getElementById('best-hud');
+  const startScreen = document.getElementById('start-screen');
+  const overScreen = document.getElementById('over-screen');
+  const startBtn = document.getElementById('start-btn');
+  const retryBtn = document.getElementById('retry-btn');
+  const finalScoreEl = document.getElementById('final-score');
+  const bestLineEl = document.getElementById('best-line');
+
+  let W, H, DPR;
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    W = wrap.clientWidth;
+    H = wrap.clientHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // In-memory best score (no localStorage per artifact constraints).
+  let best = 0;
+
+  const GRAVITY = 1500;      // px/s^2
+  const FLAP_VELOCITY = -420; // px/s
+  const GATE_GAP = 190;
+  const GATE_WIDTH = 68;
+  const GATE_SPACING = 260;
+  const SCROLL_SPEED = 170;   // px/s
+
+  let dragon = { x: 0, y: 0, vy: 0, r: 16, rot: 0, flapAnim: 0 };
+  let gates = [];
+  let particles = [];
+  let clouds = [];
+  let score = 0, running = false, started = false, lastTime, spawnTimer = 0;
+
+  function initClouds() {
+    clouds = [];
+    for (let i = 0; i < 6; i++) {
+      clouds.push({
+        x: Math.random() * 500,
+        y: 30 + Math.random() * 180,
+        r: 20 + Math.random() * 30,
+        speed: 12 + Math.random() * 18
+      });
+    }
+  }
+
+  function reset() {
+    dragon = { x: W * 0.28, y: H * 0.45, vy: 0, r: 16, rot: 0, flapAnim: 0 };
+    gates = [];
+    score = 0;
+    running = true;
+    spawnTimer = 0;
+    particles = [];
+    hud.textContent = '0';
+    bestHud.textContent = 'Kỷ Lục: ' + best;
+    bestHud.style.display = 'block';
+    spawnGate(W + 100);
+    spawnGate(W + 100 + GATE_SPACING);
+    spawnGate(W + 100 + GATE_SPACING * 2);
+  }
+
+  function spawnGate(x) {
+    const margin = 60;
+    const centerY = margin + Math.random() * (H - margin * 2 - GATE_GAP) + GATE_GAP / 2;
+    gates.push({ x: x, centerY: centerY, passed: false });
+  }
+
+  function flap() {
+    if (!running) return;
+    dragon.vy = FLAP_VELOCITY;
+    dragon.flapAnim = 1;
+    for (let i = 0; i < 4; i++) {
+      particles.push({
+        x: dragon.x - 10, y: dragon.y + 8,
+        vx: -60 - Math.random() * 60, vy: (Math.random() - 0.5) * 80,
+        life: 0.4, r: 2 + Math.random() * 2
+      });
+    }
+  }
+
+  function gameOver() {
+    running = false;
+    if (score > best) best = score;
+    finalScoreEl.textContent = score;
+    bestLineEl.textContent = 'Kỷ Lục: ' + best;
+    setTimeout(() => { overScreen.style.display = 'flex'; }, 350);
+  }
+
+  function update(dt) {
+    if (!running) return;
+
+    dragon.vy += GRAVITY * dt;
+    dragon.y += dragon.vy * dt;
+    dragon.rot = Math.max(-0.5, Math.min(1.1, dragon.vy / 600));
+    dragon.flapAnim = Math.max(0, dragon.flapAnim - dt * 4);
+
+    if (dragon.y - dragon.r < 0) { dragon.y = dragon.r; dragon.vy = 0; }
+    if (dragon.y + dragon.r > H) { gameOver(); }
+
+    for (const g of gates) {
+      g.x -= SCROLL_SPEED * dt;
+      if (!g.passed && g.x + GATE_WIDTH / 2 < dragon.x) {
+        g.passed = true;
+        score++;
+        hud.textContent = score;
+      }
+      const withinX = dragon.x + dragon.r > g.x - GATE_WIDTH / 2 && dragon.x - dragon.r < g.x + GATE_WIDTH / 2;
+      if (withinX) {
+        const topEdge = g.centerY - GATE_GAP / 2;
+        const botEdge = g.centerY + GATE_GAP / 2;
+        if (dragon.y - dragon.r < topEdge || dragon.y + dragon.r > botEdge) {
+          gameOver();
+        }
+      }
+    }
+    gates = gates.filter(g => g.x > -GATE_WIDTH);
+    const rightMost = gates.length ? Math.max(...gates.map(g => g.x)) : W;
+    if (rightMost < W + GATE_SPACING * 2) {
+      spawnGate(rightMost + GATE_SPACING);
+    }
+
+    for (const c of clouds) {
+      c.x -= c.speed * dt;
+      if (c.x < -60) c.x = W + 60;
+    }
+
+    for (const p of particles) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+    }
+    particles = particles.filter(p => p.life > 0);
+  }
+
+  function drawCastleTower(x, topY, botY, isTop) {
+    const w = GATE_WIDTH;
+    ctx.fillStyle = '#3a2a52';
+    ctx.strokeStyle = '#22162f';
+    ctx.lineWidth = 2;
+    if (isTop) {
+      ctx.fillRect(x - w / 2, 0, w, topY);
+      ctx.strokeRect(x - w / 2, 0, w, topY);
+      // battlements
+      ctx.fillStyle = '#4a3568';
+      for (let bx = -w / 2; bx < w / 2; bx += 14) {
+        ctx.fillRect(x + bx, topY - 12, 8, 12);
+      }
+      // cap band
+      ctx.fillStyle = '#5a4278';
+      ctx.fillRect(x - w / 2 - 4, topY - 4, w + 8, 10);
+    } else {
+      ctx.fillRect(x - w / 2, botY, w, H - botY);
+      ctx.strokeRect(x - w / 2, botY, w, H - botY);
+      ctx.fillStyle = '#4a3568';
+      for (let bx = -w / 2; bx < w / 2; bx += 14) {
+        ctx.fillRect(x + bx, botY, 8, 12);
+      }
+      ctx.fillStyle = '#5a4278';
+      ctx.fillRect(x - w / 2 - 4, botY - 6, w + 8, 10);
+    }
+  }
+
+  function drawDragon() {
+    ctx.save();
+    ctx.translate(dragon.x, dragon.y);
+    ctx.rotate(dragon.rot * 0.5);
+
+    // wing
+    const wingLift = Math.sin(dragon.flapAnim * Math.PI) * 14;
+    ctx.fillStyle = '#e8622f';
+    ctx.beginPath();
+    ctx.ellipse(-6, -2 - wingLift * 0.4, 14, 8, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // body
+    ctx.fillStyle = '#ff7a3d';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 17, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // belly
+    ctx.fillStyle = '#ffcf8a';
+    ctx.beginPath();
+    ctx.ellipse(2, 4, 10, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // snout
+    ctx.fillStyle = '#ff7a3d';
+    ctx.beginPath();
+    ctx.ellipse(15, -1, 8, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // eye
+    ctx.fillStyle = '#2a1508';
+    ctx.beginPath();
+    ctx.arc(17, -4, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // tail
+    ctx.strokeStyle = '#ff7a3d';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-15, 2);
+    ctx.quadraticCurveTo(-26, 6, -22, 14);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    for (const c of clouds) {
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      ctx.arc(c.x + c.r * 0.7, c.y + 4, c.r * 0.7, 0, Math.PI * 2);
+      ctx.arc(c.x - c.r * 0.7, c.y + 6, c.r * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // gates
+    for (const g of gates) {
+      drawCastleTower(g.x, g.centerY - GATE_GAP / 2, g.centerY + GATE_GAP / 2, true);
+      drawCastleTower(g.x, g.centerY - GATE_GAP / 2, g.centerY + GATE_GAP / 2, false);
+    }
+
+    // particles
+    for (const p of particles) {
+      ctx.fillStyle = `rgba(255,200,120,${Math.max(0, p.life / 0.4)})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    drawDragon();
+
+    // ground line flourish
+    ctx.fillStyle = 'rgba(20,10,30,0.35)';
+    ctx.fillRect(0, H - 4, W, 4);
+  }
+
+  function loop(t) {
+    if (!lastTime) lastTime = t;
+    const dt = Math.min(0.033, (t - lastTime) / 1000);
+    lastTime = t;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function handleInput(e) {
+    if (e.type === 'keydown' && e.code !== 'Space') return;
+    if (e.cancelable) e.preventDefault();
+    if (!started) return;
+    if (!running) return;
+    flap();
+  }
+
+  wrap.addEventListener('pointerdown', handleInput);
+  window.addEventListener('keydown', handleInput);
+
+  startBtn.addEventListener('click', () => {
+    started = true;
+    startScreen.style.display = 'none';
+    reset();
+  });
+
+  retryBtn.addEventListener('click', () => {
+    overScreen.style.display = 'none';
+    reset();
+  });
+
+  initClouds();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
