@@ -12,6 +12,7 @@ import MergeMeadow from '@/components/games/MergeMeadow';
 import ChaosOrNah from '@/components/games/ChaosOrNah';
 import BubbleBlast from '@/components/games/BubbleBlast';
 import CrystalBlocks from '@/components/games/CrystalBlocks';
+import SudokuZen from '@/components/games/SudokuZen';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -22,7 +23,8 @@ const componentMap: Record<string, React.ComponentType> = {
   'merge-meadow': MergeMeadow,
   'bubble-burst': BubbleBurst,
   'bubble-blast': BubbleBlast,
-  'crystal-blocks': CrystalBlocks
+  'crystal-blocks': CrystalBlocks,
+  'sudoku-zen': SudokuZen
 };
 
 export function generateStaticParams() {

@@ -1,7 +1,8 @@
 # Prompt 1
 Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và
-tạo cho mình game [Tetris, famous puzzle]
+tạo cho mình game [Sudoku]
 - gây nghiện
+- game có nhiều levels, độ khó tăng dần qua mỗi level
 - giao diện tối ưu và bắt mắt
 - hấp dẫn người chơi
 - tạo cảm giác muốn chơi hoài
@@ -15,6 +16,7 @@ tạo cho mình game [Tetris, famous puzzle]
 và mục tiêu chính của game là add quảng cáo kiếm tiền nên
 - đặt SEO tối ưu và tuyệt vời
 - có sẵn place holders cho Quảng cáo set up sau này
+- sau mỗi level kết thúc hoặc game over thì chạy quảng cáo video hiển thị ngay trong khung game container, người dùng có thể skip sau 10s
 
 
 # Prompt 2

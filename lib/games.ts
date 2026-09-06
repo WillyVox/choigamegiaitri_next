@@ -93,6 +93,20 @@ export const games: GameMeta[] = [
     thumbnail: '/games/crystal-blocks/thumbnail.png',
     genre: ['Puzzle', 'Classic']
   },
+  {
+    slug: 'sudoku-zen',
+    name: { en: 'Sudoku Zen', vi: 'Sudoku Thư Giãn' },
+    tagline: {
+      en: 'Fill the grid, clear your mind.',
+      vi: 'Chơi Game Giải Trí Sudoku, thư giãn đầu óc mỗi ngày.'
+    },
+    description: {
+      en: 'A calm, classic number puzzle. Fill every row, column, and box with 1 to 9, climb through leveled difficulty, and see how far you can go before running out of mistakes.',
+      vi: 'Chơi Game Giải Trí Sudoku cổ điển, nhẹ nhàng thư giãn. Điền số từ 1 đến 9 vào từng hàng, cột và ô vuông, vượt qua các cấp độ khó tăng dần, xem bạn đi được bao xa trước khi hết lượt sai.'
+    },
+    thumbnail: '/games/sudoku-zen/thumbnail.png',
+    genre: ['Puzzle', 'Classic']
+  },
   
   /* {
     slug: 'chaos-or-nah',

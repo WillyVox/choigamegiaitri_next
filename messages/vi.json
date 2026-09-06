@@ -155,5 +155,33 @@
     "triple": "Ba",
     "quad": "TỨ QUÝ",
     "adGameOver": "[QC Game Over 300x250]"
+  },
+  "sudokuZen": {
+    "levelShort": "Cấp",
+    "diffEasy": "Dễ",
+    "diffMedium": "Trung bình",
+    "diffHard": "Khó",
+    "diffExpert": "Chuyên gia",
+    "score": "điểm",
+    "best": "tốt nhất",
+    "time": "thời gian",
+    "mistakes": "lỗi",
+    "generating": "Đang tạo câu đố...",
+    "notes": "Ghi chú",
+    "undo": "Hoàn tác",
+    "hint": "Gợi ý",
+    "watchAdForHint": "Xem QC +Gợi ý",
+    "hintText": "Chọn ô rồi bấm số. Phím tắt: 1-9 để điền, N để bật/tắt Ghi chú, mũi tên để di chuyển.",
+    "adTop": "[QC Đầu Trang 728x90]",
+    "adBottom": "[QC Cuối Trang 320x50]",
+    "adPlaying": "Quảng cáo đang phát",
+    "adSkipInPrefix": "Có thể bỏ qua sau",
+    "adSkip": "Bỏ qua",
+    "levelCompleteEyebrow": "Hoàn thành màn!",
+    "nextLevel": "Màn tiếp theo",
+    "gameOverEyebrow": "Đã hết lượt sai",
+    "retryLevel": "Chơi lại màn này",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu"
   }
 }

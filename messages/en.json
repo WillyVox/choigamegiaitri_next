@@ -155,5 +155,33 @@
     "triple": "Triple",
     "quad": "QUAD",
     "adGameOver": "[Game Over Ad 300x250]"
+  },
+  "sudokuZen": {
+    "levelShort": "Level",
+    "diffEasy": "Easy",
+    "diffMedium": "Medium",
+    "diffHard": "Hard",
+    "diffExpert": "Expert",
+    "score": "score",
+    "best": "best",
+    "time": "time",
+    "mistakes": "mistakes",
+    "generating": "Generating puzzle...",
+    "notes": "Notes",
+    "undo": "Undo",
+    "hint": "Hint",
+    "watchAdForHint": "Watch ad +Hint",
+    "hintText": "Select a cell, then tap a number. Shortcuts: 1-9 to fill, N to toggle Notes, arrow keys to move.",
+    "adTop": "[Top Ad 728x90]",
+    "adBottom": "[Bottom Ad 320x50]",
+    "adPlaying": "Ad playing",
+    "adSkipInPrefix": "Skippable in",
+    "adSkip": "Skip",
+    "levelCompleteEyebrow": "Level complete!",
+    "nextLevel": "Next level",
+    "gameOverEyebrow": "Out of mistakes",
+    "retryLevel": "Retry this level",
+    "shareScore": "Copy my score",
+    "shareCopied": "Copied! Paste it anywhere"
   }
 }
