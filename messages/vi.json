@@ -36,6 +36,13 @@
     "title": "Chính Sách Bảo Mật",
     "body1": "Trang web này sử dụng cookie để lưu tuỳ chọn ngôn ngữ của bạn. Cookie này chỉ được dùng cho mục đích đó."
   },
+  "consent": {
+    "title": "Thông báo cookie",
+    "message": "Chúng tôi dùng cookie để đo lượng truy cập và hiển thị quảng cáo phù hợp hơn. Bạn có thể đồng ý hoặc từ chối bất cứ lúc nào.",
+    "acceptAll": "Đồng ý",
+    "declineAll": "Từ chối",
+    "privacyLink": "Xem chính sách bảo mật"
+  },
   "skyStrike": {
     "scoreLabel": "ĐIỂM",
     "waveTag": "CHẶNG {wave}",

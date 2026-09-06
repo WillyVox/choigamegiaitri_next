@@ -39,3 +39,8 @@ tạo cho mình 6 icons cho 6 tựa game này để mình hiện thị trên web
 - dung lượng nhẹ
 - hình ảnh bắt mắt
 - hài hoà với theme hiện tại của web
+
+
+# Prompt 4
+
+Mình muốn gắn tools để theo dõi lượng truy cập và chi tiết người dùng trên trang web mình, hãy nghiên cứu chuyên sâu, tìm hiểu sâu sắc và đưa cho mình các giải pháp và cách thức thực hiện

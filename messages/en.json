@@ -36,6 +36,13 @@
     "title": "Privacy Policy",
     "body1": "This site uses cookies to save your language preference. This cookie is used only for that purpose."
   },
+  "consent": {
+    "title": "Cookie notice",
+    "message": "We use cookies to measure traffic and show more relevant ads. You can accept or decline at any time.",
+    "acceptAll": "Accept",
+    "declineAll": "Decline",
+    "privacyLink": "See privacy policy"
+  },
   "skyStrike": {
     "scoreLabel": "SCORE",
     "waveTag": "WAVE {wave}",
