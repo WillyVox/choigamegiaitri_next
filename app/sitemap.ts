@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { games } from '@/lib/games';
+import { GAME_CONFIGS } from '@/lib/games';
 import { locales } from '@/src/routing';
 
 const SITE_URL = 'https://choigamegiaitri.com';
@@ -23,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.2
     });
-    for (const game of games) {
+    for (const game of GAME_CONFIGS) {
       entries.push({
         url: `${SITE_URL}/${locale}/games/${game.slug}`,
         changeFrequency: 'weekly',
