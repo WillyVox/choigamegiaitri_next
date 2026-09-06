@@ -10,6 +10,7 @@ import DragonsGate from '@/components/games/DragonsGate';
 import BubbleBurst from '@/components/games/BubbleBurst';
 import MergeMeadow from '@/components/games/MergeMeadow';
 import ChaosOrNah from '@/components/games/ChaosOrNah';
+import BubbleBlast from '@/components/games/BubbleBlast';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -18,7 +19,8 @@ const componentMap: Record<string, React.ComponentType> = {
   'dragons-gate': DragonsGate,
   'chaos-or-nah': ChaosOrNah,
   'merge-meadow': MergeMeadow,
-  'bubble-burst': BubbleBurst
+  'bubble-burst': BubbleBurst,
+  'bubble-blast': BubbleBlast
 };
 
 export function generateStaticParams() {

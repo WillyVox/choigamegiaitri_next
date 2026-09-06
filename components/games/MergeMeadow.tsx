@@ -189,13 +189,14 @@ export default function MergeMeadow() {
     }
 
     function updateDangerTimer() {
-      let anyDanger = false;
-      for (const b of balls) {
-        const speed = Math.hypot(b.vx, b.vy);
-        if (speed < 0.6 && b.y - b.r < DANGER_Y) { anyDanger = true; break; }
-      }
+      // Any ball whose top edge is above the danger line counts, regardless of
+      // its current speed. Using speed as a gate meant a jar packed full of
+      // balls would keep resetting this timer every time a new drop jostled
+      // its neighbours, so the jar could overflow forever without the game
+      // ever ending.
+      const anyDanger = balls.some((b) => b.y - b.r < DANGER_Y);
       dangerTimer = anyDanger ? dangerTimer + 16 : 0;
-      if (dangerTimer > 1200 && !over) triggerGameOver();
+      if (dangerTimer > 900 && !over) triggerGameOver();
     }
 
     function drawJar() {

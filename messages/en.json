@@ -34,9 +34,7 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "body1": "This site may display advertisements served by third-party ad networks (such as Google AdSense). These networks may use cookies and similar technologies to serve ads based on your prior visits to this and other websites.",
-    "body2": "We store your language preference (English or Vietnamese) in a cookie so we can remember your choice on your next visit. This cookie is used only for that purpose.",
-    "body3": "You can opt out of personalized advertising by visiting your ad network's settings, such as Google's Ads Settings page."
+    "body1": "This site uses cookies to save your language preference. This cookie is used only for that purpose."
   },
   "skyStrike": {
     "scoreLabel": "SCORE",
@@ -114,5 +112,25 @@
     "adGameOver": "[Ad Game Over 300x250]",
     "aboutTitle": "Bubble Burst – Free Online Casual Game",
     "aboutP1": "A relaxing browser game where you pop floating bubbles, build up high combos, and break your highest score."
+  },
+    "bubbleBlast": {
+    "score": "score",
+    "best": "best",
+    "next": "next",
+    "hint": "Move to aim, tap or press Space to shoot. Match 3 or more bubbles of the same color to pop them.",
+    "gameOverEyebrow": "Bubbles reached the top",
+    "newBest": "New best score!",
+    "playAgain": "Play again",
+    "shareScore": "Copy my score",
+    "shareCopied": "Copied! Paste it anywhere",
+    "title": "Bubble Blast",
+    "tagline": "Pop clusters of matching bubbles before they reach the top",
+    "playButton": "PLAY NOW",
+    "aboutTitle": "Bubble Blast – Free online bubble shooter game",
+    "aboutP1": "Bubble Blast is a classic bubble shooter you can play right in your browser, no download or install needed. Aim and fire colored bubbles to match three or more of the same color, clearing the starry sky before the bubbles reach the bottom.",
+    "aboutH2_1": "How to play",
+    "aboutP2": "On desktop, move your mouse to aim and click or press Space to shoot. On mobile, drag to aim and release to fire. Every few shots a new row pushes down from the top, so clear the board fast to stay ahead.",
+    "aboutH2_2": "A relaxing pick-up-and-play for any age",
+    "aboutP3": "The controls are simple enough for anyone to pick up, but the rising pressure keeps you coming back for one more round. Each session takes just a few minutes — perfect for a quick break or downtime."
   }
 }

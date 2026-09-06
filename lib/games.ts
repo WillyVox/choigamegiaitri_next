@@ -52,11 +52,11 @@ export const games: GameMeta[] = [
     slug: 'bubble-burst',
     name: {
       en: 'Bubble Burst',
-      vi: 'Bùng Nổ Bong Bóng'
+      vi: 'Đập Bong Bóng'
     },
     tagline: {
       en: 'Pop magical bubbles and build the highest combo.',
-      vi: 'Chơi Game Giải Trí Bắn Bóng - Game Bắn Bóng Thư Giãn Miễn Phí Trên Web'
+      vi: 'Chơi Game Giải Trí Đập Bong Bóng - Game Online Miễn Phí Trên Web'
     },
     description: {
       en: 'Tap colorful magical bubbles before they disappear, build powerful combos, and beat your high score in this relaxing yet addictive bubble-popping game.',
@@ -92,6 +92,20 @@ export const games: GameMeta[] = [
     },
     thumbnail: '/games/chaos-or-nah/thumbnail.png',
     genre: ['Party', 'Quiz']
+  },
+  {
+    slug: 'bubble-blast',
+    name: { en: 'Bubble Blast', vi: 'Bắn Bóng Vũ Trụ' },
+    tagline: {
+      en: 'Aim, shoot, pop matching bubbles.',
+      vi: 'Chơi Game Giải Trí bắn bóng và dọn sạch bầu trời sao.'
+    },
+    description: {
+      en: 'A classic bubble shooter in a cosmic setting. Aim and fire colored bubbles, match three or more of the same color to pop them, and clear the sky before the bubbles reach the bottom.',
+      vi: 'Chơi Game Giải Trí bắn bóng cổ điển giữa không gian đầy sao. Ngắm và bắn bóng màu, ghép từ 3 bóng cùng màu trở lên để nổ, dọn sạch bầu trời trước khi bóng tràn xuống đáy.'
+    },
+    thumbnail: '/games/bubble-blast/thumbnail.png',
+    genre: ['Puzzle', 'Arcade', 'Casual']
   },
 ];
 

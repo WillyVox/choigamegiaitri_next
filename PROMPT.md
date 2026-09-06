@@ -1,6 +1,6 @@
 # Prompt 1
 nghiên cứu chuyên sâu, tìm hiểu sâu sắc và
-tạo cho mình game [bắn bóng]
+tạo cho mình game [NHƯ TRÊN]
 - gây nghiện
 - giao diện tối ưu và bắt mắt
 - hấp dẫn người chơi
@@ -26,3 +26,16 @@ user-friendly
 smoothy
 beautifully
 run perfectly on web desktop and mobile
+
+
+# Prompt 3
+
+tạo cho mình 6 icons cho 6 tựa game này để mình hiện thị trên web của mình với những tiêu chí sau 
+- đơn giản
+- thân thiện với người dùng
+- hình hiện tại
+- màu sáng tươi sáng, sang trọng
+- cân đối hài hoà hiển thị trên web
+- dung lượng nhẹ
+- hình ảnh bắt mắt
+- hài hoà với theme hiện tại của web

@@ -34,9 +34,7 @@
   },
   "privacy": {
     "title": "Chính Sách Bảo Mật",
-    "body1": "Trang web này có thể hiển thị quảng cáo từ các mạng quảng cáo bên thứ ba (như Google AdSense). Các mạng này có thể sử dụng cookie và công nghệ tương tự để hiển thị quảng cáo dựa trên lượt truy cập trước đó của bạn.",
-    "body2": "Chúng tôi lưu tùy chọn ngôn ngữ của bạn (Tiếng Việt hoặc Tiếng Anh) trong một cookie để ghi nhớ lựa chọn cho lần truy cập sau. Cookie này chỉ được dùng cho mục đích đó.",
-    "body3": "Bạn có thể từ chối quảng cáo cá nhân hóa bằng cách truy cập trang cài đặt của mạng quảng cáo, ví dụ như trang Cài đặt Quảng cáo của Google."
+    "body1": "Trang web này sử dụng cookie để lưu tuỳ chọn ngôn ngữ của bạn. Cookie này chỉ được dùng cho mục đích đó."
   },
   "skyStrike": {
     "scoreLabel": "ĐIỂM",
@@ -74,9 +72,9 @@
     "footerNote": "Dragon's Gate — Game Vui Online"
   },
   "bubbleBurst": {
-    "title": "BẮN BÓNG 🫧",
+    "title": "NỔ BONG BÓNG 🫧",
     "subtitle": "Chạm/Click để nổ bóng!<br />Đừng để bóng trôi chạm vạch trên.",
-    "instructions": "Chạm để vỡ càng nhiều bóng bọt kỳ diệu càng tốt trước khi chúng biến mất.",
+    "instructions": "Chạm để vỡ càng nhiều bong bóng kỳ diệu càng tốt trước khi chúng biến mất.",
     "playButton": "CHƠI NGAY",
     "tapHint": "Chạm hoặc nhấp vào các bóng bọt",
     "gameOverScore": "Điểm của bạn: {score}",
@@ -114,5 +112,25 @@
     "dailyHint": "Cùng 10 tình huống với mọi người hôm nay. Chỉ chơi một lần.",
     "shareDaily": "Sao chép kết quả hôm nay",
     "dailyNote": "Thử thách hằng ngày mới sẽ mở khóa vào ngày mai."
+  },
+  "bubbleBlast": {
+    "score": "điểm",
+    "best": "tốt nhất",
+    "next": "tiếp theo",
+    "hint": "Di chuyển để ngắm, chạm hoặc nhấn Space để bắn. Ghép 3 bóng cùng màu trở lên để nổ.",
+    "gameOverEyebrow": "Bóng đã tràn lên đỉnh",
+    "newBest": "Kỷ lục mới!",
+    "playAgain": "Chơi lại",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+    "title": "Bắn Bóng Vũ Trụ",
+    "tagline": "Bắn nổ từng cụm bóng cùng màu trước khi chúng tràn lên đỉnh",
+    "playButton": "CHƠI NGAY",
+    "aboutTitle": "Bắn Bóng Vũ Trụ – Game bắn bóng online miễn phí",
+    "aboutP1": "Bắn Bóng Vũ Trụ là game bắn bóng cổ điển chơi trực tiếp trên trình duyệt, không cần tải về hay cài đặt. Ngắm và bắn bóng màu để ghép từ 3 bóng cùng màu trở lên, dọn sạch bầu trời đầy sao trước khi bóng tràn xuống đáy.",
+    "aboutH2_1": "Cách chơi",
+    "aboutP2": "Trên máy tính, di chuyển chuột để ngắm hướng và nhấp chuột hoặc nhấn phím Space để bắn. Trên điện thoại, chạm và kéo để ngắm, thả tay để bắn. Sau vài lượt bắn, một hàng bóng mới sẽ đẩy từ trên xuống, vì vậy hãy dọn bóng thật nhanh.",
+    "aboutH2_2": "Phù hợp thư giãn mọi lúc, mọi lứa tuổi",
+    "aboutP3": "Cách chơi đơn giản, dễ thao tác nhưng vẫn đủ thử thách để cuốn bạn chơi hết ván này đến ván khác. Mỗi lượt chơi chỉ mất vài phút, lý tưởng để giải trí trong giờ nghỉ hoặc lúc rảnh rỗi."
   }
 }

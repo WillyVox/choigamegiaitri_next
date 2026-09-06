@@ -14,8 +14,6 @@ export default getRequestConfig(async () => {
     ? requested 
     : defaultLocale;
 
-  
-    console.log('Locale', locale);
 
   return {
     locale, // Required in v4 downstream

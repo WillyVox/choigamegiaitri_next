@@ -28,8 +28,6 @@ export default async function PrivacyPage({
     <article className="static-page">
       <h1>{t('title')}</h1>
       <p>{t('body1')}</p>
-      <p>{t('body2')}</p>
-      <p>{t('body3')}</p>
     </article>
   );
 }
