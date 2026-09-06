@@ -79,7 +79,8 @@ export const games: GameMeta[] = [
     thumbnail: '/games/merge-meadow/thumbnail.png',
     genre: ['Puzzle', 'Casual']
   },  
-  {
+  
+  /* {
     slug: 'chaos-or-nah',
     name: { en: 'Chaos or Nah?', vi: 'Chaos or Nah?' },
     tagline: {
@@ -106,7 +107,8 @@ export const games: GameMeta[] = [
     },
     thumbnail: '/games/bubble-blast/thumbnail.png',
     genre: ['Puzzle', 'Arcade', 'Casual']
-  },
+  }, 
+  */
 ];
 
 export function getGame(slug: string): GameMeta | undefined {
