@@ -323,11 +323,7 @@ export default function BubbleBurstGame() {
 
   return (
     <div className="bubble-game-container">
-      {/* ADS PLACEHOLDER 1 */}
-      <div className="ad-banner">
-        <span>{t('adTop')}</span>
-      </div>
-
+      
       {/* GAME CONTAINER */}
       <div ref={wrapperRef} className="game-wrapper">
         {/* HUD */}
@@ -376,54 +372,31 @@ export default function BubbleBurstGame() {
         <canvas ref={canvasRef} className="game-canvas" />
       </div>
 
-      {/* ADS PLACEHOLDER 3 */}
-      <div className="ad-banner">
-        <span>{t('adBottom')}</span>
-      </div>
-
       <style jsx>{`
         .bubble-game-container {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: space-between;
-          min-height: 100vh;
           background-color: #0f172a;
           color: #f8fafc;
           font-family: system-ui, -apple-system, sans-serif;
           user-select: none;
           overflow-x: hidden;
-          padding: 8px;
           box-sizing: border-box;
-        }
-
-        .ad-banner {
-          width: 100%;
-          max-width: 728px;
-          height: 90px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px dashed #475569;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #64748b;
-          font-size: 12px;
-          margin: 8px 0;
-          border-radius: 6px;
         }
 
         .game-wrapper {
           position: relative;
           width: 100%;
           max-width: 420px;
-          height: calc(100vh - 200px);
+          height: calc(100vh - 100px);
           max-height: 750px;
-          min-height: 500px;
           background: linear-gradient(180deg, #0f172a 0%, #311042 100%);
           border-radius: 16px;
           box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 85, 247, 0.2);
           overflow: hidden;
-          border: 2px solid #5b21b6;
+          // border: 2px solid #5b21b6;
         }
 
         .hud {
