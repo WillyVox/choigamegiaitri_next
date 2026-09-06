@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { games, getGame, type Locale } from '@/lib/games';
+import { GAME_CONFIGS, getGame, type Locale } from '@/lib/games';
 import { locales } from '@/src/routing';
 import AdSlot from '@/components/AdSlot';
 import GameCard from '@/components/GameCard';
@@ -28,7 +28,7 @@ const componentMap: Record<string, React.ComponentType> = {
 };
 
 export function generateStaticParams() {
-  return locales.flatMap((locale) => games.map((g) => ({ locale, slug: g.slug })));
+  return locales.flatMap((locale) => GAME_CONFIGS.map((g) => ({ locale, slug: g.slug })));
 }
 
 export async function generateMetadata({
@@ -76,7 +76,7 @@ export default async function GamePage({
 
   const loc = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'gamePage' });
-  const related = games.filter((g) => g.slug !== slug);
+  const related = GAME_CONFIGS.filter((g) => g.slug !== slug);
 
   const jsonLd = {
     '@context': 'https://schema.org',

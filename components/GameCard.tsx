@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import type { GameMeta, Locale } from '@/lib/games';
+import Image from 'next/image';
 
 export default function GameCard({ game, locale }: { game: GameMeta; locale: Locale }) {
   return (
     <Link href={`/${locale}/games/${game.slug}`} className="game-card">
       <div className="game-card__thumb" aria-hidden="true">
         {/* Swap for a real <Image> once you have thumbnail art in /public */}
-        <span>{game.name[locale].slice(0, 1)}</span>
+        {game.thumbnail.includes('games/icon-') ? <Image src={game.thumbnail} alt={game.name[locale]} width={80} height={80} /> : <span>{game.name[locale].slice(0, 1)}</span>}
       </div>
       <div className="game-card__body">
         <h3>{game.name[locale]}</h3>
@@ -43,7 +44,8 @@ export default function GameCard({ game, locale }: { game: GameMeta; locale: Loc
           justify-content: center;
           font-size: 2.4rem;
           font-weight: 800;
-          background: linear-gradient(135deg, #ffd479, #ff8a5c);
+          // background: linear-gradient(135deg, #ffd479, #ff8a5c);
+          background: linear-gradient(135deg, #100f15, #939bab);
           color: #3a2410;
         }
         .game-card__body {

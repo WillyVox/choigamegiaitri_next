@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import GameCard from '@/components/GameCard';
 import AdSlot from '@/components/AdSlot';
-import { games, type Locale } from '@/lib/games';
+import { GAME_CONFIGS, type Locale } from '@/lib/games';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -36,7 +36,7 @@ export default async function HomePage({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    itemListElement: games.map((g, i) => ({
+    itemListElement: GAME_CONFIGS.map((g, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       url: `${SITE_URL}/${locale}/games/${g.slug}`,
@@ -60,7 +60,7 @@ export default async function HomePage({
       <AdSlot size="banner" id="home-top-banner" />
 
       <section id="games" className="game-grid">
-        {games.map((g) => (
+        {GAME_CONFIGS.map((g) => (
           <GameCard key={g.slug} game={g} locale={loc} />
         ))}
       </section>

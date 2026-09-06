@@ -18,7 +18,7 @@ export interface GameMeta {
  *   3. Add its slug -> component mapping in app/[locale]/games/[slug]/page.tsx.
  * The dashboard, sitemap, and SEO metadata all pick it up automatically.
  */
-export const games: GameMeta[] = [
+export const GAME_CONFIGS: GameMeta[] = [
   {
     slug: 'sky-strike',
     name: { en: 'Sky Strike', vi: 'Chiến Cơ Siêu Kích' },
@@ -30,7 +30,7 @@ export const games: GameMeta[] = [
       en: 'Take control of an advanced fighter jet in this fast-paced arcade shooter. Collect power-ups, defeat boss ships, and climb the high scores.',
       vi: 'Chơi Game Giải Trí bắn máy bay arcade - Điều khiển chiến cơ hiện đại, thu thập vật phẩm hỗ trợ, tiêu diệt trùm và chinh phục kỷ lục điểm số.'
     },
-    thumbnail: '/games/sky-strike/thumbnail.png',
+    thumbnail: 'games/icon-sky-strike.svg',
     genre: ['Arcade', 'Action']
   },
   
@@ -45,7 +45,7 @@ export const games: GameMeta[] = [
       en: "Guide a dragon through a gauntlet of castle gates in this addictive one-tap arcade flyer. Simple to learn, hard to master.",
       vi: 'Chơi game giải trí - Điều khiển một chú rồng bay qua hàng loạt cổng thành trong trò chơi arcade một chạm gây nghiện này. Dễ chơi nhưng khó làm chủ.'
     },
-    thumbnail: '/games/dragons-gate/thumbnail.png',
+    thumbnail: 'games/icon-dragons-gate.svg',
     genre: ['Arcade', 'Casual']
   },
   {
@@ -62,7 +62,7 @@ export const games: GameMeta[] = [
       en: 'Tap colorful magical bubbles before they disappear, build powerful combos, and beat your high score in this relaxing yet addictive bubble-popping game.',
       vi: 'Chơi game giải trí bắn bóng thư giãn, xả stress miễn phí ngay trên trình duyệt. Game chơi mượt trên điện thoại và máy tính, không cần cài đặt!'
     },
-    thumbnail: '/games/bubble-burst/thumbnail.png',
+    thumbnail: 'games/icon-bubble-burst.svg',
     genre: ['Casual', 'Arcade']
   },
   {
@@ -76,7 +76,7 @@ export const games: GameMeta[] = [
       en: 'A cozy physics puzzle game. Drop fruit, merge matching pairs into bigger ones, and see how big you can grow before the jar overflows.',
       vi: 'Chơi Game Giải Trí vật lý nhẹ nhàng. Thả trái cây, ghép các cặp giống nhau để tạo ra trái to hơn, xem bạn có thể tạo ra trái lớn đến đâu trước khi lọ bị tràn.'
     },
-    thumbnail: '/games/merge-meadow/thumbnail.png',
+    thumbnail: 'games/icon-merge-meadow.svg',
     genre: ['Puzzle', 'Casual']
   },  
   {
@@ -90,7 +90,7 @@ export const games: GameMeta[] = [
       en: 'A polished falling-block puzzle. Rotate and drop crystal-colored blocks to clear full lines, speed up as you level up, and see how high you can score before the board fills.',
       vi: 'Chơi Game Giải Trí xếp khối pha lê kinh điển. Xoay và thả khối để lấp đầy từng hàng, tốc độ tăng dần theo cấp độ, xem bạn ghi được bao nhiêu điểm trước khi bảng bị đầy.'
     },
-    thumbnail: '/games/crystal-blocks/thumbnail.png',
+    thumbnail: 'games/icon-crystal-blocks.svg',
     genre: ['Puzzle', 'Classic']
   },
   {
@@ -104,7 +104,7 @@ export const games: GameMeta[] = [
       en: 'A calm, classic number puzzle. Fill every row, column, and box with 1 to 9, climb through leveled difficulty, and see how far you can go before running out of mistakes.',
       vi: 'Chơi Game Giải Trí Sudoku cổ điển, nhẹ nhàng thư giãn. Điền số từ 1 đến 9 vào từng hàng, cột và ô vuông, vượt qua các cấp độ khó tăng dần, xem bạn đi được bao xa trước khi hết lượt sai.'
     },
-    thumbnail: '/games/sudoku-zen/thumbnail.png',
+    thumbnail: '/games/icon-sudoku-zen.svg',
     genre: ['Puzzle', 'Classic']
   },
   
@@ -140,5 +140,5 @@ export const games: GameMeta[] = [
 ];
 
 export function getGame(slug: string): GameMeta | undefined {
-  return games.find((g) => g.slug === slug);
+  return GAME_CONFIGS.find((g) => g.slug === slug);
 }
