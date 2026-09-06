@@ -132,5 +132,21 @@
     "aboutP2": "Trên máy tính, di chuyển chuột để ngắm hướng và nhấp chuột hoặc nhấn phím Space để bắn. Trên điện thoại, chạm và kéo để ngắm, thả tay để bắn. Sau vài lượt bắn, một hàng bóng mới sẽ đẩy từ trên xuống, vì vậy hãy dọn bóng thật nhanh.",
     "aboutH2_2": "Phù hợp thư giãn mọi lúc, mọi lứa tuổi",
     "aboutP3": "Cách chơi đơn giản, dễ thao tác nhưng vẫn đủ thử thách để cuốn bạn chơi hết ván này đến ván khác. Mỗi lượt chơi chỉ mất vài phút, lý tưởng để giải trí trong giờ nghỉ hoặc lúc rảnh rỗi."
+  },
+  "crystalBlocks": {
+    "score": "điểm",
+    "best": "tốt nhất",
+    "level": "cấp độ",
+    "hint": "Mũi tên để di chuyển, Space để rơi nhanh, C để giữ khối. Trên điện thoại dùng nút bên dưới.",
+    "gameOverEyebrow": "Bảng đã đầy",
+    "newBest": "Kỷ lục mới!",
+    "playAgain": "Chơi lại",
+    "shareScore": "Sao chép điểm của tôi",
+    "shareCopied": "Đã sao chép! Dán vào bất cứ đâu",
+    "single": "Đơn",
+    "double": "Đôi",
+    "triple": "Ba",
+    "quad": "TỨ QUÝ",
+    "adGameOver": "[QC Game Over 300x250]"
   }
 }

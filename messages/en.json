@@ -132,5 +132,21 @@
     "aboutP2": "On desktop, move your mouse to aim and click or press Space to shoot. On mobile, drag to aim and release to fire. Every few shots a new row pushes down from the top, so clear the board fast to stay ahead.",
     "aboutH2_2": "A relaxing pick-up-and-play for any age",
     "aboutP3": "The controls are simple enough for anyone to pick up, but the rising pressure keeps you coming back for one more round. Each session takes just a few minutes — perfect for a quick break or downtime."
+  },
+  "crystalBlocks": {
+    "score": "score",
+    "best": "best",
+    "level": "level",
+    "hint": "Arrow keys to move, Space to drop, C to hold. Use the buttons below on mobile.",
+    "gameOverEyebrow": "Board is full",
+    "newBest": "New best score!",
+    "playAgain": "Play again",
+    "shareScore": "Copy my score",
+    "shareCopied": "Copied! Paste it anywhere",
+    "single": "Single",
+    "double": "Double",
+    "triple": "Triple",
+    "quad": "QUAD",
+    "adGameOver": "[Game Over Ad 300x250]"
   }
 }

@@ -79,6 +79,20 @@ export const games: GameMeta[] = [
     thumbnail: '/games/merge-meadow/thumbnail.png',
     genre: ['Puzzle', 'Casual']
   },  
+  {
+    slug: 'crystal-blocks',
+    name: { en: 'Crystal Blocks', vi: 'Khối Pha Lê' },
+    tagline: {
+      en: 'Stack, clear, and chase the high score.',
+      vi: 'Chơi Game Giải Trí xếp khối và phá kỷ lục của bạn.'
+    },
+    description: {
+      en: 'A polished falling-block puzzle. Rotate and drop crystal-colored blocks to clear full lines, speed up as you level up, and see how high you can score before the board fills.',
+      vi: 'Chơi Game Giải Trí xếp khối pha lê kinh điển. Xoay và thả khối để lấp đầy từng hàng, tốc độ tăng dần theo cấp độ, xem bạn ghi được bao nhiêu điểm trước khi bảng bị đầy.'
+    },
+    thumbnail: '/games/crystal-blocks/thumbnail.png',
+    genre: ['Puzzle', 'Classic']
+  },
   
   /* {
     slug: 'chaos-or-nah',

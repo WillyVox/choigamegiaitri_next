@@ -1,6 +1,6 @@
 # Prompt 1
-nghiên cứu chuyên sâu, tìm hiểu sâu sắc và
-tạo cho mình game [NHƯ TRÊN]
+Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và
+tạo cho mình game [Tetris, famous puzzle]
 - gây nghiện
 - giao diện tối ưu và bắt mắt
 - hấp dẫn người chơi
