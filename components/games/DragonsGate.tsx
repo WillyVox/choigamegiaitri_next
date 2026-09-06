@@ -433,7 +433,7 @@ export default function DragonsGate() {
         }
 
         #app {
-          min-height: 100vh;
+          // min-height: 100vh;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -446,40 +446,6 @@ export default function DragonsGate() {
           font-family: var(--font-body);
           color: var(--cloud);
           overflow-x: hidden;
-        }
-
-        .ad-slot {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          color: rgba(238, 243, 249, 0.35);
-          font-size: 11px;
-          letter-spacing: 0.06em;
-          background: repeating-linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.03) 0 10px,
-            rgba(255, 255, 255, 0.01) 10px 20px
-          );
-          border-top: 1px dashed rgba(238, 243, 249, 0.14);
-          border-bottom: 1px dashed rgba(238, 243, 249, 0.14);
-          flex-shrink: 0;
-        }
-
-        .ad-top {
-          min-height: 60px;
-          max-height: 90px;
-        }
-        .ad-bottom {
-          min-height: 50px;
-          max-height: 90px;
-          margin-top: 8px;
-        }
-        .ad-side {
-          width: 160px;
-          min-width: 160px;
-          height: 600px;
-          writing-mode: vertical-rl;
         }
 
         @media (max-width: 900px) {
@@ -496,6 +462,13 @@ export default function DragonsGate() {
           padding: 16px;
           width: 100%;
           max-width: 1200px;
+          min-width: 420px;
+          
+          canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+          }
         }
 
         .stage-wrap {
@@ -510,12 +483,6 @@ export default function DragonsGate() {
           background: var(--sky-deep);
           touch-action: none;
           user-select: none;
-        }
-
-        canvas {
-          display: block;
-          width: 100%;
-          height: 100%;
         }
 
         .hud {
