@@ -246,9 +246,9 @@ export default function DragonsGate() {
     }
   }
 
-  function togglePause() {
-    setGameState((prev) => (prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev));
-  }
+  // function togglePause() {
+  //   setGameState((prev) => (prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev));
+  // }
 
   /* --------------------------- main game engine --------------------------- */
 
@@ -867,14 +867,14 @@ export default function DragonsGate() {
                   >
                     {muted ? '🔇' : '🔊'}
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     className="pause-btn"
                     onClick={togglePause}
                     aria-label="Tạm dừng"
                   >
                     {gameState === 'paused' ? '▶' : '⏸'}
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
