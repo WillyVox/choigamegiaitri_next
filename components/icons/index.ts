@@ -5,3 +5,4 @@ export { default as MergeMeadowIcon } from './MergeMeadowIcon';
 export { default as CrystalBlocksIcon } from './CrystalBlocksIcon';
 export { default as SudokuZenIcon } from './SudokuZenIcon';
 export { default as ChaosOrNahIcon } from './ChaosOrNahIcon';
+export { default as GooseGooseDuckIcon } from './GooseGooseDuckIcon';

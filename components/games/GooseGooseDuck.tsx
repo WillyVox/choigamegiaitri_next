@@ -62,7 +62,13 @@ function getLevelConfig(level: number): LevelConfig {
   const total = cols * rows;
   const ducks = Math.min(1 + Math.floor(level / 3), Math.max(2, Math.floor(total / 5)));
   const baseTime = Math.max(12, 42 - level * 2);
-  const movesLimit = level >= 6 ? Math.round(total * 1.6) : null;
+  // Moves-limit removed: it was the only mechanic that could end a level in a
+  // *loss* even after the player had gone on to tap every duck correctly
+  // (it only checked "did I run out of taps", not "did I actually fail").
+  // It also happened to be the first new mechanic to switch on at level 6,
+  // which is why the "stuck at level 6" reports started there. Keeping the
+  // field (always null) instead of deleting it everywhere else that reads it.
+  const movesLimit = null;
   const suspicionDrift = level >= 6 ? Math.min(4, Math.floor((level - 5) / 3) + 1) : 0;
   const wrongPenalty = Math.min(32, 12 + level);
   const hasSweep = level >= 8;
@@ -258,8 +264,13 @@ export default function GooseGooseDuck() {
       if (movesLeftRef.current !== null) movesLeftRef.current -= 1;
 
       if (tile.isDuck) {
-        commitTiles(tilesRef.current.map((tl) => (tl.id === id ? { ...tl, found: true } : tl)));
-        ducksFoundRef.current += 1;
+        const nextTiles = tilesRef.current.map((tl) => (tl.id === id ? { ...tl, found: true } : tl));
+        commitTiles(nextTiles);
+        // Derive the found-count from the tiles we just committed rather than
+        // trusting a separately-incremented ref — this can never drift out of
+        // sync with what's actually on screen, so "all ducks tapped" always
+        // reliably triggers the win.
+        ducksFoundRef.current = nextTiles.filter((tl) => tl.isDuck && tl.found).length;
         const gained = 10 * levelRef.current;
         scoreRef.current += gained;
         suspicionRef.current = Math.max(0, suspicionRef.current - 5);
@@ -276,6 +287,10 @@ export default function GooseGooseDuck() {
 
       if (ducksFoundRef.current >= ducksTotalRef.current) return endLevel(true);
       if (suspicionRef.current >= 100) return endLevel(false, 'suspicion');
+      // Moves-limit mechanic removed (see getLevelConfig) — movesLeftRef.current
+      // will always be null now, so this branch is permanently dormant. Left in
+      // place in case a designer wants to re-enable a (non-fatal) moves display
+      // later; it can no longer end a level.
       if (movesLeftRef.current !== null && movesLeftRef.current <= 0 && ducksFoundRef.current < ducksTotalRef.current) {
         return endLevel(false, 'moves');
       }
