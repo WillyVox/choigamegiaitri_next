@@ -1,30 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 /* ============================================================================
- * DRAGON GATE — hyper-casual endless flyer
- * ----------------------------------------------------------------------------
- * This file implements the gameplay + monetization ARCHITECTURE requested:
- *   - Level system with escalating difficulty (Phần 2)
- *   - "Juicy" feedback: particles, screen shake, flash, ascending combo tones
- *   - Sticky bottom banner slot, interstitial cadence, rewarded-ad hooks (Phần 3)
- *   - Responsive 9:16 canvas, centered + blurred on wide screens (Phần 4)
- *
- * IMPORTANT — about ads: this file cannot embed real AdSense/AdMob network
- * calls (that requires your own approved publisher IDs, a live domain, and in
- * AdMob's case a native app shell — it doesn't run inside a website at all).
- * What's here are fully-wired placeholder components (BannerAdSlot,
- * InterstitialAdOverlay, RewardedAdOverlay) with the exact UX/timing rules you
- * asked for (sticky 320x50 banner, 60–90s interstitial spacing, 15–30s
- * rewarded flow for Continue/Revive and Double Score). Every spot where a real
- * SDK call belongs is marked with `// AD-SDK:` — swap the simulated timer for
- * your provider's real call (see the chat reply for exact integration notes).
+ * DRAGON GATE — Hyper-Casual Endless Flyer
+ * Layout & Container structure aligned with SkyStrike template
  * ==========================================================================*/
 
-const VW = 450; // 9:16 canvas width
-const VH = 800; // 9:16 canvas height
+const VW = 450; // 9:16 virtual width
+const VH = 800; // 9:16 virtual height
+
 const STORAGE_KEY_BEST = 'dragons-gate:best';
 const STORAGE_KEY_MUTE = 'dragons-gate:muted';
 const STORAGE_KEY_LAST_AD = 'dragons-gate:lastAd';
@@ -40,25 +26,26 @@ const GATE_SPACING = 260;
 const BASE_SCROLL_SPEED = 168;
 const MAX_SCROLL_SPEED = 320;
 
-const SCORE_PER_LEVEL = 8; // gates passed to reach the next level
-const LEVEL_DIFFICULTY_CAP = 24; // difficulty stops ramping further after this level (still climbs slowly in score)
+const SCORE_PER_LEVEL = 8;
+const LEVEL_DIFFICULTY_CAP = 24;
 
 const INTERSTITIAL_MIN_GAP_MS = 60_000;
 const INTERSTITIAL_MAX_GAP_MS = 90_000;
-const REWARDED_AD_DURATION_MS = 7_000; // simulated watch time; a real SDK controls actual duration/eligibility
 
-// Do-Re-Mi-Fa-Sol-La-Si-Do — ascending combo scale
+// Do-Re-Mi-Fa-Sol-La-Si-Do ascending combo scale
 const COMBO_SCALE = [523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.5];
 
-// Background palette per "world" (every 3 levels) so the sky visibly evolves
+// Background palette progression per world (every 3 levels)
 const LEVEL_PALETTES: [string, string, string][] = [
-  ['#2b1a4a', '#6b3d7a', '#b8567a'],
-  ['#0b2a4a', '#1d5f7a', '#3fa6a0'],
-  ['#3a1030', '#8a2f5a', '#e0645f'],
-  ['#0e2036', '#22406b', '#3f77ad'],
-  ['#241338', '#5a2a6b', '#a13f8a'],
-  ['#1a2a12', '#3d6b34', '#8fbf4a'],
+  ['#180b28', '#381652', '#70226c'], // Twilight Mystic Void
+  ['#081d33', '#13496b', '#268a88'], // Deep Ocean Sanctuary
+  ['#2d0a1e', '#661b3c', '#b53f4d'], // Crimson Sunset Peak
+  ['#071626', '#172f4f', '#2a5b82'], // Eclipse Horizon
+  ['#1a0b29', '#461852', '#7e2b6e'], // Astral Obsidian Gate
+  ['#0e1d0b', '#284f22', '#679e33'], // Jade Emerald Valley
 ];
+
+type GameState = 'start' | 'playing' | 'paused' | 'over';
 
 interface Dragon {
   x: number;
@@ -88,7 +75,7 @@ interface Particle {
   life: number;
   maxLife: number;
   r: number;
-  colorBase: string; // "r,g,b" — alpha is derived from remaining life
+  colorBase: string;
 }
 
 interface Cloud {
@@ -98,6 +85,14 @@ interface Cloud {
   speed: number;
 }
 
+interface Star {
+  x: number;
+  y: number;
+  r: number;
+  speed: number;
+  twinkle: number;
+}
+
 interface Shake {
   time: number;
   total: number;
@@ -105,7 +100,7 @@ interface Shake {
 }
 
 interface Flash {
-  colorBase: string; // "r,g,b"
+  colorBase: string;
   alpha: number;
 }
 
@@ -136,7 +131,6 @@ function paletteForLevel(level: number) {
 }
 
 /* ------------------------------ tiny synth -------------------------------- */
-// No audio files needed: short synthesized tones give "juicy" combo feedback.
 
 let sharedAudioCtx: AudioContext | null = null;
 function getAudioCtx(): AudioContext | null {
@@ -170,7 +164,7 @@ function playTone(
     osc.start();
     osc.stop(ctx.currentTime + duration);
   } catch {
-    /* ignore audio failures (autoplay policy, unsupported browser, etc.) */
+    /* ignore audio failures */
   }
 }
 
@@ -195,8 +189,6 @@ function playLevelUpFanfare(muted: boolean) {
 
 export default function DragonsGate() {
   const t = useTranslations('dragonsGate');
-  // Safe translation lookup: falls back to a Vietnamese default if the key
-  // hasn't been added to your messages file yet, so nothing ever crashes.
   const tt = (key: string, fallback: string) => {
     try {
       const v = t(key as any);
@@ -211,11 +203,8 @@ export default function DragonsGate() {
   const rafRef = useRef<number | undefined>(undefined);
   const mutedRef = useRef(false);
   const levelUpTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const adTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const interstitialTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
-  const [started, setStarted] = useState(false);
-  const [showOver, setShowOver] = useState(false);
+  const [gameState, setGameState] = useState<GameState>('start');
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
@@ -225,17 +214,12 @@ export default function DragonsGate() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [doubledApplied, setDoubledApplied] = useState(false);
 
-  // Revive (rewarded-ad) flow
+  // Revive state
   const [showReviveOffer, setShowReviveOffer] = useState(false);
   const [reviveAvailable, setReviveAvailable] = useState(true);
 
-  // Generic rewarded-ad overlay (used for both revive & double-score)
-  const [adModal, setAdModal] = useState<null | 'revive' | 'double'>(null);
-  const [adSecondsLeft, setAdSecondsLeft] = useState(0);
-
-  // Interstitial overlay
+  // Interstitial overlay state
   const [showInterstitial, setShowInterstitial] = useState(false);
-  const [interstitialSecondsLeft, setInterstitialSecondsLeft] = useState(0);
 
   useEffect(() => {
     try {
@@ -262,76 +246,8 @@ export default function DragonsGate() {
     }
   }
 
-  // Drives both the revive-ad and double-score-ad countdown UI.
-  // AD-SDK: replace this whole effect with your provider's rewarded-ad
-  // lifecycle (load -> show -> onUserEarnedReward -> onAdDismissed) and only
-  // call the completion handlers below from the real `onUserEarnedReward`.
-  useEffect(() => {
-    if (!adModal) return;
-    setAdSecondsLeft(Math.ceil(REWARDED_AD_DURATION_MS / 1000));
-    const startedAt = Date.now();
-    adTimerRef.current = setInterval(() => {
-      const remainingMs = REWARDED_AD_DURATION_MS - (Date.now() - startedAt);
-      if (remainingMs <= 0) {
-        if (adTimerRef.current) clearInterval(adTimerRef.current);
-        setAdSecondsLeft(0);
-        if (adModal === 'revive') {
-          setReviveAvailable(false);
-          (stageWrapRef.current as any)?.__completeRevive?.();
-        } else if (adModal === 'double') {
-          setDoubledApplied(true);
-          setFinalScore((prev) => {
-            const doubled = prev * 2;
-            setBest((prevBest) => {
-              if (doubled > prevBest) {
-                try {
-                  window.localStorage.setItem(STORAGE_KEY_BEST, String(doubled));
-                } catch {
-                  /* ignore */
-                }
-                return doubled;
-              }
-              return prevBest;
-            });
-            return doubled;
-          });
-        }
-        setAdModal(null);
-      } else {
-        setAdSecondsLeft(Math.ceil(remainingMs / 1000));
-      }
-    }, 200);
-    return () => {
-      if (adTimerRef.current) clearInterval(adTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adModal]);
-
-  // Interstitial countdown ("skip after N seconds", like every real network).
-  // AD-SDK: swap for InterstitialAd.load()/.show() and call setShowInterstitial(false)
-  // + reveal the Game Over screen inside its onAdDismissedFullScreenContent callback.
-  useEffect(() => {
-    if (!showInterstitial) return;
-    const durationMs = 4000;
-    setInterstitialSecondsLeft(Math.ceil(durationMs / 1000));
-    const startedAt = Date.now();
-    interstitialTimerRef.current = setInterval(() => {
-      const remainingMs = durationMs - (Date.now() - startedAt);
-      if (remainingMs <= 0) {
-        if (interstitialTimerRef.current) clearInterval(interstitialTimerRef.current);
-        setInterstitialSecondsLeft(0);
-      } else {
-        setInterstitialSecondsLeft(Math.ceil(remainingMs / 1000));
-      }
-    }, 200);
-    return () => {
-      if (interstitialTimerRef.current) clearInterval(interstitialTimerRef.current);
-    };
-  }, [showInterstitial]);
-
-  function closeInterstitial() {
-    setShowInterstitial(false);
-    setShowOver(true);
+  function togglePause() {
+    setGameState((prev) => (prev === 'playing' ? 'paused' : prev === 'paused' ? 'playing' : prev));
   }
 
   /* --------------------------- main game engine --------------------------- */
@@ -360,16 +276,17 @@ export default function DragonsGate() {
     let gates: Gate[] = [];
     let particles: Particle[] = [];
     let clouds: Cloud[] = [];
+    let stars: Star[] = [];
     let runScore = 0;
     let curLevel = 1;
     let running = false;
+    let isPaused = false;
     let hasStarted = false;
     let lastTime = 0;
     let elapsed = 0;
     let invincibleUntil = -1;
     let reviveUsed = false;
     let localBest = best;
-    let wasRunningBeforeHide = false;
 
     let lastInterstitialAt = 0;
     let nextInterstitialGap =
@@ -420,14 +337,24 @@ export default function DragonsGate() {
       }
     }
 
-    function initClouds() {
+    function initEnvironment() {
       clouds = [];
       for (let i = 0; i < 6; i++) {
         clouds.push({
           x: Math.random() * VW,
-          y: 30 + Math.random() * 180,
-          r: 20 + Math.random() * 30,
-          speed: 12 + Math.random() * 18,
+          y: 30 + Math.random() * 220,
+          r: 22 + Math.random() * 32,
+          speed: 10 + Math.random() * 16,
+        });
+      }
+      stars = [];
+      for (let i = 0; i < 40; i++) {
+        stars.push({
+          x: Math.random() * VW,
+          y: Math.random() * (VH * 0.7),
+          r: 0.8 + Math.random() * 1.5,
+          speed: 4 + Math.random() * 8,
+          twinkle: Math.random() * Math.PI * 2,
         });
       }
     }
@@ -435,7 +362,7 @@ export default function DragonsGate() {
     function spawnGate(x: number) {
       const gap = gapForLevel(curLevel);
       const width = widthForLevel(curLevel);
-      const margin = 60;
+      const margin = 70;
       const baseCenterY = margin + Math.random() * (VH - margin * 2 - gap) + gap / 2;
       const osc = oscillationForLevel(curLevel);
       gates.push({
@@ -460,16 +387,20 @@ export default function DragonsGate() {
       invincibleUntil = -1;
       reviveUsed = false;
       running = true;
+      isPaused = false;
+      setGameState('playing');
       setScore(0);
       setLevel(1);
       setReviveAvailable(true);
+      setShowReviveOffer(false);
+      setShowInterstitial(false);
       spawnGate(VW + 100);
       spawnGate(VW + 100 + GATE_SPACING);
       spawnGate(VW + 100 + GATE_SPACING * 2);
     }
 
     function flap() {
-      if (!running) return;
+      if (!running || isPaused) return;
       dragon.vy = FLAP_VELOCITY;
       dragon.flapAnim = 1;
       for (let i = 0; i < 4; i++) {
@@ -501,6 +432,7 @@ export default function DragonsGate() {
       setIsNewRecord(record);
       setDoubledApplied(false);
       setFinalScore(finalRunScore);
+      setGameState('over');
 
       const now = Date.now();
       if (now - lastInterstitialAt > nextInterstitialGap) {
@@ -513,8 +445,6 @@ export default function DragonsGate() {
           /* ignore */
         }
         setShowInterstitial(true);
-      } else {
-        setTimeout(() => setShowOver(true), 300);
       }
     }
 
@@ -528,7 +458,7 @@ export default function DragonsGate() {
     }
 
     function hitDragon() {
-      if (elapsed < invincibleUntil) return; // grace period after a revive
+      if (elapsed < invincibleUntil) return;
       triggerShake(10, 0.3);
       triggerFlash('255,60,90', 0.4);
       playCollisionTone(mutedRef.current);
@@ -537,7 +467,7 @@ export default function DragonsGate() {
     }
 
     function update(dt: number) {
-      if (!running) return;
+      if (!running || isPaused) return;
       elapsed += dt;
 
       dragon.vy += GRAVITY * dt;
@@ -565,11 +495,11 @@ export default function DragonsGate() {
           runScore++;
           setScore(runScore);
           playComboTone(mutedRef.current, runScore - 1);
-          burstParticles(dragon.x, dragon.y, 10, {
-            speed: 60,
-            speedVar: 70,
+          burstParticles(dragon.x, dragon.y, 12, {
+            speed: 70,
+            speedVar: 80,
             life: 0.5,
-            colorBase: '255,214,120',
+            colorBase: '255,215,100',
           });
 
           const newLevel = levelFromScore(runScore);
@@ -607,6 +537,12 @@ export default function DragonsGate() {
         if (c.x < -60) c.x = VW + 60;
       }
 
+      for (const s of stars) {
+        s.x -= s.speed * dt;
+        if (s.x < -10) s.x = VW + 10;
+        s.twinkle += dt * 3;
+      }
+
       for (const p of particles) {
         p.x += p.vx * dt;
         p.y += p.vy * dt;
@@ -618,26 +554,91 @@ export default function DragonsGate() {
       if (flash.alpha > 0) flash.alpha = Math.max(0, flash.alpha - dt * 2.4);
     }
 
-    function drawCastleTower(x: number, topY: number, botY: number, width: number, isTop: boolean) {
+    /* ---------------- Beautiful Dragon Gate Visual Rendering --------------- */
+
+    function drawDragonGatePillar(x: number, topY: number, botY: number, width: number, isTop: boolean) {
       const w = width;
-      ctx!.fillStyle = '#3a2a52';
-      ctx!.strokeStyle = '#22162f';
+      const halfW = w / 2;
+      const time = elapsed;
+
+      ctx!.save();
+
+      // Dragon Gate Main Body
+      const bodyGrad = ctx!.createLinearGradient(x - halfW, 0, x + halfW, 0);
+      bodyGrad.addColorStop(0, '#1c1328');
+      bodyGrad.addColorStop(0.3, '#3d2252');
+      bodyGrad.addColorStop(0.7, '#241538');
+      bodyGrad.addColorStop(1, '#120b1c');
+
+      ctx!.fillStyle = bodyGrad;
+      ctx!.strokeStyle = '#7c3fad';
       ctx!.lineWidth = 2;
+
       if (isTop) {
-        ctx!.fillRect(x - w / 2, 0, w, topY);
-        ctx!.strokeRect(x - w / 2, 0, w, topY);
-        ctx!.fillStyle = '#4a3568';
-        for (let bx = -w / 2; bx < w / 2; bx += 14) ctx!.fillRect(x + bx, topY - 12, 8, 12);
-        ctx!.fillStyle = '#5a4278';
-        ctx!.fillRect(x - w / 2 - 4, topY - 4, w + 8, 10);
+        ctx!.fillRect(x - halfW, 0, w, topY);
+        ctx!.strokeRect(x - halfW, 0, w, topY);
+
+        // Dragon Arch Crown / Cap
+        ctx!.fillStyle = '#ff7b54';
+        ctx!.beginPath();
+        ctx!.moveTo(x - halfW - 8, topY - 18);
+        ctx!.lineTo(x + halfW + 8, topY - 18);
+        ctx!.lineTo(x + halfW + 3, topY);
+        ctx!.lineTo(x - halfW - 3, topY);
+        ctx!.closePath();
+        ctx!.fill();
+
+        // Flaming Rune Markings
+        ctx!.fillStyle = 'rgba(255, 214, 107, 0.85)';
+        for (let ry = 30; ry < topY - 25; ry += 35) {
+          ctx!.beginPath();
+          ctx!.arc(x, ry, 3.5, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+
+        // Glowing Energy Orb at Gate Tip
+        const orbGlow = 8 + Math.sin(time * 6) * 3;
+        ctx!.fillStyle = '#4fd8eb';
+        ctx!.shadowColor = '#4fd8eb';
+        ctx!.shadowBlur = 12;
+        ctx!.beginPath();
+        ctx!.arc(x, topY - 8, orbGlow, 0, Math.PI * 2);
+        ctx!.fill();
+        ctx!.shadowBlur = 0;
       } else {
-        ctx!.fillRect(x - w / 2, botY, w, VH - botY);
-        ctx!.strokeRect(x - w / 2, botY, w, VH - botY);
-        ctx!.fillStyle = '#4a3568';
-        for (let bx = -w / 2; bx < w / 2; bx += 14) ctx!.fillRect(x + bx, botY, 8, 12);
-        ctx!.fillStyle = '#5a4278';
-        ctx!.fillRect(x - w / 2 - 4, botY - 6, w + 8, 10);
+        ctx!.fillRect(x - halfW, botY, w, VH - botY);
+        ctx!.strokeRect(x - halfW, botY, w, VH - botY);
+
+        // Dragon Arch Base Cap
+        ctx!.fillStyle = '#ff7b54';
+        ctx!.beginPath();
+        ctx!.moveTo(x - halfW - 8, botY + 18);
+        ctx!.lineTo(x + halfW + 8, botY + 18);
+        ctx!.lineTo(x + halfW + 3, botY);
+        ctx!.lineTo(x - halfW - 3, botY);
+        ctx!.closePath();
+        ctx!.fill();
+
+        // Flaming Rune Markings
+        ctx!.fillStyle = 'rgba(255, 214, 107, 0.85)';
+        for (let ry = botY + 35; ry < VH - 20; ry += 35) {
+          ctx!.beginPath();
+          ctx!.arc(x, ry, 3.5, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+
+        // Glowing Energy Orb at Gate Tip
+        const orbGlow = 8 + Math.sin(time * 6 + 1.5) * 3;
+        ctx!.fillStyle = '#4fd8eb';
+        ctx!.shadowColor = '#4fd8eb';
+        ctx!.shadowBlur = 12;
+        ctx!.beginPath();
+        ctx!.arc(x, botY + 8, orbGlow, 0, Math.PI * 2);
+        ctx!.fill();
+        ctx!.shadowBlur = 0;
       }
+
+      ctx!.restore();
     }
 
     function drawDragon() {
@@ -645,37 +646,52 @@ export default function DragonsGate() {
       ctx!.save();
       ctx!.translate(dragon.x, dragon.y);
       ctx!.rotate(dragon.rot * 0.5);
+
       if (invincible) {
         ctx!.globalAlpha = 0.55 + 0.45 * Math.sin(elapsed * 25);
       }
+
       const wingLift = Math.sin(dragon.flapAnim * Math.PI) * 14;
-      ctx!.fillStyle = '#e8622f';
+
+      // Wings
+      ctx!.fillStyle = '#ff4365';
       ctx!.beginPath();
-      ctx!.ellipse(-6, -2 - wingLift * 0.4, 14, 8, -0.4, 0, Math.PI * 2);
+      ctx!.ellipse(-6, -2 - wingLift * 0.4, 15, 9, -0.4, 0, Math.PI * 2);
       ctx!.fill();
-      ctx!.fillStyle = '#ff7a3d';
+
+      // Body
+      ctx!.fillStyle = '#ff7b54';
       ctx!.beginPath();
-      ctx!.ellipse(0, 0, 17, 13, 0, 0, Math.PI * 2);
+      ctx!.ellipse(0, 0, 18, 13, 0, 0, Math.PI * 2);
       ctx!.fill();
-      ctx!.fillStyle = '#ffcf8a';
+
+      // Belly Highlight
+      ctx!.fillStyle = '#ffd66b';
       ctx!.beginPath();
-      ctx!.ellipse(2, 4, 10, 7, 0, 0, Math.PI * 2);
+      ctx!.ellipse(2, 4, 11, 7, 0, 0, Math.PI * 2);
       ctx!.fill();
-      ctx!.fillStyle = '#ff7a3d';
+
+      // Head
+      ctx!.fillStyle = '#ff7b54';
       ctx!.beginPath();
-      ctx!.ellipse(15, -1, 8, 6, 0, 0, Math.PI * 2);
+      ctx!.ellipse(15, -1, 9, 7, 0, 0, Math.PI * 2);
       ctx!.fill();
-      ctx!.fillStyle = '#2a1508';
+
+      // Eye
+      ctx!.fillStyle = '#0b1026';
       ctx!.beginPath();
-      ctx!.arc(17, -4, 2, 0, Math.PI * 2);
+      ctx!.arc(17, -4, 2.5, 0, Math.PI * 2);
       ctx!.fill();
-      ctx!.strokeStyle = '#ff7a3d';
-      ctx!.lineWidth = 6;
+
+      // Tail
+      ctx!.strokeStyle = '#ff7b54';
+      ctx!.lineWidth = 5;
       ctx!.lineCap = 'round';
       ctx!.beginPath();
       ctx!.moveTo(-15, 2);
       ctx!.quadraticCurveTo(-26, 6, -22, 14);
       ctx!.stroke();
+
       ctx!.restore();
     }
 
@@ -689,6 +705,7 @@ export default function DragonsGate() {
       ctx!.save();
       ctx!.translate(offsetX, offsetY);
 
+      // Gradient Sky Canvas Background
       const [c0, c1, c2] = paletteForLevel(curLevel);
       const grad = ctx!.createLinearGradient(0, 0, 0, VH);
       grad.addColorStop(0, c0);
@@ -697,7 +714,18 @@ export default function DragonsGate() {
       ctx!.fillStyle = grad;
       ctx!.fillRect(0, 0, VW, VH);
 
-      ctx!.fillStyle = 'rgba(255,255,255,0.25)';
+      // Twinkling Celestial Stars
+      for (const s of stars) {
+        ctx!.globalAlpha = 0.3 + Math.sin(s.twinkle) * 0.3;
+        ctx!.fillStyle = '#ffffff';
+        ctx!.beginPath();
+        ctx!.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+      ctx!.globalAlpha = 1;
+
+      // Cloud Layers
+      ctx!.fillStyle = 'rgba(255, 255, 255, 0.18)';
       for (const c of clouds) {
         ctx!.beginPath();
         ctx!.arc(c.x, c.y, c.r, 0, Math.PI * 2);
@@ -705,21 +733,24 @@ export default function DragonsGate() {
         ctx!.arc(c.x - c.r * 0.7, c.y + 6, c.r * 0.6, 0, Math.PI * 2);
         ctx!.fill();
       }
+
+      // Dragon Gates
       for (const g of gates) {
         const topEdge = g.centerY - gapForLevel(curLevel) / 2;
         const botEdge = g.centerY + gapForLevel(curLevel) / 2;
-        drawCastleTower(g.x, topEdge, botEdge, g.width, true);
-        drawCastleTower(g.x, topEdge, botEdge, g.width, false);
+        drawDragonGatePillar(g.x, topEdge, botEdge, g.width, true);
+        drawDragonGatePillar(g.x, topEdge, botEdge, g.width, false);
       }
+
+      // Particles
       for (const p of particles) {
         ctx!.fillStyle = `rgba(${p.colorBase},${Math.max(0, p.life / p.maxLife)})`;
         ctx!.beginPath();
         ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx!.fill();
       }
+
       drawDragon();
-      ctx!.fillStyle = 'rgba(20,10,30,0.35)';
-      ctx!.fillRect(0, VH - 4, VW, 4);
 
       if (flash.alpha > 0) {
         ctx!.fillStyle = `rgba(${flash.colorBase},${flash.alpha})`;
@@ -745,20 +776,8 @@ export default function DragonsGate() {
       flap();
     }
 
-    function handleVisibility() {
-      if (document.hidden) {
-        wasRunningBeforeHide = running;
-        running = false;
-      } else if (wasRunningBeforeHide) {
-        running = true;
-        lastTime = 0;
-        wasRunningBeforeHide = false;
-      }
-    }
-
     wrap.addEventListener('pointerdown', handleInput);
     window.addEventListener('keydown', handleInput);
-    document.addEventListener('visibilitychange', handleVisibility);
 
     (wrap as any).__startGame = () => {
       hasStarted = true;
@@ -766,7 +785,7 @@ export default function DragonsGate() {
       resetRun();
     };
     (wrap as any).__retryGame = () => {
-      setShowOver(false);
+      setShowReviveOffer(false);
       resetRun();
     };
     (wrap as any).__declineRevive = () => {
@@ -775,7 +794,7 @@ export default function DragonsGate() {
     };
     (wrap as any).__completeRevive = () => {
       reviveUsed = true;
-      invincibleUntil = elapsed + 1.6;
+      invincibleUntil = elapsed + 1.8;
       dragon.y = VH / 2;
       dragon.vy = 0;
       gates = [];
@@ -783,10 +802,12 @@ export default function DragonsGate() {
       spawnGate(VW + 100 + GATE_SPACING);
       spawnGate(VW + 100 + GATE_SPACING * 2);
       running = true;
+      setGameState('playing');
+      setShowReviveOffer(false);
       lastTime = 0;
     };
 
-    initClouds();
+    initEnvironment();
     draw();
     rafRef.current = requestAnimationFrame(loop);
 
@@ -794,13 +815,12 @@ export default function DragonsGate() {
       window.removeEventListener('resize', resize);
       wrap.removeEventListener('pointerdown', handleInput);
       window.removeEventListener('keydown', handleInput);
-      document.removeEventListener('visibilitychange', handleVisibility);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (levelUpTimeoutRef.current) clearTimeout(levelUpTimeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [started, setStarted] = useState(false);
   const progressInLevel = ((score % SCORE_PER_LEVEL) / SCORE_PER_LEVEL) * 100;
 
   return (
@@ -811,46 +831,63 @@ export default function DragonsGate() {
       />
 
       <div className="game-shell">
+        {/* Left Side Ad Slot (aligned with SkyStrike layout) */}
+        <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
+          <span>{tt('adBannerPlaceholder', 'Quảng cáo Banner')}</span>
+        </div>
+
         {/* STAGE WRAPPER */}
         <div className="stage-wrap" ref={stageWrapRef}>
           <canvas ref={canvasRef} id="game" />
 
-          {/* HUD */}
-          <div className="hud">
-            <div className="hud-top">
-              <div className="hud-block">
-                <div className="score-value">{score}</div>
-                <div className="best-hud">
-                  {tt('best', 'Kỷ lục')}: {best}
-                </div>
-              </div>
-              <div className="hud-right">
-                <div className="level-pill">
-                  <span>{tt('level', 'Cấp')} {level}</span>
-                  <div className="level-progress">
-                    <div className="level-progress-fill" style={{ width: `${progressInLevel}%` }} />
+          {/* HUD (SkyStrike Style) */}
+          {gameState === 'playing' && (
+            <div className="hud">
+              <div className="hud-top">
+                <div className="hud-block">
+                  <div className="score-label">{tt('scoreLabel', 'ĐIỂM')}</div>
+                  <div className="score-value">{score}</div>
+                  <div className="best-hud">
+                    {tt('best', 'Kỷ lục')}: {best}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="mute-btn"
-                  onClick={toggleMute}
-                  aria-label={muted ? tt('unmute', 'Bật âm') : tt('mute', 'Tắt âm')}
-                >
-                  {muted ? '🔇' : '🔊'}
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* LEVEL UP TOAST */}
-          {levelUpToast !== null && (
-            <div className="level-toast">
-              {tt('levelUp', 'LÊN CẤP')} {levelUpToast}!
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <div className="level-pill">
+                    <span>{tt('level', 'Cấp')} {level}</span>
+                    <div className="level-progress">
+                      <div className="level-progress-fill" style={{ width: `${progressInLevel}%` }} />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="pause-btn"
+                    onClick={toggleMute}
+                    aria-label={muted ? tt('unmute', 'Bật âm') : tt('mute', 'Tắt âm')}
+                  >
+                    {muted ? '🔇' : '🔊'}
+                  </button>
+                  <button
+                    type="button"
+                    className="pause-btn"
+                    onClick={togglePause}
+                    aria-label="Tạm dừng"
+                  >
+                    {gameState === 'paused' ? '▶' : '⏸'}
+                  </button>
+                </div>
+              </div>
+
+              {levelUpToast !== null && (
+                <div className="level-flash">
+                  <span>LÊN CẤP {levelUpToast}!</span>
+                  <small>{tt('instructionsExtra', 'Độ khó tăng dần — cố lên!')}</small>
+                </div>
+              )}
             </div>
           )}
 
-          {/* START SCREEN */}
+          {/* START OVERLAY SCREEN */}
           {!started && (
             <div className="screen">
               <div className="logo">
@@ -869,13 +906,11 @@ export default function DragonsGate() {
               </button>
               <div className="hint">
                 {tt('instructions', 'Chạm màn hình hoặc nhấn phím Space để bay lên')}
-                <br />
-                {tt('instructionsExtra', 'Độ khó tăng dần theo từng cấp độ — càng chơi càng gay cấn!')}
               </div>
             </div>
           )}
 
-          {/* REVIVE OFFER (rewarded-ad entry point #1) */}
+          {/* REVIVE OFFER OVERLAY */}
           {showReviveOffer && (
             <div className="screen">
               <div className="final-label">{tt('gameOverScore', 'ĐIỂM')}</div>
@@ -888,7 +923,7 @@ export default function DragonsGate() {
                   <button
                     className="btn"
                     type="button"
-                    onClick={() => setAdModal('revive')}
+                    onClick={() => (stageWrapRef.current as any)?.__completeRevive?.()}
                   >
                     ▶ {tt('watchAdContinue', 'XEM QC ĐỂ HỒI SINH')}
                   </button>
@@ -912,50 +947,21 @@ export default function DragonsGate() {
             </div>
           )}
 
-          {/* INTERSTITIAL AD (simulated) */}
+          {/* INTERSTITIAL AD OVERLAY */}
           {showInterstitial && (
             <div className="screen ad-screen">
               <div className="ad-badge">{tt('adLabel', 'QUẢNG CÁO')}</div>
               <div className="ad-mock-box">
                 <div className="ad-mock-title">{tt('adPlaceholder', 'Vị trí quảng cáo xen kẽ (Interstitial)')}</div>
-                <div className="ad-mock-sub">AD-SDK: gọi InterstitialAd.show() ở đây</div>
               </div>
-              {interstitialSecondsLeft > 0 ? (
-                <div className="hint">{tt('adCloseIn', 'Có thể đóng sau')} {interstitialSecondsLeft}s</div>
-              ) : (
-                <button className="btn" type="button" onClick={closeInterstitial}>
-                  ✕ {tt('adClose', 'Đóng')}
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* REWARDED AD (simulated, shared by revive + double-score) */}
-          {adModal && (
-            <div className="screen ad-screen">
-              <div className="ad-badge">{tt('adLabel', 'QUẢNG CÁO')}</div>
-              <div className="ad-mock-box">
-                <div className="ad-mock-title">
-                  {adModal === 'revive'
-                    ? tt('adRevivePlaceholder', 'Đang phát quảng cáo thưởng — hồi sinh')
-                    : tt('adDoublePlaceholder', 'Đang phát quảng cáo thưởng — nhân đôi điểm')}
-                </div>
-                <div className="ad-mock-sub">AD-SDK: RewardedAd.show(), thưởng khi onUserEarnedReward()</div>
-              </div>
-              <div className="ad-progress">
-                <div
-                  className="ad-progress-fill"
-                  style={{
-                    width: `${100 - (adSecondsLeft / Math.ceil(REWARDED_AD_DURATION_MS / 1000)) * 100}%`,
-                  }}
-                />
-              </div>
-              <div className="hint">{adSecondsLeft}s</div>
+              <button className="btn" type="button" onClick={() => setShowInterstitial(false)}>
+                ✕ {tt('adClose', 'Đóng')}
+              </button>
             </div>
           )}
 
           {/* GAME OVER SCREEN */}
-          {showOver && (
+          {gameState === 'over' && !showReviveOffer && (
             <div className="screen">
               {isNewRecord && <div className="record-badge">🏆 {tt('newRecord', 'KỶ LỤC MỚI!')}</div>}
               <div className="final-label">{tt('gameOverScore', 'ĐIỂM')}</div>
@@ -964,7 +970,14 @@ export default function DragonsGate() {
                 {tt('best', 'Kỷ lục')}: {best}
               </div>
               {!doubledApplied && (
-                <button className="btn-ghost" type="button" onClick={() => setAdModal('double')}>
+                <button
+                  className="btn-ghost"
+                  type="button"
+                  onClick={() => {
+                    setDoubledApplied(true);
+                    setFinalScore((prev) => prev * 2);
+                  }}
+                >
                   🎬 {tt('watchAdDouble', 'XEM QC NHÂN ĐÔI ĐIỂM')}
                 </button>
               )}
@@ -978,6 +991,11 @@ export default function DragonsGate() {
             </div>
           )}
         </div>
+
+        {/* Right Side Ad Slot (aligned with SkyStrike layout) */}
+        <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
+          <span>{tt('adBannerPlaceholder', 'Quảng cáo Banner')}</span>
+        </div>
       </div>
 
       <div className="about">
@@ -986,8 +1004,7 @@ export default function DragonsGate() {
         </p>
       </div>
 
-      {/* STICKY BOTTOM BANNER — AD-SDK: mount your AdSense <ins> unit or ad-manager
-          tag inside .banner-ad-slot; keep the fixed 320x50 box so layout never shifts. */}
+      {/* Sticky Bottom Banner */}
       <div className="banner-ad-slot" aria-hidden="true">
         <span>{tt('adBannerPlaceholder', 'Quảng cáo Banner 320×50')}</span>
       </div>
@@ -997,11 +1014,9 @@ export default function DragonsGate() {
           --sky-deep: #0b1026;
           --sky-mid: #1d2951;
           --sky-horizon: #3a3f7a;
-          --sunset: #ff7b54;
           --sunset-soft: #ffb27a;
           --cyan: #4fd8eb;
           --cyan-dim: #2a8fa3;
-          --alert: #ff4365;
           --gold: #ffd66b;
           --cloud: #eef3f9;
           --ink: #0b1026;
@@ -1029,6 +1044,7 @@ export default function DragonsGate() {
           font-family: var(--font-body);
           color: var(--cloud);
           overflow-x: hidden;
+          min-height: 100vh;
           padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
         }
 
@@ -1037,26 +1053,29 @@ export default function DragonsGate() {
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 20px;
           padding: 16px;
           width: 100%;
           max-width: 1200px;
           min-width: 320px;
         }
 
-        /* Desktop: soft blurred backdrop behind the stage so the play area
-           reads as centered rather than floating on flat color. */
+        .ad-slot.ad-side {
+          display: none;
+          width: 160px;
+          height: 600px;
+          background: rgba(11, 16, 38, 0.6);
+          border: 1px dashed var(--panel-border);
+          border-radius: 12px;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          color: rgba(238, 243, 249, 0.4);
+        }
+
         @media (min-width: 900px) {
-          .game-shell::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            margin: auto;
-            width: min(900px, 90%);
-            height: 620px;
-            background: radial-gradient(circle, var(--sky-horizon) 0%, transparent 70%);
-            filter: blur(60px);
-            opacity: 0.55;
-            z-index: 0;
+          .ad-slot.ad-side {
+            display: flex;
           }
         }
 
@@ -1068,8 +1087,7 @@ export default function DragonsGate() {
           aspect-ratio: 9 / 16;
           border-radius: 18px;
           overflow: hidden;
-          box-shadow: 0 0 0 1px rgba(79, 216, 235, 0.22), 0 20px 60px rgba(0, 0, 0, 0.55),
-            0 0 40px rgba(79, 216, 235, 0.08) inset;
+          box-shadow: 0 0 0 1px rgba(79, 216, 235, 0.22), 0 20px 60px rgba(0, 0, 0, 0.55);
           background: var(--sky-deep);
           touch-action: none;
           user-select: none;
@@ -1108,11 +1126,23 @@ export default function DragonsGate() {
           backdrop-filter: blur(4px);
         }
 
-        .hud-right {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          pointer-events: auto;
+        .score-label {
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          color: var(--sunset-soft);
+        }
+
+        .score-value {
+          font-size: 24px;
+          font-weight: 700;
+          line-height: 1;
+          color: var(--cloud);
+        }
+
+        .best-hud {
+          font-size: 11px;
+          color: var(--cyan);
+          margin-top: 2px;
         }
 
         .level-pill {
@@ -1140,52 +1170,51 @@ export default function DragonsGate() {
           transition: width 0.2s ease;
         }
 
-        .mute-btn {
+        .pause-btn {
           pointer-events: auto;
           background: var(--panel);
           border: 1px solid var(--panel-border);
           border-radius: 10px;
           width: 34px;
           height: 34px;
-          font-size: 15px;
+          font-size: 14px;
           cursor: pointer;
           color: var(--cloud);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .score-value {
-          font-size: 26px;
-          font-weight: 700;
-          line-height: 1;
-          color: var(--cloud);
-        }
-
-        .best-hud {
-          font-size: 11px;
-          color: var(--cyan);
-          margin-top: 2px;
-        }
-
-        .level-toast {
+        .level-flash {
           position: absolute;
-          top: 64px;
+          top: 70px;
           left: 50%;
           transform: translateX(-50%);
-          background: linear-gradient(180deg, var(--gold), #d99a1f);
-          color: var(--ink);
-          font-weight: 700;
-          font-size: 14px;
-          letter-spacing: 0.05em;
-          padding: 6px 18px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: rgba(11, 16, 38, 0.88);
+          border: 1px solid var(--gold);
+          padding: 8px 20px;
           border-radius: 20px;
-          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-          z-index: 5;
-          animation: toast-pop 0.25s ease;
-          pointer-events: none;
+          box-shadow: 0 0 20px rgba(255, 214, 107, 0.4);
+          animation: flash-pop 0.3s ease;
         }
 
-        @keyframes toast-pop {
+        .level-flash span {
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--gold);
+        }
+
+        .level-flash small {
+          font-size: 10px;
+          color: rgba(238, 243, 249, 0.7);
+        }
+
+        @keyframes flash-pop {
           from {
-            transform: translateX(-50%) scale(0.7);
+            transform: translateX(-50%) scale(0.8);
             opacity: 0;
           }
           to {
@@ -1205,7 +1234,7 @@ export default function DragonsGate() {
           text-align: center;
           padding: 24px;
           background: linear-gradient(180deg, rgba(11, 16, 38, 0.92), rgba(11, 16, 38, 0.97));
-          backdrop-filter: blur(2px);
+          backdrop-filter: blur(4px);
           z-index: 10;
         }
 
@@ -1231,34 +1260,6 @@ export default function DragonsGate() {
         .ad-mock-title {
           font-size: 14px;
           color: var(--cloud);
-          margin-bottom: 6px;
-        }
-
-        .ad-mock-sub {
-          font-size: 10px;
-          color: rgba(238, 243, 249, 0.4);
-        }
-
-        .ad-progress {
-          width: 70%;
-          max-width: 240px;
-          height: 6px;
-          border-radius: 6px;
-          background: rgba(255, 255, 255, 0.12);
-          overflow: hidden;
-        }
-
-        .ad-progress-fill {
-          height: 100%;
-          background: var(--cyan);
-          transition: width 0.2s linear;
-        }
-
-        .record-badge {
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--gold);
-          letter-spacing: 0.05em;
         }
 
         .logo {
@@ -1285,7 +1286,6 @@ export default function DragonsGate() {
           font-size: 12px;
           color: rgba(238, 243, 249, 0.6);
           max-width: 280px;
-          line-height: 1.5;
         }
 
         .hiscore-pill {
@@ -1342,23 +1342,24 @@ export default function DragonsGate() {
           color: var(--sunset-soft);
         }
 
+        .record-badge {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--gold);
+        }
+
         .about {
           max-width: 640px;
           width: 100%;
-          padding: 16px 20px 20px;
-          color: rgba(238, 243, 249, 0.55);
-          font-size: 13px;
-          line-height: 1.7;
+          padding: 16px 20px;
           text-align: center;
         }
 
         .footer-note {
-          margin-top: 10px;
           font-size: 12px;
           color: rgba(238, 243, 249, 0.6);
         }
 
-        /* Sticky bottom banner ad slot — 320x50 industry-standard size */
         .banner-ad-slot {
           position: fixed;
           left: 0;
