@@ -57,7 +57,7 @@ export async function generateMetadata({
       title: game.name[loc],
       description: game.description[loc],
       url: `${SITE_URL}/${locale}/games/${slug}`,
-      images: [{ url: `${SITE_URL}${game.thumbnail}` }]
+      images: [{ url: `${SITE_URL}${game.ogImage}` }]
     }
   };
 }
