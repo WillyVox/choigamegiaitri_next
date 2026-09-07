@@ -57,13 +57,13 @@ const PLANTS: Record<string, PlantDef> = {
 const PLANT_ORDER = ['sunflower', 'peashooter', 'wallnut', 'snowpea', 'repeater', 'cherrybomb', 'melonpult'];
 
 const BUGS: Record<string, BugDef> = {
-  aphid: { nameKey: 'bugs_aphid_name', emoji: '🐛', hp: 60, speed: 17, dmg: 1, atkRate: 900, points: 10, color: '#8bc34a', factKey: 'bugs_aphid_fact' },
-  beetle: { nameKey: 'bugs_beetle_name', emoji: '🪲', hp: 150, speed: 12, dmg: 2, atkRate: 900, points: 18, color: '#5d4037', factKey: 'bugs_beetle_fact' },
-  hopper: { nameKey: 'bugs_hopper_name', emoji: '🦗', hp: 80, speed: 30, dmg: 2, atkRate: 800, points: 16, color: '#7cb342', factKey: 'bugs_hopper_fact' },
-  snail: { nameKey: 'bugs_snail_name', emoji: '🐌', hp: 260, speed: 8, dmg: 3, atkRate: 900, points: 24, color: '#a1887f', factKey: 'bugs_snail_fact' },
-  wasp: { nameKey: 'bugs_wasp_name', emoji: '🐝', hp: 70, speed: 34, dmg: 2, atkRate: 800, points: 20, flying: true, color: '#fdd835', factKey: 'bugs_wasp_fact' },
-  caterpillar: { nameKey: 'bugs_caterpillar_name', emoji: '🐛', hp: 30, speed: 14, dmg: 1, atkRate: 900, points: 8, color: '#c0ca33', factKey: 'bugs_caterpillar_fact' },
-  slugboss: { nameKey: 'bugs_slugboss_name', emoji: '🐌', hp: 1400, speed: 7, dmg: 5, atkRate: 700, points: 200, boss: true, color: '#6d4c41', factKey: 'bugs_slugboss_fact' }
+  aphid: { nameKey: 'bugs_aphid_name', emoji: '🐛', hp: 45, speed: 10, dmg: 1, atkRate: 1100, points: 10, color: '#a8e6a1', factKey: 'bugs_aphid_fact' },
+  beetle: { nameKey: 'bugs_beetle_name', emoji: '🐞', hp: 105, speed: 8, dmg: 2, atkRate: 1100, points: 18, color: '#ff8a80', factKey: 'bugs_beetle_fact' },
+  hopper: { nameKey: 'bugs_hopper_name', emoji: '🦗', hp: 55, speed: 17, dmg: 1, atkRate: 1000, points: 16, color: '#c5e1a5', factKey: 'bugs_hopper_fact' },
+  snail: { nameKey: 'bugs_snail_name', emoji: '🐌', hp: 180, speed: 5, dmg: 2, atkRate: 1100, points: 24, color: '#d7ccc8', factKey: 'bugs_snail_fact' },
+  wasp: { nameKey: 'bugs_wasp_name', emoji: '🐝', hp: 45, speed: 19, dmg: 1, atkRate: 1000, points: 20, flying: true, color: '#fff59d', factKey: 'bugs_wasp_fact' },
+  caterpillar: { nameKey: 'bugs_caterpillar_name', emoji: '🐛', hp: 20, speed: 8, dmg: 1, atkRate: 1100, points: 8, color: '#dce775', factKey: 'bugs_caterpillar_fact' },
+  slugboss: { nameKey: 'bugs_slugboss_name', emoji: '🐢', hp: 950, speed: 4, dmg: 3, atkRate: 900, points: 200, boss: true, color: '#b2dfdb', factKey: 'bugs_slugboss_fact' }
 };
 
 const ROWS = 5;
@@ -271,17 +271,17 @@ export const PlantsVsBugs = () => {
       if (n >= 5) pool.push('wasp');
       if (n >= 6) pool.push('caterpillar');
       const waveCount = 3 + Math.floor(n / 2);
-      const baseInterval = Math.max(1900 - n * 90, 650);
+      const baseInterval = Math.max(2400 - n * 70, 1000);
       const waves = [];
       for (let w = 0; w < waveCount; w++) {
-        const bugCount = 4 + n + w;
+        const bugCount = 3 + Math.floor(n * 0.7) + w;
         const isFinal = w === waveCount - 1;
         const boss = isFinal && (n === 5 || n === 10);
         waves.push({ bugCount, interval: baseInterval, pool: pool.slice(), boss });
       }
       levels.push({
         num: n,
-        startSun: 150 + n * 10,
+        startSun: 180 + n * 15,
         waves,
         unlocksPlant: PLANT_ORDER.find(p => PLANTS[p].unlock === n) || null,
         title: `${t('game_modalTip_levelTitle')} ${n}`,
@@ -550,9 +550,27 @@ export const PlantsVsBugs = () => {
             ctx.save();
             ctx.translate(b.x, b.y + Math.sin(tTime / 150 + b.x) * 2);
             if (b.dying) ctx.globalAlpha = Math.max(0, b.dying / 260);
+
+            // soft pastel glow so the bug reads as cute, not menacing
+            const glowR = def.boss ? cellH * 0.7 : cellH * 0.34;
+            ctx.beginPath();
+            ctx.fillStyle = `${def.color}66`;
+            ctx.arc(0, 0, glowR, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.font = `${def.boss ? cellH * 1.1 : cellH * 0.5}px sans-serif`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.save(); ctx.scale(-1, 1); ctx.fillText(def.emoji, 0, 2); ctx.restore();
+
+            // little blush cheeks for extra loveliness
+            ctx.fillStyle = 'rgba(255,140,170,0.55)';
+            const cheekDx = def.boss ? cellH * 0.34 : cellH * 0.17;
+            const cheekY = def.boss ? cellH * 0.12 : cellH * 0.07;
+            const cheekRx = def.boss ? cellH * 0.09 : cellH * 0.05;
+            const cheekRy = cheekRx * 0.7;
+            ctx.beginPath(); ctx.ellipse(-cheekDx, cheekY, cheekRx, cheekRy, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(cheekDx, cheekY, cheekRx, cheekRy, 0, 0, Math.PI * 2); ctx.fill();
+
             ctx.restore();
             if (!b.dying) {
               const pct = Math.max(0, b.hp / b.maxHp);
@@ -579,21 +597,38 @@ export const PlantsVsBugs = () => {
     return () => cancelAnimationFrame(animationFrameId);
   }, [paused, getLevels, save, saveToStorage, sfxExplode, sfxHit, sfxLose, sfxShoot, sfxWin]);
 
-  // Window Resize Listener
+  // Resize Listener — reacts to window resizes AND to the stage container
+  // changing size on its own (e.g. the desktop side-ad slots mounting,
+  // orientation change, or the app shell being resized without a window
+  // resize event).
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !canvas.parentElement) return;
+
     const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas || !canvas.parentElement) return;
+      if (!canvas.parentElement) return;
       const rect = canvas.parentElement.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
       const DPR = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(rect.width * DPR);
       canvas.height = Math.round(rect.height * DPR);
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
     };
+
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(handleResize);
+      ro.observe(canvas.parentElement);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (ro) ro.disconnect();
+    };
   }, []);
 
   // Card Selection & Cooldown Calculation
@@ -726,23 +761,28 @@ export const PlantsVsBugs = () => {
   const currentLevelObj = getLevels()[level - 1] || getLevels()[0];
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: '#1c2b17', touchAction: 'none' }}>
-      {/* Background Backdrop */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 0,
-        background: 'radial-gradient(circle at 20% 15%, #fff7c9 0%, transparent 40%), linear-gradient(180deg,#8fd3f4 0%, #cdf2bf 55%, #7bc850 56%, #6fbb46 100%)',
-        filter: 'blur(18px) saturate(1.15) brightness(0.85)', transform: 'scale(1.15)'
-      }} />
+    <div id="pvb-app">
+      <div className="pvb-shell">
+        <div className="pvb-ad-slot pvb-ad-side" data-ad-slot="side-left" aria-hidden="true">
+          Quảng cáo
+        </div>
 
-      {/* Main Game Stage */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          position: 'relative',
-          width: 'min(100vw, calc(100vh * 9 / 16))',
-          height: 'min(100vh, calc(100vw * 16 / 9))',
-          background: 'linear-gradient(180deg,#8fd3f4 0%, #cdf2bf 38%, #7bc850 40%, #6fbb46 100%)',
-          borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column'
-        }}>
+        <div className="pvb-stage-wrap">
+          {/* Background Backdrop */}
+          <div
+            className="pvb-backdrop"
+            style={{
+              background:
+                'radial-gradient(circle at 20% 15%, #fff7c9 0%, transparent 40%), linear-gradient(180deg,#8fd3f4 0%, #cdf2bf 55%, #7bc850 56%, #6fbb46 100%)',
+            }}
+          />
+
+          <div
+            className="pvb-stage"
+            style={{
+              background: 'linear-gradient(180deg,#8fd3f4 0%, #cdf2bf 38%, #7bc850 40%, #6fbb46 100%)',
+            }}
+          >
           {/* HUD Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', background: 'linear-gradient(180deg,#7a4b2a,#5a3a22)', borderBottom: '3px solid #6e4a29', zIndex: 5 }}>
             <div className="hud-pill" style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(0,0,0,.25)', borderRadius: 20, padding: '4px 10px', color: '#fff6e0', fontWeight: 800, fontSize: 14 }}>
@@ -908,7 +948,19 @@ export const PlantsVsBugs = () => {
               </div>
             )}
           </div>
+          </div>
         </div>
+
+        <div className="pvb-ad-slot pvb-ad-side" data-ad-slot="side-right" aria-hidden="true">
+          Quảng cáo
+        </div>
+      </div>
+
+      {/* Sticky bottom banner (320x50-equivalent). Fixed to the viewport,
+          padded for iOS home-indicator / Android nav-bar safe areas. This is
+          where a real AdSense/AdMob banner unit would mount. */}
+      <div className="pvb-banner-ad" data-ad-slot="sticky-bottom-banner" aria-hidden="true">
+        Quảng cáo banner 320×50
       </div>
 
       {/* ================= MODALS ================= */}
@@ -1145,6 +1197,114 @@ export const PlantsVsBugs = () => {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        #pvb-app * {
+          box-sizing: border-box;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        #pvb-app {
+          min-height: 100vh;
+          min-height: 100dvh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: #1c2b17;
+          overflow-x: hidden;
+        }
+
+        .pvb-shell {
+          flex: 1;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 16px;
+          padding: 16px;
+          padding-bottom: calc(16px + 66px + env(safe-area-inset-bottom, 0px));
+          width: 100%;
+          max-width: 1200px;
+        }
+
+        .pvb-stage-wrap {
+          position: relative;
+          width: 100%;
+          max-width: 480px;
+          aspect-ratio: 9 / 16;
+          max-height: calc(100vh - 32px - 66px - env(safe-area-inset-bottom, 0px));
+          max-height: calc(100dvh - 32px - 66px - env(safe-area-inset-bottom, 0px));
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 0 0 1px rgba(255, 214, 130, 0.18), 0 20px 60px rgba(0, 0, 0, 0.55);
+          background: #1c2b17;
+          touch-action: none;
+        }
+
+        .pvb-backdrop {
+          position: absolute;
+          inset: -20%;
+          z-index: 0;
+          filter: blur(18px) saturate(1.15) brightness(0.85);
+          transform: scale(1.15);
+        }
+
+        .pvb-stage {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .pvb-ad-slot {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(255, 246, 224, 0.35);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          background: repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.03) 0 10px,
+            rgba(255, 255, 255, 0.01) 10px 20px
+          );
+          border: 1px dashed rgba(255, 246, 224, 0.16);
+          border-radius: 10px;
+          flex-shrink: 0;
+        }
+
+        .pvb-ad-side {
+          width: 160px;
+          min-width: 160px;
+          height: 600px;
+          writing-mode: vertical-rl;
+        }
+
+        @media (max-width: 900px) {
+          .pvb-ad-side {
+            display: none;
+          }
+        }
+        .pvb-banner-ad {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 40;
+          height: 58px;
+          padding-bottom: env(safe-area-inset-bottom, 0px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(255, 246, 224, 0.4);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          background: #12190f;
+          border-top: 1px dashed rgba(255, 246, 224, 0.16);
+        }
+      `}</style>
     </div>
   );
 };

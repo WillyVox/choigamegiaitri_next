@@ -1122,6 +1122,16 @@ export default function SkyStrike() {
       if (gameStateRef.current !== 'playing') return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
+      // If the tap landed on an interactive overlay control that sits on
+      // top of the canvas (tutorial card, pause/mute buttons, etc.), let
+      // that element handle it instead of also moving the plane / eating
+      // the tap. Those overlays stop propagation themselves, but this is
+      // a defensive second guard so a future overlay can't get "stuck".
+      const targetEl = e.target as HTMLElement | null;
+      if (targetEl && targetEl.closest('.tutorial-overlay, .pause-btn')) {
+        return;
+      }
+
       e.preventDefault();
       try {
         stageWrap.setPointerCapture(e.pointerId);
@@ -1232,7 +1242,7 @@ export default function SkyStrike() {
 
       <div className="game-shell">
         <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
-          Ad
+          {t('adSideLabel')}
         </div>
 
         <div className="stage-wrap" ref={stageWrapRef}>
@@ -1252,13 +1262,13 @@ export default function SkyStrike() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button className="pause-btn" onClick={toggleMute} aria-label="Âm thanh">
+                  <button className="pause-btn" onClick={toggleMute} aria-label={t('muteAriaLabel')}>
                     {muted ? '🔇' : '🔊'}
                   </button>
                   <button
                     className="pause-btn"
                     onClick={handleTogglePause}
-                    aria-label="Tạm dừng"
+                    aria-label={t('pauseAriaLabel')}
                   >
                     ⏸
                   </button>
@@ -1269,8 +1279,8 @@ export default function SkyStrike() {
 
               {levelFlash !== null && (
                 <div className="level-flash">
-                  <span>CẤP {levelFlash}</span>
-                  <small>Độ khó tăng dần — cố lên!</small>
+                  <span>{t('levelFlashLabel', { level: levelFlash })}</span>
+                  <small>{t('levelFlashHint')}</small>
                 </div>
               )}
 
@@ -1301,16 +1311,42 @@ export default function SkyStrike() {
                 disabled={!rewardedPowerupReady || adBusy === 'powerup'}
                 type="button"
               >
-                {adBusy === 'powerup' ? '⏳ Đang tải QC…' : rewardedPowerupReady ? '🎁 Xem QC nhận trợ giúp' : '🎁 Chờ một chút…'}
+                {adBusy === 'powerup'
+                  ? t('rewardAdLoading')
+                  : rewardedPowerupReady
+                  ? t('rewardPowerupReady')
+                  : t('rewardPowerupCooldown')}
               </button>
 
               {showTutorial && (
-                <div className="tutorial-overlay" onClick={dismissTutorial}>
+                <div
+                  className="tutorial-overlay"
+                  onPointerDown={(e) => {
+                    // Dismiss on pointerdown (not click): on touch devices,
+                    // the stageWrap's native pointerdown listener calls
+                    // preventDefault() to drive the ship, and that
+                    // suppresses the browser's synthesized "click" event —
+                    // so an onClick handler here would never fire and the
+                    // card would stay stuck forever. stopPropagation keeps
+                    // this tap from also being read as a move command.
+                    e.stopPropagation();
+                    e.preventDefault();
+                    dismissTutorial();
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      dismissTutorial();
+                    }
+                  }}
+                >
                   <div className="tutorial-card">
                     <div className="tutorial-icon">👆</div>
-                    <p>Chạm & kéo để điều khiển máy bay.</p>
-                    <p>Súng tự động bắn — chỉ cần né và nhặt vật phẩm!</p>
-                    <span className="tutorial-tap">Chạm để bắt đầu</span>
+                    <p>{t('tutorialLine1')}</p>
+                    <p>{t('tutorialLine2')}</p>
+                    <span className="tutorial-tap">{t('tutorialTap')}</span>
                   </div>
                 </div>
               )}
@@ -1319,7 +1355,7 @@ export default function SkyStrike() {
 
           {gameState === 'start' && (
             <div className="screen">
-              <button className="mute-corner" onClick={toggleMute} aria-label="Âm thanh" type="button">
+              <button className="mute-corner" onClick={toggleMute} aria-label={t('muteAriaLabel')} type="button">
                 {muted ? '🔇' : '🔊'}
               </button>
               <div className="logo">
@@ -1353,19 +1389,19 @@ export default function SkyStrike() {
 
           {gameState === 'over' && canContinue && (
             <div className="screen">
-              <div className="final-label">RỚT MÁY BAY!</div>
+              <div className="final-label">{t('crashedLabel')}</div>
               <div className="final-score">{score}</div>
-              <p className="hint">Xem một quảng cáo ngắn để hồi sinh ngay tại chỗ và chơi tiếp?</p>
+              <p className="hint">{t('continuePrompt')}</p>
               <button
                 className="btn"
                 onClick={handleWatchContinueAd}
                 disabled={adBusy === 'continue'}
                 type="button"
               >
-                {adBusy === 'continue' ? '⏳ Đang tải quảng cáo…' : `▶ Xem QC & chơi tiếp (${continueSecondsLeft}s)`}
+                {adBusy === 'continue' ? t('continueAdLoading') : t('continueButton', { seconds: continueSecondsLeft })}
               </button>
               <button className="btn secondary" onClick={handleDeclineContinue} type="button">
-                Kết thúc lượt chơi
+                {t('endRunButton')}
               </button>
             </div>
           )}
@@ -1386,7 +1422,7 @@ export default function SkyStrike() {
                   disabled={adBusy === 'double'}
                   type="button"
                 >
-                  {adBusy === 'double' ? '⏳ Đang tải quảng cáo…' : '🎬 Xem QC nhận x2 điểm'}
+                  {adBusy === 'double' ? t('doubleAdLoading') : t('doubleScoreButton')}
                 </button>
               )}
 
@@ -1396,7 +1432,7 @@ export default function SkyStrike() {
 
               {showInterstitial && (
                 <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
-                  {adBusy === 'interstitial' ? 'Đang tải quảng cáo…' : 'Ad xen kẽ (interstitial)'}
+                  {adBusy === 'interstitial' ? t('interstitialLoading') : t('interstitialPlaceholder')}
                 </div>
               )}
             </div>
@@ -1404,7 +1440,7 @@ export default function SkyStrike() {
         </div>
 
         <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
-          Ad
+          {t('adSideLabel')}
         </div>
       </div>
 
@@ -1415,7 +1451,7 @@ export default function SkyStrike() {
           would mount (e.g. an <ins class="adsbygoogle"> tag or a native
           bridge banner view). */}
       <div className="banner-ad" data-ad-slot="sticky-bottom-banner" aria-hidden="true">
-        Ad banner 320×50
+        {t('adBannerLabel')}
       </div>
 
       <div className="about">
@@ -1783,6 +1819,75 @@ export default function SkyStrike() {
           justify-content: center;
           color: rgba(238, 243, 249, 0.35);
           font-size: 11px;
+        }
+
+        .tutorial-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 40;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          background: rgba(11, 16, 38, 0.6);
+          backdrop-filter: blur(3px);
+          cursor: pointer;
+          pointer-events: auto;
+          touch-action: none;
+          animation: tutorialFadeIn 0.2s ease-out;
+        }
+
+        .tutorial-card {
+          width: 100%;
+          max-width: 200px;
+          background: var(--panel);
+          border: 1px solid var(--panel-border);
+          border-radius: 14px;
+          padding: 14px 16px;
+          text-align: center;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .tutorial-icon {
+          font-size: 22px;
+          line-height: 1;
+          margin-bottom: 6px;
+          animation: tutorialBounce 1.1s ease-in-out infinite;
+        }
+
+        .tutorial-card p {
+          margin: 3px 0;
+          font-size: 11.5px;
+          line-height: 1.4;
+          color: var(--cloud);
+        }
+
+        .tutorial-tap {
+          display: inline-block;
+          margin-top: 8px;
+          font-size: 9px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--cyan);
+        }
+
+        @keyframes tutorialFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes tutorialBounce {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(4px);
+          }
         }
 
         .about {
