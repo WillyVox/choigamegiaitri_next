@@ -6,8 +6,6 @@ export interface GameMeta {
   name: Record<Locale, string>;
   tagline: Record<Locale, string>;
   description: Record<Locale, string>;
-  /** Path under /public, e.g. /games/merge-meadow/thumbnail.png */
-  thumbnail: string;
   genre: string[];
 }
 
@@ -30,7 +28,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'Take control of an advanced fighter jet in this fast-paced arcade shooter. Collect power-ups, defeat boss ships, and climb the high scores.',
       vi: 'Chơi Game Giải Trí bắn máy bay arcade - Điều khiển chiến cơ hiện đại, thu thập vật phẩm hỗ trợ, tiêu diệt trùm và chinh phục kỷ lục điểm số.'
     },
-    thumbnail: 'games/icon-sky-strike.svg',
     genre: ['Arcade', 'Action']
   },
   
@@ -45,7 +42,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: "Guide a dragon through a gauntlet of castle gates in this addictive one-tap arcade flyer. Simple to learn, hard to master.",
       vi: 'Chơi game giải trí - Điều khiển một chú rồng bay qua hàng loạt cổng thành trong trò chơi arcade một chạm gây nghiện này. Dễ chơi nhưng khó làm chủ.'
     },
-    thumbnail: 'games/icon-dragons-gate.svg',
     genre: ['Arcade', 'Casual']
   },
   {
@@ -62,7 +58,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'Tap colorful magical bubbles before they disappear, build powerful combos, and beat your high score in this relaxing yet addictive bubble-popping game.',
       vi: 'Chơi game giải trí bắn bóng thư giãn, xả stress miễn phí ngay trên trình duyệt. Game chơi mượt trên điện thoại và máy tính, không cần cài đặt!'
     },
-    thumbnail: 'games/icon-bubble-burst.svg',
     genre: ['Casual', 'Arcade']
   },
   {
@@ -76,7 +71,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A cozy physics puzzle game. Drop fruit, merge matching pairs into bigger ones, and see how big you can grow before the jar overflows.',
       vi: 'Chơi Game Giải Trí vật lý nhẹ nhàng. Thả trái cây, ghép các cặp giống nhau để tạo ra trái to hơn, xem bạn có thể tạo ra trái lớn đến đâu trước khi lọ bị tràn.'
     },
-    thumbnail: 'games/icon-merge-meadow.svg',
     genre: ['Puzzle', 'Casual']
   },  
   {
@@ -90,7 +84,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A polished falling-block puzzle. Rotate and drop crystal-colored blocks to clear full lines, speed up as you level up, and see how high you can score before the board fills.',
       vi: 'Chơi Game Giải Trí xếp khối pha lê kinh điển. Xoay và thả khối để lấp đầy từng hàng, tốc độ tăng dần theo cấp độ, xem bạn ghi được bao nhiêu điểm trước khi bảng bị đầy.'
     },
-    thumbnail: 'games/icon-crystal-blocks.svg',
     genre: ['Puzzle', 'Classic']
   },
   {
@@ -104,7 +97,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A calm, classic number puzzle. Fill every row, column, and box with 1 to 9, climb through leveled difficulty, and see how far you can go before running out of mistakes.',
       vi: 'Chơi Game Giải Trí Sudoku cổ điển, nhẹ nhàng thư giãn. Điền số từ 1 đến 9 vào từng hàng, cột và ô vuông, vượt qua các cấp độ khó tăng dần, xem bạn đi được bao xa trước khi hết lượt sai.'
     },
-    thumbnail: '/games/icon-sudoku-zen.svg',
     genre: ['Puzzle', 'Classic']
   },
   
@@ -119,7 +111,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A rapid-fire this-or-that game full of ridiculous dilemmas. Build a streak, or try the daily challenge and compare your result grid with friends.',
       vi: "Chơi Game Giải Trí - Trò chơi lựa chọn nhanh với những tình huống siêu hài hước. Giữ chuỗi thắng, hoặc thử thử thách hằng ngày và so sánh kết quả với bạn bè."
     },
-    thumbnail: '/games/chaos-or-nah/thumbnail.png',
     genre: ['Party', 'Quiz']
   },
   {
@@ -133,7 +124,6 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A classic bubble shooter in a cosmic setting. Aim and fire colored bubbles, match three or more of the same color to pop them, and clear the sky before the bubbles reach the bottom.',
       vi: 'Chơi Game Giải Trí bắn bóng cổ điển giữa không gian đầy sao. Ngắm và bắn bóng màu, ghép từ 3 bóng cùng màu trở lên để nổ, dọn sạch bầu trời trước khi bóng tràn xuống đáy.'
     },
-    thumbnail: '/games/bubble-blast/thumbnail.png',
     genre: ['Puzzle', 'Arcade', 'Casual']
   }, 
   */
