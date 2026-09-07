@@ -62,7 +62,16 @@ export async function generateMetadata({
     verification: {
       // Drop your Google Search Console verification token here once you have one:
       google: 'HBF8-dO4e4hADTYCt8hkm0FzZa15xldK2SMfG-97H_4',
-    }
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+        { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+      ],
+      apple: '/apple-touch-icon.png',
+    },
+    manifest: '/site.webmanifest',
   };
 }
 
