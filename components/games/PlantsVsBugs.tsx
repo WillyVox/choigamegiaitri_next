@@ -10,7 +10,11 @@ import { useTranslations } from 'next-intl';
 export type Language = 'en' | 'vi';
 
 export interface PlantDef {
-  nameKey: string;
+  // nameKey/descKey drive translated copy for the original roster. New
+  // plants added here can instead set `name`/`desc` directly (plain text)
+  // since they don't have translation entries yet — see plantLabel/plantDesc.
+  nameKey?: string;
+  name?: string;
   emoji: string;
   cost: number;
   cooldown: number;
@@ -26,8 +30,14 @@ export interface PlantDef {
   splash?: number;
   fuse?: number;
   radius?: number;
+  // Wall-type plants can chill any bug that claws at them, slowing the
+  // attacker down for a bit — a cheap, simple way to add crowd control
+  // without a new engine mechanic.
+  contactSlow?: number;
+  contactSlowTime?: number;
   unlock: number;
-  descKey: string;
+  descKey?: string;
+  desc?: string;
 }
 
 export interface BugDef {
@@ -48,21 +58,30 @@ const PLANTS: Record<string, PlantDef> = {
   sunflower: { nameKey: 'plants_sunflower_name', emoji: '🌻', cost: 50, cooldown: 6000, hp: 100, role: 'sun', sunAmount: 25, sunEvery: 6000, unlock: 1, descKey: 'plants_sunflower_desc' },
   peashooter: { nameKey: 'plants_peashooter_name', emoji: '🌱', cost: 100, cooldown: 4000, hp: 100, role: 'shooter', dmg: 20, rate: 1200, shots: 1, unlock: 1, descKey: 'plants_peashooter_desc' },
   wallnut: { nameKey: 'plants_wallnut_name', emoji: '🌰', cost: 50, cooldown: 8000, hp: 400, role: 'wall', unlock: 1, descKey: 'plants_wallnut_desc' },
+  // New: two more options unlock right after the tutorial level so players
+  // have real choices to experiment with early, not just three cards.
+  icewall: { name: 'Ice Wall', desc: 'A frosty wall — any bug that claws at it gets chilled and slows down.', emoji: '🧊', cost: 75, cooldown: 9000, hp: 500, role: 'wall', contactSlow: 0.5, contactSlowTime: 2500, unlock: 2 },
+  twinsunflower: { name: 'Twin Sunflower', desc: 'Produces double the sun of a regular sunflower. Great for a fast economy.', emoji: '🌼', cost: 90, cooldown: 7000, hp: 120, role: 'sun', sunAmount: 50, sunEvery: 6000, unlock: 2 },
   snowpea: { nameKey: 'plants_snowpea_name', emoji: '🥶', cost: 150, cooldown: 6000, hp: 100, role: 'shooter', dmg: 15, rate: 1400, shots: 1, slow: 0.5, slowTime: 2000, unlock: 3, descKey: 'plants_snowpea_desc' },
   repeater: { nameKey: 'plants_repeater_name', emoji: '🌿', cost: 200, cooldown: 6000, hp: 100, role: 'shooter', dmg: 20, rate: 1200, shots: 2, unlock: 4, descKey: 'plants_repeater_desc' },
   cherrybomb: { nameKey: 'plants_cherrybomb_name', emoji: '🍒', cost: 150, cooldown: 20000, hp: 1, role: 'bomb', dmg: 900, radius: 1.6, fuse: 900, unlock: 5, descKey: 'plants_cherrybomb_desc' },
-  melonpult: { nameKey: 'plants_melonpult_name', emoji: '🍉', cost: 300, cooldown: 8000, hp: 100, role: 'shooter', dmg: 70, rate: 2000, shots: 1, splash: 1.1, unlock: 6, descKey: 'plants_melonpult_desc' }
+  melonpult: { nameKey: 'plants_melonpult_name', emoji: '🍉', cost: 300, cooldown: 8000, hp: 100, role: 'shooter', dmg: 70, rate: 2000, shots: 1, splash: 1.1, unlock: 6, descKey: 'plants_melonpult_desc' },
+  gatlingpea: { name: 'Gatling Pea', desc: 'Unloads four peas per volley — the heaviest sustained damage in the garden.', emoji: '🎯', cost: 350, cooldown: 9000, hp: 100, role: 'shooter', dmg: 20, rate: 1300, shots: 4, unlock: 7 }
 };
 
-const PLANT_ORDER = ['sunflower', 'peashooter', 'wallnut', 'snowpea', 'repeater', 'cherrybomb', 'melonpult'];
+const PLANT_ORDER = ['sunflower', 'peashooter', 'wallnut', 'icewall', 'twinsunflower', 'snowpea', 'repeater', 'cherrybomb', 'melonpult', 'gatlingpea'];
 
+// The caterpillar now uses the classic 🐛 "bug" emoji (that's literally its
+// Unicode name) so it reads as THE bug of the garden — the gentle, slow
+// tutorial enemy for round one. Aphid gets its own look so the two are no
+// longer visually identical.
 const BUGS: Record<string, BugDef> = {
-  aphid: { nameKey: 'bugs_aphid_name', emoji: '🐛', hp: 45, speed: 10, dmg: 1, atkRate: 1100, points: 10, color: '#a8e6a1', factKey: 'bugs_aphid_fact' },
+  aphid: { nameKey: 'bugs_aphid_name', emoji: '🐜', hp: 45, speed: 10, dmg: 1, atkRate: 1100, points: 10, color: '#a8e6a1', factKey: 'bugs_aphid_fact' },
   beetle: { nameKey: 'bugs_beetle_name', emoji: '🐞', hp: 105, speed: 8, dmg: 2, atkRate: 1100, points: 18, color: '#ff8a80', factKey: 'bugs_beetle_fact' },
   hopper: { nameKey: 'bugs_hopper_name', emoji: '🦗', hp: 55, speed: 17, dmg: 1, atkRate: 1000, points: 16, color: '#c5e1a5', factKey: 'bugs_hopper_fact' },
   snail: { nameKey: 'bugs_snail_name', emoji: '🐌', hp: 180, speed: 5, dmg: 2, atkRate: 1100, points: 24, color: '#d7ccc8', factKey: 'bugs_snail_fact' },
   wasp: { nameKey: 'bugs_wasp_name', emoji: '🐝', hp: 45, speed: 19, dmg: 1, atkRate: 1000, points: 20, flying: true, color: '#fff59d', factKey: 'bugs_wasp_fact' },
-  caterpillar: { nameKey: 'bugs_caterpillar_name', emoji: '🐛', hp: 20, speed: 8, dmg: 1, atkRate: 1100, points: 8, color: '#dce775', factKey: 'bugs_caterpillar_fact' },
+  caterpillar: { nameKey: 'bugs_caterpillar_name', emoji: '🐛', hp: 20, speed: 6, dmg: 1, atkRate: 1100, points: 8, color: '#dce775', factKey: 'bugs_caterpillar_fact' },
   slugboss: { nameKey: 'bugs_slugboss_name', emoji: '🐢', hp: 950, speed: 4, dmg: 3, atkRate: 900, points: 200, boss: true, color: '#b2dfdb', factKey: 'bugs_slugboss_fact' }
 };
 
@@ -152,7 +171,7 @@ export const PlantsVsBugs = () => {
   });
 
   // UI / Modals State
-  const [modal, setModal] = useState<'start' | 'levels' | 'tip' | 'win' | 'lose' | 'interstitial' | 'rewarded' | 'help' | null>('start');
+  const [modal, setModal] = useState<'start' | 'levels' | 'tip' | 'win' | 'lose' | 'rewarded' | null>('start');
   const [paused, setPaused] = useState<boolean>(false);
   const [muted, setMuted] = useState<boolean>(save.muted);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
@@ -163,16 +182,13 @@ export const PlantsVsBugs = () => {
   const [lives, setLives] = useState<number>(3);
   const [floaters, setFloaters] = useState<Floater[]>([]);
   const [bossBanner, setBossBanner] = useState<boolean>(false);
-  const [helpPlantKey, setHelpPlantKey] = useState<string | null>(null);
+  // Hover-only instructions: which tray card is currently hovered, so we can
+  // show its "how it's used" copy without ever popping a blocking modal.
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
   // Rewarded Modal parameters
   const [rewardConfig, setRewardConfig] = useState<{ title: string; desc: string; onReward: () => void } | null>(null);
   const [rewardProgress, setRewardProgress] = useState<number>(0);
-
-  // Interstitial Modal parameters
-  const [interProgress, setInterProgress] = useState<number>(0);
-  const [interSkipDisabled, setInterSkipDisabled] = useState<boolean>(true);
-  const [interCountdown, setInterCountdown] = useState<number>(5);
 
   // Refs for Game Engine Loop
   const engineRef = useRef({
@@ -207,7 +223,12 @@ export const PlantsVsBugs = () => {
   });
 
   const actxRef = useRef<AudioContext | null>(null);
-  const helpShownRef = useRef<Record<string, boolean>>({});
+
+  // New plants ship with plain-text name/desc (no translation entries yet);
+  // the original roster keeps using nameKey/descKey. These helpers paper
+  // over the difference everywhere copy is shown.
+  const plantLabel = useCallback((def: PlantDef) => def.name ?? (def.nameKey ? t(def.nameKey) : ''), [t]);
+  const plantDesc = useCallback((def: PlantDef) => def.desc ?? (def.descKey ? t(def.descKey) : ''), [t]);
 
   // Audio helper
   const ensureAudio = useCallback(() => {
@@ -264,26 +285,37 @@ export const PlantsVsBugs = () => {
   const getLevels = useCallback(() => {
     const levels = [];
     for (let n = 1; n <= 10; n++) {
-      const pool = ['aphid'];
-      if (n >= 2) pool.push('beetle');
-      if (n >= 3) pool.push('hopper');
-      if (n >= 4) pool.push('snail');
-      if (n >= 5) pool.push('wasp');
-      if (n >= 6) pool.push('caterpillar');
-      const waveCount = 3 + Math.floor(n / 2);
-      const baseInterval = Math.max(2400 - n * 70, 1000);
+      // Round 1 is an all-caterpillar tutorial: THE bug, slow and gentle.
+      // Tougher species phase in one at a time from level 2 onward.
+      const pool = ['caterpillar'];
+      if (n >= 2) pool.push('aphid');
+      if (n >= 3) pool.push('beetle');
+      if (n >= 4) pool.push('hopper');
+      if (n >= 5) pool.push('snail');
+      if (n >= 6) pool.push('wasp');
+
+      const isFirstLevel = n === 1;
+      const waveCount = isFirstLevel ? 2 : 3 + Math.floor(n / 2);
+      const baseInterval = isFirstLevel ? 2800 : Math.max(2400 - n * 70, 1000);
+      // Fewer, slower bugs on round 1 so brand-new players get a real,
+      // relaxed introduction instead of getting swarmed immediately.
+      const speedMult = isFirstLevel ? 0.6 : 1;
+
       const waves = [];
       for (let w = 0; w < waveCount; w++) {
-        const bugCount = 3 + Math.floor(n * 0.7) + w;
+        const bugCount = isFirstLevel ? 2 + w : 3 + Math.floor(n * 0.7) + w;
         const isFinal = w === waveCount - 1;
         const boss = isFinal && (n === 5 || n === 10);
         waves.push({ bugCount, interval: baseInterval, pool: pool.slice(), boss });
       }
       levels.push({
         num: n,
-        startSun: 180 + n * 15,
+        // Much more generous starting sun so players can experiment with
+        // several plants right away instead of waiting one out.
+        startSun: 320 + (n - 1) * 25,
+        speedMult,
         waves,
-        unlocksPlant: PLANT_ORDER.find(p => PLANTS[p].unlock === n) || null,
+        unlocksPlants: PLANT_ORDER.filter(p => PLANTS[p].unlock === n),
         title: `${t('game_modalTip_levelTitle')} ${n}`,
         fact: t(BUGS[pool[pool.length - 1]].factKey)
       });
@@ -338,7 +370,7 @@ export const PlantsVsBugs = () => {
             if (wave.boss && engine.spawnedInWave === 0) {
               const def = BUGS.slugboss;
               const row = Math.floor(ROWS / 2);
-              engine.bugs.push({ key: 'slugboss', row, x: COLS * cellW + 40, y: row * cellH + cellH / 2, hp: def.hp, maxHp: def.hp, speedBase: def.speed, slowUntil: 0, atkTimer: 0, dying: 0 });
+              engine.bugs.push({ key: 'slugboss', row, x: COLS * cellW + 40, y: row * cellH + cellH / 2, hp: def.hp, maxHp: def.hp, speedBase: def.speed * (lv.speedMult || 1), slowUntil: 0, atkTimer: 0, dying: 0 });
               setBossBanner(true);
               setTimeout(() => setBossBanner(false), 2500);
               sfxExplode();
@@ -347,7 +379,7 @@ export const PlantsVsBugs = () => {
               const key = wave.pool[Math.floor(Math.random() * wave.pool.length)];
               const def = BUGS[key];
               const row = Math.floor(Math.random() * ROWS);
-              engine.bugs.push({ key, row, x: COLS * cellW + 30, y: row * cellH + cellH / 2, hp: def.hp, maxHp: def.hp, speedBase: def.speed, slowUntil: 0, atkTimer: 0, dying: 0 });
+              engine.bugs.push({ key, row, x: COLS * cellW + 30, y: row * cellH + cellH / 2, hp: def.hp, maxHp: def.hp, speedBase: def.speed * (lv.speedMult || 1), slowUntil: 0, atkTimer: 0, dying: 0 });
               engine.spawnedInWave++;
             }
             engine.waveTimer = wave.interval;
@@ -355,7 +387,9 @@ export const PlantsVsBugs = () => {
           if (engine.spawnedInWave >= wave.bugCount) {
             engine.waveIndex++;
             engine.spawnedInWave = 0;
-            engine.waveTimer = 800;
+            // Shorter gap before the next wave rolls in — less standing
+            // around waiting, more time actually playing.
+            engine.waveTimer = 400;
             if (engine.waveIndex >= lv.waves.length) engine.levelFinishedSpawning = true;
           }
         }
@@ -441,6 +475,10 @@ export const PlantsVsBugs = () => {
             if (b.atkTimer <= 0) {
               b.atkTimer = def.atkRate;
               blocker.hp -= def.dmg * 4;
+              const blockerDef = PLANTS[blocker.key];
+              if (blockerDef.contactSlow) {
+                b.slowUntil = tTime + (blockerDef.contactSlowTime || 2000);
+              }
               if (blocker.hp <= 0) engine.plants = engine.plants.filter(p => p !== blocker);
             }
           } else {
@@ -647,10 +685,11 @@ export const PlantsVsBugs = () => {
     setModal('rewarded');
 
     let elapsed = 0;
+    const AD_DURATION = 1800; // shorter simulated ad — less waiting, more playing
     const interval = setInterval(() => {
       elapsed += 100;
-      setRewardProgress(Math.min(100, (elapsed / 4000) * 100));
-      if (elapsed >= 4000) {
+      setRewardProgress(Math.min(100, (elapsed / AD_DURATION) * 100));
+      if (elapsed >= AD_DURATION) {
         clearInterval(interval);
         setModal(null);
         onReward();
@@ -760,14 +799,23 @@ export const PlantsVsBugs = () => {
   const unlockedPlantsList = PLANT_ORDER.filter(k => PLANTS[k].unlock <= level);
   const currentLevelObj = getLevels()[level - 1] || getLevels()[0];
 
+  // Hover-only "how it's used" info for the tray — never opens on click/tap,
+  // just reflects whatever card the pointer is currently resting on.
+  const hoveredInfo = (() => {
+    if (hoveredKey === 'shovel') return { emoji: '🪓', name: t('game_tray_shovel'), desc: t('game_tray_shovel') };
+    if (hoveredKey === 'freeze') return { emoji: '🧊', name: t('game_tray_freezeTitle'), desc: t('game_tray_freezeDesc') };
+    if (hoveredKey === 'boost') return { emoji: '⏫', name: t('game_tray_boostTitle'), desc: t('game_tray_boostDesc') };
+    const p = hoveredKey ? PLANTS[hoveredKey] : null;
+    return p ? { emoji: p.emoji, name: plantLabel(p), desc: plantDesc(p) } : null;
+  })();
+
   return (
     <div id="pvb-app">
-      <div className="pvb-shell">
-        <div className="pvb-ad-slot pvb-ad-side" data-ad-slot="side-left" aria-hidden="true">
-          Quảng cáo
-        </div>
-
-        <div className="pvb-stage-wrap">
+      {/* Self-contained frame: fixed aspect ratio, its own stacking context,
+          no fixed-to-viewport chrome — drops cleanly into any app layout,
+          and every modal below is positioned/clipped relative to it rather
+          than the whole browser viewport. */}
+      <div className="pvb-stage-wrap">
           {/* Background Backdrop */}
           <div
             className="pvb-backdrop"
@@ -815,12 +863,24 @@ export const PlantsVsBugs = () => {
             </button>
           </div>
 
+          {/* Hover-only instructions dock — shows "how it's used" for whatever
+              card the pointer rests on; stays quiet and never blocks play. */}
+          <div className="pvb-hint-dock">
+            {hoveredInfo ? (
+              <><span style={{ marginRight: 6 }}>{hoveredInfo.emoji}</span><b>{hoveredInfo.name}:</b> {hoveredInfo.desc}</>
+            ) : (
+              <span style={{ opacity: 0.65 }}>💡 Hover a card to see what it does</span>
+            )}
+          </div>
+
           {/* Plant Selection Tray */}
           <div style={{ background: 'linear-gradient(180deg,#8b5e34,#6e4a29)', borderBottom: '3px solid #4a3018', padding: 6 }}>
             <div style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
               {/* Shovel */}
               <button
                 onClick={() => setSelectedCard(selectedCard === 'shovel' ? null : 'shovel')}
+                onMouseEnter={() => setHoveredKey('shovel')}
+                onMouseLeave={() => setHoveredKey(prev => (prev === 'shovel' ? null : prev))}
                 style={{
                   position: 'relative', width: 54, height: 64, borderRadius: 10, border: '2px solid #3a7dc9',
                   background: 'linear-gradient(180deg,#dceeff,#b9dcf7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
@@ -836,6 +896,8 @@ export const PlantsVsBugs = () => {
                 onClick={() => showRewardedAd(t('game_tray_freezeTitle'), t('game_tray_freezeDesc'), () => {
                   engineRef.current.freezeUntil = performance.now() + 5000;
                 })}
+                onMouseEnter={() => setHoveredKey('freeze')}
+                onMouseLeave={() => setHoveredKey(prev => (prev === 'freeze' ? null : prev))}
                 style={{
                   position: 'relative', width: 54, height: 64, borderRadius: 10, border: '2px solid #e08a2b',
                   background: 'linear-gradient(180deg,#ffe3c2,#ffcf94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
@@ -850,6 +912,8 @@ export const PlantsVsBugs = () => {
                 onClick={() => showRewardedAd(t('game_tray_boostTitle'), t('game_tray_boostDesc'), () => {
                   engineRef.current.doubleSunUntil = performance.now() + 20000;
                 })}
+                onMouseEnter={() => setHoveredKey('boost')}
+                onMouseLeave={() => setHoveredKey(prev => (prev === 'boost' ? null : prev))}
                 style={{
                   position: 'relative', width: 54, height: 64, borderRadius: 10, border: '2px solid #e08a2b',
                   background: 'linear-gradient(180deg,#ffe3c2,#ffcf94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
@@ -873,12 +937,9 @@ export const PlantsVsBugs = () => {
                       if (!ready) { sfxError(); return; }
                       setSelectedCard(selected ? null : key);
                       engineRef.current.selectedCard = selected ? null : key;
-                      if (!helpShownRef.current[key]) {
-                        helpShownRef.current[key] = true;
-                        setHelpPlantKey(key);
-                        setModal('help');
-                      }
                     }}
+                    onMouseEnter={() => setHoveredKey(key)}
+                    onMouseLeave={() => setHoveredKey(prev => (prev === key ? null : prev))}
                     style={{
                       position: 'relative', width: 54, height: 64, borderRadius: 10, border: '2px solid #c98a3a',
                       background: 'linear-gradient(180deg,#fff6e0,#f3e3bd)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -949,25 +1010,15 @@ export const PlantsVsBugs = () => {
             )}
           </div>
           </div>
-        </div>
 
-        <div className="pvb-ad-slot pvb-ad-side" data-ad-slot="side-right" aria-hidden="true">
-          Quảng cáo
-        </div>
-      </div>
-
-      {/* Sticky bottom banner (320x50-equivalent). Fixed to the viewport,
-          padded for iOS home-indicator / Android nav-bar safe areas. This is
-          where a real AdSense/AdMob banner unit would mount. */}
-      <div className="pvb-banner-ad" data-ad-slot="sticky-bottom-banner" aria-hidden="true">
-        Quảng cáo banner 320×50
-      </div>
-
-      {/* ================= MODALS ================= */}
+      {/* ================= MODALS =================
+          Positioned absolute within this same frame (not fixed to the
+          viewport), so they stay contained wherever this component is
+          embedded rather than covering the whole host page. */}
 
       {/* Start Modal */}
       {modal === 'start' && (
-        <div className="modal-bg" style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div className="modal-bg" style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
             <h2 style={{ margin: '0 0 8px', color: '#2c1c0e', fontSize: 24 }}>🌻 Plants vs Bugs</h2>
             <h3 style={{ marginTop: -6, color: '#7a4b2a' }}>Garden Defense</h3>
@@ -993,7 +1044,7 @@ export const PlantsVsBugs = () => {
 
       {/* Level Select Modal */}
       {modal === 'levels' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
             <h2 style={{ margin: '0 0 8px', color: '#2c1c0e', fontSize: 24 }}>{t('game_modalLevels_title')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8, margin: '12px 0' }}>
@@ -1031,11 +1082,14 @@ export const PlantsVsBugs = () => {
 
       {/* Level Tip Modal */}
       {modal === 'tip' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
-            <h2 style={{ margin: '0 0 8px', color: '#2c1c0e', fontSize: 24 }}>
-              {currentLevelObj.title} {currentLevelObj.unlocksPlant ? `🔓 ${t(PLANTS[currentLevelObj.unlocksPlant].nameKey)}` : ''}
-            </h2>
+            <h2 style={{ margin: '0 0 8px', color: '#2c1c0e', fontSize: 24 }}>{currentLevelObj.title}</h2>
+            {currentLevelObj.unlocksPlants.length > 0 && (
+              <p style={{ margin: '0 0 8px', color: '#7a4b2a', fontWeight: 700, fontSize: 14 }}>
+                🔓 {currentLevelObj.unlocksPlants.map((k: string) => `${PLANTS[k].emoji} ${plantLabel(PLANTS[k])}`).join(' · ')}
+              </p>
+            )}
             <p style={{ color: '#4a3620', fontSize: 14.5 }}>
               {t('game_modalTip_desc')} {currentLevelObj.waves.length}.
             </p>
@@ -1058,7 +1112,7 @@ export const PlantsVsBugs = () => {
 
       {/* Win Modal */}
       {modal === 'win' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
             <h2>🎉 {t('game_modalWin_title')}</h2>
             <div style={{ fontSize: 34, letterSpacing: 6, margin: '8px 0' }}>
@@ -1104,7 +1158,7 @@ export const PlantsVsBugs = () => {
 
       {/* Lose Modal */}
       {modal === 'lose' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
             <h2>😵 {t('game_modalLose_title')}</h2>
             <p>{t('game_modalLose_desc')}</p>
@@ -1143,29 +1197,9 @@ export const PlantsVsBugs = () => {
         </div>
       )}
 
-      {/* Interstitial Ad Placeholder Modal */}
-      {modal === 'interstitial' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
-            <h2>{t('game_interstitial_title')}</h2>
-            <p>{t('game_interstitial_desc')}</p>
-            <div style={{ background: '#ddd', borderRadius: 8, height: 14, overflow: 'hidden', margin: '14px 0' }}>
-              <div style={{ height: '100%', width: `${interProgress}%`, background: 'linear-gradient(90deg,#4a9c3f,#8fd35c)', transition: 'width .1s linear' }} />
-            </div>
-            <button
-              disabled={interSkipDisabled}
-              onClick={() => setModal(null)}
-              style={{ background: '#8a8a8a', color: '#fff', border: 'none', borderRadius: 26, padding: '12px 22px', fontWeight: 700, cursor: interSkipDisabled ? 'not-allowed' : 'pointer' }}
-            >
-              {interSkipDisabled ? `${t('game_interstitial_skip')} (${interCountdown})` : `${t('game_interstitial_skip')} ✓`}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Rewarded Ad Placeholder Modal */}
       {modal === 'rewarded' && rewardConfig && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
             <h2>{rewardConfig.title}</h2>
             <p>{rewardConfig.desc}</p>
@@ -1181,61 +1215,32 @@ export const PlantsVsBugs = () => {
           </div>
         </div>
       )}
+      </div>
 
-      {/* Plant Info Modal */}
-      {modal === 'help' && helpPlantKey && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(10,15,8,.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: 'linear-gradient(180deg,#fff8e6,#f2e0b8)', border: '4px solid #c98a3a', borderRadius: 18, padding: '22px 20px', maxWidth: 360, width: '100%', textAlign: 'center' }}>
-            <h2>{PLANTS[helpPlantKey].emoji} {t(PLANTS[helpPlantKey].nameKey)}</h2>
-            <p style={{ color: '#4a3620', fontSize: 14.5, margin: '12px 0 20px' }}>{t(PLANTS[helpPlantKey].descKey)}</p>
-            <button
-              onClick={() => setModal(null)}
-              style={{ background: '#4a9c3f', color: '#fff', border: 'none', borderRadius: 26, padding: '12px 22px', fontWeight: 700, cursor: 'pointer' }}
-            >
-              {t('game_help_close')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <style jsx global>{`
-        #pvb-app * {
+      <style jsx>{`
+        #pvb-app :global(*) {
           box-sizing: border-box;
           -webkit-tap-highlight-color: transparent;
         }
 
+        /* Self-contained widget: centers itself wherever it's dropped, but
+           never assumes it owns the whole page (no min-height:100vh, no
+           fixed-position children) — safe to embed inline in another app. */
         #pvb-app {
-          min-height: 100vh;
-          min-height: 100dvh;
           display: flex;
-          flex-direction: column;
-          align-items: center;
-          background: #1c2b17;
-          overflow-x: hidden;
-        }
-
-        .pvb-shell {
-          flex: 1;
-          display: flex;
-          align-items: flex-start;
           justify-content: center;
-          gap: 16px;
-          padding: 16px;
-          padding-bottom: calc(16px + 66px + env(safe-area-inset-bottom, 0px));
           width: 100%;
-          max-width: 1200px;
         }
 
         .pvb-stage-wrap {
           position: relative;
-          width: 100%;
-          max-width: 480px;
+          width: min(430px, 100%);
           aspect-ratio: 9 / 16;
-          max-height: calc(100vh - 32px - 66px - env(safe-area-inset-bottom, 0px));
-          max-height: calc(100dvh - 32px - 66px - env(safe-area-inset-bottom, 0px));
-          border-radius: 18px;
+          max-height: 90vh;
+          margin: 0 auto;
+          border-radius: 22px;
           overflow: hidden;
-          box-shadow: 0 0 0 1px rgba(255, 214, 130, 0.18), 0 20px 60px rgba(0, 0, 0, 0.55);
+          box-shadow: 0 0 0 1px rgba(255, 214, 130, 0.18), 0 20px 60px rgba(0, 0, 0, 0.45);
           background: #1c2b17;
           touch-action: none;
         }
@@ -1258,51 +1263,17 @@ export const PlantsVsBugs = () => {
           overflow: hidden;
         }
 
-        .pvb-ad-slot {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: rgba(255, 246, 224, 0.35);
-          font-size: 11px;
-          letter-spacing: 0.06em;
-          background: repeating-linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.03) 0 10px,
-            rgba(255, 255, 255, 0.01) 10px 20px
-          );
-          border: 1px dashed rgba(255, 246, 224, 0.16);
-          border-radius: 10px;
+        .pvb-hint-dock {
           flex-shrink: 0;
-        }
-
-        .pvb-ad-side {
-          width: 160px;
-          min-width: 160px;
-          height: 600px;
-          writing-mode: vertical-rl;
-        }
-
-        @media (max-width: 900px) {
-          .pvb-ad-side {
-            display: none;
-          }
-        }
-        .pvb-banner-ad {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 40;
-          height: 58px;
-          padding-bottom: env(safe-area-inset-bottom, 0px);
+          min-height: 30px;
           display: flex;
           align-items: center;
-          justify-content: center;
-          color: rgba(255, 246, 224, 0.4);
-          font-size: 11px;
-          letter-spacing: 0.06em;
-          background: #12190f;
-          border-top: 1px dashed rgba(255, 246, 224, 0.16);
+          padding: 5px 10px;
+          font-size: 11.5px;
+          line-height: 1.3;
+          color: #fff6e0;
+          background: rgba(0, 0, 0, 0.28);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         }
       `}</style>
     </div>
