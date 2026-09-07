@@ -1,7 +1,9 @@
 # Prompt 1
-PHẦN 1:
-Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và update cho mình các game ở trong uploaded files: 
+Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và tạo cho mình game [Goose Goose Duck (suy luận xã hội) ] thoả các điều kiện ở trên và kèm theo sau nữa, trả về mình file hoàn chỉnh với các yêu cầu sau:
+
+PHẦN 1: Tổng quát: 
 - gây nghiện
+- vui nhộn, giáo dục
 - game có nhiều levels, độ khó tăng dần qua mỗi level
 - giao diện tối ưu và bắt mắt
 - hấp dẫn người chơi
@@ -12,12 +14,6 @@ Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và update cho mình các gam
 - game để thư giản
 - game build và chơi trên web browser
 - hiển thì vừa vặn và đẹp đẽ trên cả desktop và điện thoại
-
-và mục tiêu chính của game là add quảng cáo kiếm tiền nên
-- đặt SEO tối ưu và tuyệt vời
-- có sẵn place holders cho Quảng cáo set up sau này
-- sau mỗi level kết thúc hoặc game over thì chạy quảng cáo video hiển thị ngay trong khung game container, người dùng có thể skip sau 10s
-
 
 PHẦN 2: THIẾT KẾ GAME BẮT MẮT, GÂY NGHIỆN & TỐI ƯU QUẢNG CÁO
 
@@ -31,8 +27,9 @@ PHẦN 2: THIẾT KẾ GAME BẮT MẮT, GÂY NGHIỆN & TỐI ƯU QUẢNG CÁO
     * Âm thanh combo vui tai (Do-Re-Mi-Fa-Sol tăng dần theo chuỗi combo).
 2. Lựa chọn dòng Game phù hợp nhất
 Tên Game	Thể loại	Lối chơi cốt lõi	Lý do gây nghiện
-Fruit Merge (Ghép Trái Cây / Suika)	Physics Puzzle	Thả các trái cây nhỏ rơi xuống để nhập thành trái lớn hơn (nhỏ nhất là Dâu, lớn nhất là Dưa Hấu).	Cơ chế vật lý chân thực, không gian chơi giới hạn tạo sự gay cấn khi sắp tràn ly.
-Block Blast / Color Match	Grid Puzzle	Xếp các khối hình (như Tetris) vào lưới 8 \times 8 để xóa hàng/cột.	Không giới hạn thời gian, kích thích tư duy sắp xếp.
+Vi du:
+- Fruit Merge (Ghép Trái Cây / Suika)	Physics Puzzle	Thả các trái cây nhỏ rơi xuống để nhập thành trái lớn hơn (nhỏ nhất là Dâu, lớn nhất là Dưa Hấu).	Cơ chế vật lý chân thực, không gian chơi giới hạn tạo sự gay cấn khi sắp tràn ly.
+- Block Blast / Color Match	Grid Puzzle	Xếp các khối hình (như Tetris) vào lưới 8 \times 8 để xóa hàng/cột.	Không giới hạn thời gian, kích thích tư duy sắp xếp.
 
 
 PHẦN 3: KIẾN TRÚC TỐI ƯU QUẢNG CÁO (MONETIZATION STRATEGY)

@@ -31,10 +31,10 @@ Hình ảnh cho thấy các icon bị đứt nét (biểu tượng ? chấm hỏ
 *     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
 *   },
 * };
-*  
+* 
 * Cách C: Chuyển SVG thành React Component inline Nhập trực tiếp SVG vào code component để không phải fetch qua HTTP request:import SudokuIcon from '@/assets/icons/sudoku.svg';
 * // Hoặc render trực tiếp mã <svg>...</svg>
-*  
+* 
 
 
 PHẦN 2: THIẾT KẾ GAME BẮT MẮT, GÂY NGHIỆN & TỐI ƯU QUẢNG CÁO
@@ -80,4 +80,8 @@ PHẦN 4: KỸ THUẬT WEB GAME TRÊN NEXT.JS (RESPONSIVE)
 
 
 Next game ideas
-- Trò chơi giải trí phổ biến: Các tựa game nhẹ nhàng, vui nhộn như Goose Goose Duck (suy luận xã hội), Magic Dodos (trí tuệ) hoặc các game casual trên điện thoại. [1] (https://ai-hay.vn/choi-game-giai-tri-tren-win-10-mien-phi-pN1UmIcNNdW)
+- Trò chơi giải trí phổ biến: Các tựa game nhẹ nhàng, vui nhộn như Goose Goose Duck (suy luận xã hội), 
+Magic Dodos (trí tuệ) hoặc các game casual trên điện thoại. [1] (https://ai-hay.vn/choi-game-giai-tri-tren-win-10-mien-phi-pN1UmIcNNdW)
+
+- Game đố vui & Trí tuệ nhẹ nhàng 
+- Brain Out / Brain Test: Những câu đố "hại não" nhưng đầy hài hước và bất ngờ, giúp kích thích tư duy sáng tạo. 

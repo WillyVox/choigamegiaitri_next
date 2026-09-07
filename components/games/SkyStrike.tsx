@@ -6,6 +6,43 @@ import { useTranslations } from 'next-intl';
 const VW = 480;
 const VH = 800;
 const STORAGE_KEY = 'skystrike_highscore';
+const TUTORIAL_KEY = 'skystrike_tutorial_seen';
+const MUTE_KEY = 'skystrike_muted';
+
+// ---- Monetization tuning -------------------------------------------------
+// Interstitials are throttled so they never interrupt play more than once
+// per this window. Keeping it randomized (60-90s) avoids a predictable
+// "ad every single time" pattern that tanks retention.
+const INTERSTITIAL_MIN_GAP_MS = 60_000;
+const INTERSTITIAL_MAX_GAP_MS = 90_000;
+// Rewarded "free power-up" can only be requested this often so it stays a
+// treat, not a way to trivialize the game.
+const REWARDED_POWERUP_COOLDOWN_MS = 30_000;
+
+/**
+ * Ad SDK integration points.
+ *
+ * These functions are the ONLY places that should talk to an ad network.
+ * Right now they simulate network latency + a watch window so the game is
+ * fully playable/testable without credentials. Swap the body of each
+ * function for the real SDK call (AdMob via a WebView bridge, Google Ad
+ * Manager / AdSense for web) and every call site below keeps working
+ * unchanged.
+ */
+function simulateInterstitialAd(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 1200));
+}
+function simulateRewardedAd(onReward: () => void): Promise<boolean> {
+  // Real integration: call the rewarded ad SDK, resolve `true` only from
+  // its onUserEarnedReward callback so users can't skip early and still
+  // get the reward.
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      onReward();
+      resolve(true);
+    }, 1800);
+  });
+}
 
 type GameState = 'start' | 'playing' | 'paused' | 'over';
 type PowerupType = 'rapid' | 'spread' | 'shield' | 'life' | 'score';
@@ -105,6 +142,15 @@ export default function SkyStrike() {
     rapid: false,
     spread: false,
   });
+  const [showTutorial, setShowTutorial] = useState<boolean>(false);
+  const [muted, setMuted] = useState<boolean>(false);
+  const [levelFlash, setLevelFlash] = useState<number | null>(null);
+  const [canContinue, setCanContinue] = useState<boolean>(false);
+  const [continueSecondsLeft, setContinueSecondsLeft] = useState<number>(6);
+  const [adBusy, setAdBusy] = useState<'none' | 'continue' | 'powerup' | 'double' | 'interstitial'>('none');
+  const [doubledScore, setDoubledScore] = useState<boolean>(false);
+  const [rewardedPowerupReady, setRewardedPowerupReady] = useState<boolean>(true);
+  const [showInterstitial, setShowInterstitial] = useState<boolean>(false);
 
   const gameStateRef = useRef<GameState>('start');
   const scoreRef = useRef<number>(0);
@@ -118,6 +164,13 @@ export default function SkyStrike() {
   const difficultyRef = useRef<number>(1);
   const elapsedRef = useRef<number>(0);
   const shakeRef = useRef<number>(0);
+  const mutedRef = useRef<boolean>(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const usedContinueRef = useRef<boolean>(false);
+  const lastInterstitialAtRef = useRef<number>(0);
+  const nextInterstitialGapRef = useRef<number>(INTERSTITIAL_MIN_GAP_MS);
+  const rewardedPowerupCooldownUntilRef = useRef<number>(0);
+  const continueTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const inputRef = useRef<{
     targetX: number;
@@ -159,16 +212,107 @@ export default function SkyStrike() {
   }, [gameState]);
 
   useEffect(() => {
+    if (levelFlash === null) return;
+    const id = setTimeout(() => setLevelFlash(null), 1400);
+    return () => clearTimeout(id);
+  }, [levelFlash]);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = parseInt(saved, 10) || 0;
         setHighScore(parsed);
       }
+      setShowTutorial(!localStorage.getItem(TUTORIAL_KEY));
+      const mutedSaved = localStorage.getItem(MUTE_KEY) === '1';
+      setMuted(mutedSaved);
+      mutedRef.current = mutedSaved;
     } catch {
       // Ignore
     }
+    // Randomize the first interstitial gap so day-one sessions don't all
+    // hit the ad at the exact same elapsed time.
+    nextInterstitialGapRef.current = rand(INTERSTITIAL_MIN_GAP_MS, INTERSTITIAL_MAX_GAP_MS);
   }, []);
+
+  const toggleMute = () => {
+    setMuted((prev) => {
+      const next = !prev;
+      mutedRef.current = next;
+      try {
+        localStorage.setItem(MUTE_KEY, next ? '1' : '0');
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
+
+  const dismissTutorial = () => {
+    setShowTutorial(false);
+    try {
+      localStorage.setItem(TUTORIAL_KEY, '1');
+    } catch {
+      // Ignore
+    }
+  };
+
+  // ---- "Juicy" audio: short synthesized tones via Web Audio API. No
+  // external sound files needed, so this never blocks on asset loading.
+  const getAudioCtx = () => {
+    if (typeof window === 'undefined') return null;
+    if (!audioCtxRef.current) {
+      const Ctor = window.AudioContext || (window as any).webkitAudioContext;
+      if (!Ctor) return null;
+      audioCtxRef.current = new Ctor();
+    }
+    return audioCtxRef.current;
+  };
+
+  const playTone = (freq: number, duration: number, type: OscillatorType = 'sine', gain = 0.08) => {
+    if (mutedRef.current) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.value = gain;
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  };
+
+  // Do-Re-Mi-Fa-Sol... rising scale, one note per combo step, resetting
+  // every octave so long combos still feel good instead of screeching.
+  const COMBO_SCALE = [523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77];
+  const playComboTone = (comboCount: number) => {
+    const note = COMBO_SCALE[(comboCount - 1) % COMBO_SCALE.length];
+    const octave = 1 + Math.floor((comboCount - 1) / COMBO_SCALE.length) * 0.5;
+    playTone(note * octave, 0.16, 'triangle', 0.07);
+  };
+
+  const playExplosion = (big: boolean) => {
+    if (mutedRef.current) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(big ? 180 : 240, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + (big ? 0.4 : 0.2));
+    g.gain.value = big ? 0.14 : 0.09;
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (big ? 0.4 : 0.2));
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + (big ? 0.4 : 0.2));
+  };
+
+  const playHit = () => playTone(200, 0.08, 'square', 0.05);
 
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const chance = (p: number) => Math.random() < p;
@@ -255,6 +399,13 @@ export default function SkyStrike() {
 
     inputRef.current.targetX = VW / 2;
     inputRef.current.targetY = VH * 0.8;
+
+    usedContinueRef.current = false;
+    if (continueTimerRef.current) clearInterval(continueTimerRef.current);
+    setCanContinue(false);
+    setDoubledScore(false);
+    setShowInterstitial(false);
+    setAdBusy('none');
 
     updateHUD();
   };
@@ -379,22 +530,110 @@ export default function SkyStrike() {
     shakeRef.current = 10;
     burst(p.x, p.y, '#ff4365', 18);
     comboRef.current = 0;
+    playHit();
     updateHUD();
 
     if (livesRef.current <= 0) {
-      gameOver();
+      offerContinue();
     }
   };
 
-  const gameOver = () => {
+  // First death of a run offers a rewarded-ad revive (classic "Continue?"
+  // flow — the single highest-converting rewarded-ad placement). Declining
+  // or letting the countdown lapse falls through to the real game-over.
+  const offerContinue = () => {
+    if (usedContinueRef.current) {
+      finalizeGameOver();
+      return;
+    }
     setGameState('over');
+    setCanContinue(true);
+    setContinueSecondsLeft(6);
+    if (continueTimerRef.current) clearInterval(continueTimerRef.current);
+    continueTimerRef.current = setInterval(() => {
+      setContinueSecondsLeft((s) => {
+        if (s <= 1) {
+          if (continueTimerRef.current) clearInterval(continueTimerRef.current);
+          setCanContinue(false);
+          finalizeGameOver();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  };
+
+  const finalizeGameOver = () => {
+    setCanContinue(false);
     const finalSc = Math.floor(scoreRef.current);
     const isRecord = finalSc > highScore;
     setIsNewRecord(isRecord);
+    if (isRecord) saveHighScore(finalSc);
 
-    if (isRecord) {
-      saveHighScore(finalSc);
+    // Interstitial: only if we're past the randomized 60-90s cooldown, so a
+    // string of quick deaths never turns into ad spam.
+    const now = Date.now();
+    if (now - lastInterstitialAtRef.current >= nextInterstitialGapRef.current) {
+      lastInterstitialAtRef.current = now;
+      nextInterstitialGapRef.current = rand(INTERSTITIAL_MIN_GAP_MS, INTERSTITIAL_MAX_GAP_MS);
+      setShowInterstitial(true);
+      setAdBusy('interstitial');
+      simulateInterstitialAd().then(() => setAdBusy('none'));
+    } else {
+      setShowInterstitial(false);
     }
+  };
+
+  const handleWatchContinueAd = async () => {
+    if (continueTimerRef.current) clearInterval(continueTimerRef.current);
+    setAdBusy('continue');
+    await simulateRewardedAd(() => {
+      usedContinueRef.current = true;
+      livesRef.current = 1;
+      const p = playerRef.current;
+      p.invuln = 2.5;
+      // Clear the bullets/enemies crowding the player so the revive isn't
+      // an instant second death.
+      ebulletsRef.current = [];
+      enemiesRef.current = enemiesRef.current.filter((e) => e.y < p.y - 140);
+    });
+    setAdBusy('none');
+    setCanContinue(false);
+    setGameState('playing');
+    updateHUD();
+  };
+
+  const handleDeclineContinue = () => {
+    if (continueTimerRef.current) clearInterval(continueTimerRef.current);
+    setCanContinue(false);
+    finalizeGameOver();
+  };
+
+  const handleWatchDoubleScoreAd = async () => {
+    if (doubledScore) return;
+    setAdBusy('double');
+    await simulateRewardedAd(() => {
+      const doubled = Math.floor(scoreRef.current) * 2;
+      scoreRef.current = doubled;
+      setScore(doubled);
+      if (doubled > highScore) saveHighScore(doubled);
+      setDoubledScore(true);
+    });
+    setAdBusy('none');
+  };
+
+  const handleWatchPowerupAd = async () => {
+    if (!rewardedPowerupReady || gameStateRef.current !== 'playing') return;
+    setRewardedPowerupReady(false);
+    setAdBusy('powerup');
+    await simulateRewardedAd(() => {
+      const p = playerRef.current;
+      applyPowerup(chance(0.5) ? 'shield' : 'rapid');
+      burst(p.x, p.y, '#ffe27a', 20);
+    });
+    setAdBusy('none');
+    rewardedPowerupCooldownUntilRef.current = Date.now() + REWARDED_POWERUP_COOLDOWN_MS;
+    setTimeout(() => setRewardedPowerupReady(true), REWARDED_POWERUP_COOLDOWN_MS);
   };
 
   const playerShoot = (dt: number) => {
@@ -416,7 +655,13 @@ export default function SkyStrike() {
 
   const update = (dt: number) => {
     elapsedRef.current += dt;
-    difficultyRef.current = 1 + elapsedRef.current / 28;
+    // Levels 1-5 stay near-flat difficulty (fast early wins = dopamine
+    // hit). From level 6 on, difficulty ramps noticeably so the game keeps
+    // demanding more skill instead of going stale.
+    difficultyRef.current =
+      waveRef.current <= 5
+        ? 1 + (waveRef.current - 1) * 0.06 + elapsedRef.current / 90
+        : 1.24 + (waveRef.current - 5) * 0.24 + elapsedRef.current / 60;
 
     const p = playerRef.current;
     const keys = inputRef.current.keys;
@@ -474,6 +719,9 @@ export default function SkyStrike() {
     if (waveTimerRef.current > 16 + waveRef.current * 1.5) {
       waveTimerRef.current = 0;
       waveRef.current += 1;
+      setLevelFlash(waveRef.current);
+      playTone(880, 0.12, 'triangle', 0.06);
+      setTimeout(() => playTone(1108.73, 0.18, 'triangle', 0.06), 110);
       if (waveRef.current % 4 === 0 && !enemiesRef.current.some((e) => e.type === 'boss')) {
         maybeSpawnBoss();
       }
@@ -558,6 +806,8 @@ export default function SkyStrike() {
             scoreRef.current += gained;
             burst(e.x, e.y, e.type === 'boss' ? '#ff7b54' : '#4fd8eb', e.type === 'boss' ? 46 : 16);
             shakeRef.current = Math.max(shakeRef.current, e.type === 'boss' ? 16 : 4);
+            playExplosion(e.type === 'boss');
+            playComboTone(comboRef.current);
 
             if (chance(e.type === 'boss' ? 1 : 0.22)) spawnPowerup(e.x, e.y);
             if (e.type === 'boss') {
@@ -960,6 +1210,7 @@ export default function SkyStrike() {
       stageWrap.removeEventListener('pointerleave', handlePointerUp);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      if (continueTimerRef.current) clearInterval(continueTimerRef.current);
     };
   }, []);
 
@@ -980,7 +1231,10 @@ export default function SkyStrike() {
       />
 
       <div className="game-shell">
-        
+        <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
+          Quảng cáo
+        </div>
+
         <div className="stage-wrap" ref={stageWrapRef}>
           <canvas ref={canvasRef} id="game" />
 
@@ -997,16 +1251,28 @@ export default function SkyStrike() {
                     ))}
                   </div>
                 </div>
-                <button
-                  className="pause-btn"
-                  onClick={handleTogglePause}
-                  aria-label="Tạm dừng"
-                >
-                  ⏸
-                </button>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="pause-btn" onClick={toggleMute} aria-label="Âm thanh">
+                    {muted ? '🔇' : '🔊'}
+                  </button>
+                  <button
+                    className="pause-btn"
+                    onClick={handleTogglePause}
+                    aria-label="Tạm dừng"
+                  >
+                    ⏸
+                  </button>
+                </div>
               </div>
 
               <div className="wave-tag">{t('waveTag', { wave })}</div>
+
+              {levelFlash !== null && (
+                <div className="level-flash">
+                  <span>CẤP {levelFlash}</span>
+                  <small>Độ khó tăng dần — cố lên!</small>
+                </div>
+              )}
 
               <div className="powerup-bar">
                 {activePowerups.shield && (
@@ -1028,11 +1294,34 @@ export default function SkyStrike() {
                   </div>
                 )}
               </div>
+
+              <button
+                className={`reward-fab ${!rewardedPowerupReady ? 'disabled' : ''}`}
+                onClick={handleWatchPowerupAd}
+                disabled={!rewardedPowerupReady || adBusy === 'powerup'}
+                type="button"
+              >
+                {adBusy === 'powerup' ? '⏳ Đang tải QC…' : rewardedPowerupReady ? '🎁 Xem QC nhận trợ giúp' : '🎁 Chờ một chút…'}
+              </button>
+
+              {showTutorial && (
+                <div className="tutorial-overlay" onClick={dismissTutorial}>
+                  <div className="tutorial-card">
+                    <div className="tutorial-icon">👆</div>
+                    <p>Chạm & kéo để điều khiển máy bay.</p>
+                    <p>Súng tự động bắn — chỉ cần né và nhặt vật phẩm!</p>
+                    <span className="tutorial-tap">Chạm để bắt đầu</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {gameState === 'start' && (
             <div className="screen">
+              <button className="mute-corner" onClick={toggleMute} aria-label="Âm thanh" type="button">
+                {muted ? '🔇' : '🔊'}
+              </button>
               <div className="logo">
                 SKY<span>STRIKE</span>
               </div>
@@ -1062,7 +1351,26 @@ export default function SkyStrike() {
             </div>
           )}
 
-          {gameState === 'over' && (
+          {gameState === 'over' && canContinue && (
+            <div className="screen">
+              <div className="final-label">RỚT MÁY BAY!</div>
+              <div className="final-score">{score}</div>
+              <p className="hint">Xem một quảng cáo ngắn để hồi sinh ngay tại chỗ và chơi tiếp?</p>
+              <button
+                className="btn"
+                onClick={handleWatchContinueAd}
+                disabled={adBusy === 'continue'}
+                type="button"
+              >
+                {adBusy === 'continue' ? '⏳ Đang tải quảng cáo…' : `▶ Xem QC & chơi tiếp (${continueSecondsLeft}s)`}
+              </button>
+              <button className="btn secondary" onClick={handleDeclineContinue} type="button">
+                Kết thúc lượt chơi
+              </button>
+            </div>
+          )}
+
+          {gameState === 'over' && !canContinue && (
             <div className="screen">
               <div className="final-label">{t('finalLabel')}</div>
               <div className="final-score">{score}</div>
@@ -1070,16 +1378,44 @@ export default function SkyStrike() {
               <div className="hiscore-pill">
                 {t('hiscorePill', { score: Math.max(highScore, score) })}
               </div>
+
+              {!doubledScore && (
+                <button
+                  className="btn secondary double-btn"
+                  onClick={handleWatchDoubleScoreAd}
+                  disabled={adBusy === 'double'}
+                  type="button"
+                >
+                  {adBusy === 'double' ? '⏳ Đang tải quảng cáo…' : '🎬 Xem QC nhận x2 điểm'}
+                </button>
+              )}
+
               <button className="btn" onClick={handlePlay} type="button">
                 {t('replayButton')}
               </button>
-              <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
-                Quảng cáo (khi kết thúc lượt chơi)
-              </div>
+
+              {showInterstitial && (
+                <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
+                  {adBusy === 'interstitial' ? 'Đang tải quảng cáo…' : 'Quảng cáo xen kẽ (interstitial)'}
+                </div>
+              )}
             </div>
           )}
         </div>
 
+        <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
+          Quảng cáo
+        </div>
+      </div>
+
+      {/* Sticky bottom banner (320x50-equivalent). Fixed to the viewport,
+          padded for iOS home-indicator / Android nav-bar safe areas, and
+          never overlaps the game canvas thanks to the page's bottom
+          padding below. This is where a real AdSense/AdMob banner unit
+          would mount (e.g. an <ins class="adsbygoogle"> tag or a native
+          bridge banner view). */}
+      <div className="banner-ad" data-ad-slot="sticky-bottom-banner" aria-hidden="true">
+        Quảng cáo banner 320×50
       </div>
 
       <div className="about">
