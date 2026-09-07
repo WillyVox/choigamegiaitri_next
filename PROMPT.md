@@ -84,3 +84,35 @@ tạo cho mình 6 icons cho 6 tựa game này để mình hiện thị trên web
 # Prompt 4
 
 Mình muốn gắn tools để theo dõi lượng truy cập và chi tiết người dùng trên trang web mình, hãy nghiên cứu chuyên sâu, tìm hiểu sâu sắc và đưa cho mình các giải pháp và cách thức thực hiện
+
+
+# Prompt 5
+- Convert to React Component.
+- build an icon for the game.
+- provide slugs like:
+{
+    slug: 'sudoku-zen',
+    name: { en: 'Sudoku Zen', vi: 'Sudoku Thư Giãn' },
+    tagline: {
+    en: 'Fill the grid, clear your mind.',
+    vi: 'Chơi Game Giải Trí Sudoku, thư giãn đầu óc mỗi ngày.'
+    },
+    description: {
+        en: 'A calm, classic number puzzle. Fill every row, column, and box with 1 to 9, climb through leveled difficulty, and see how far you can go before running out of mistakes.',
+        vi: 'Chơi Game Giải Trí Sudoku cổ điển, nhẹ nhàng thư giãn. Điền số từ 1 đến 9 vào từng hàng, cột và ô vuông, vượt qua các cấp độ khó tăng dần, xem bạn đi được bao xa trước khi hết lượt sai.'
+    },
+    ogImage: '/games/icon-sudoku-zen.svg',
+    genre: ['Puzzle', 'Classic']
+},
+
+- provide locale vi.json and en.json like
+"sudokuZen": {
+    "levelShort": "Cấp",
+    "diffEasy": "Dễ",
+    "diffMedium": "Trung bình",
+    "diffHard": "Khó",
+    "diffExpert": "Chuyên gia",
+    "score": "điểm",
+    "best": "tốt nhất",
+    "time": "thời gian",
+}

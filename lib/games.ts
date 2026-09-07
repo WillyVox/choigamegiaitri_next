@@ -107,7 +107,23 @@ export const GAME_CONFIGS: GameMeta[] = [
     ogImage: '/games/icon-sudoku-zen.svg',
     genre: ['Puzzle', 'Classic']
   },
-  
+  {
+    slug: 'goose-goose-duck',
+    name: { 
+      en: 'Goose Goose Duck', 
+      vi: 'Vịt Lẫn Trốn' 
+    },
+    tagline: {
+      en: 'Spot the hidden duck among the geese before time runs out!',
+      vi: 'Truy tìm chú vịt ẩn nấp giữa đàn ngỗng trước khi hết giờ!'
+    },
+    description: {
+      en: 'A fast-paced hyper-casual hidden-object game. Tap through the flock, spot the imposter duck, keep suspicion low, and clear levels as difficulty scales.',
+      vi: 'Trò chơi tinh mắt nhanh tay đầy kịch tính. Bấm tìm chú vịt ẩn nấp giữa bầy ngỗng, kiểm soát mức độ nghi ngờ và vượt qua các cấp độ thử thách tăng dần.'
+    },
+    ogImage: '/games/icon-goose-goose-duck.svg',
+    genre: ['Casual', 'Puzzle', 'Arcade']
+  }
   /* {
     slug: 'chaos-or-nah',
     name: { en: 'Chaos or Nah?', vi: 'Chaos or Nah?' },

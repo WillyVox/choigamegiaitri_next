@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Vịt Lẩn Trốn — Duck Hunt Party</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#EAF6F4;
+    --pond:#2FA6A6;
+    --pond-dark:#1C7373;
+    --grass:#7FC95B;
+    --bill:#F5A623;
+    --ink:#173238;
+    --alert:#E85D4E;
+    --cream:#FFF8EC;
+    --line:rgba(23,50,56,0.10);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 20%, #bfe9e4 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, #d9f0c4 0%, transparent 50%),
+      var(--sky);
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  /* ---------- FRAME (9:16 game canvas, centered on desktop, full-bleed on mobile) ---------- */
+  #frame{
+    position:relative;
+    width:min(430px, 100vw);
+    height:min(100vh, calc(min(430px,100vw) * 16 / 9));
+    background:linear-gradient(180deg,#FBFFFC 0%, var(--sky) 100%);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(20,60,60,0.25);
+    animation:frameIn .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @media (min-width:520px){
+    #frame{ border-radius:28px; }
+  }
+  @keyframes frameIn{
+    from{opacity:0; transform:scale(.94) translateY(10px);}
+    to{opacity:1; transform:scale(1) translateY(0);}
+  }
+
+  /* ---------- HEADER / HUD ---------- */
+  #hud{
+    padding:calc(12px + var(--safe-t)) 14px 8px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    flex:0 0 auto;
+    background:var(--pond);
+    color:#fff;
+    border-bottom-left-radius:22px;
+    border-bottom-right-radius:22px;
+    box-shadow:0 6px 14px rgba(20,60,60,0.12);
+    z-index:5;
+  }
+  #hud-top{display:flex; justify-content:space-between; align-items:center;}
+  .hud-stat{font-family:'Fredoka',sans-serif; font-size:14px; display:flex; align-items:center; gap:6px;}
+  .hud-stat b{font-size:17px;}
+  #timeRow{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800;}
+  .bar-track{flex:1; height:9px; border-radius:6px; background:rgba(255,255,255,0.28); overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px; transition:width .25s linear, background-color .3s;}
+  #timeFill{background:#fff;}
+  #susRow{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800;}
+  #susFill{background:var(--grass);}
+
+  /* ---------- GAME AREA ---------- */
+  #stage{
+    flex:1 1 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 14px;
+    min-height:0;
+    position:relative;
+  }
+  #grid{
+    display:grid;
+    gap:8px;
+    width:100%;
+  }
+  .tile{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:16px;
+    background:var(--cream);
+    border:2px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:min(9vw,34px);
+    cursor:pointer;
+    user-select:none;
+    transition:transform .12s ease, background .2s, border-color .2s;
+  }
+  .tile:active{transform:scale(.88);}
+  .tile.found{background:#DDF5E3; border-color:var(--grass); cursor:default;}
+  .tile.wrong{animation:shake .35s;}
+  .tile.covered{background:var(--pond-dark); color:transparent; cursor:default;}
+  .tile.covered::after{content:'👁'; position:absolute; color:#fff; font-size:min(7vw,26px);}
+  .tile .mark{position:absolute; top:-6px; right:-6px; font-size:16px;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px); background:#FBDEDA;}
+    75%{transform:translateX(6px); background:#FBDEDA;}
+  }
+  @keyframes popIn{
+    from{opacity:0; transform:scale(.5);}
+    to{opacity:1; transform:scale(1);}
+  }
+
+  /* ---------- POWERUP BAR ---------- */
+  #powerbar{
+    flex:0 0 auto;
+    display:flex;
+    gap:8px;
+    padding:0 14px 10px;
+  }
+  .pwr{
+    flex:1;
+    background:#fff;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:8px 4px;
+    text-align:center;
+    font-family:'Fredoka',sans-serif;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    line-height:1.3;
+  }
+  .pwr:active{transform:scale(.94);}
+  .pwr .ic{font-size:20px; display:block;}
+
+  /* ---------- AD BANNER (sticky, safe-area aware) ---------- */
+  #adbanner{
+    flex:0 0 auto;
+    height:50px;
+    margin:0 auto calc(6px + var(--safe-b));
+    width:min(320px, calc(100% - 20px));
+    background:repeating-linear-gradient(135deg,#dfe7e7,#dfe7e7 10px,#eef3f3 10px,#eef3f3 20px);
+    border:1px dashed #9fb3b3;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#5c7373;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.3px;
+  }
+
+  /* ---------- OVERLAYS ---------- */
+  .overlay{
+    position:absolute; inset:0;
+    background:rgba(12,30,34,0.72);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    z-index:20;
+    animation:fadeOv .25s ease both;
+  }
+  @keyframes fadeOv{from{opacity:0;} to{opacity:1;}}
+  .card{
+    background:var(--cream);
+    border-radius:22px;
+    padding:26px 22px;
+    width:100%;
+    max-width:320px;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.3);
+  }
+  .card h2{
+    font-family:'Fredoka',sans-serif;
+    margin:4px 0 6px;
+    font-size:24px;
+    color:var(--pond-dark);
+  }
+  .card p{margin:4px 0 16px; font-size:14px; color:#43585d; line-height:1.5;}
+  .big-emoji{font-size:52px; display:block; margin-bottom:4px;}
+  .btn{
+    display:block;
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:14px;
+    font-family:'Fredoka',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    margin-top:10px;
+    cursor:pointer;
+    transition:transform .1s;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-primary{background:var(--pond); color:#fff;}
+  .btn-gold{background:var(--bill); color:#fff;}
+  .btn-ghost{background:transparent; color:#5c7373; text-decoration:underline; font-size:13px; padding:8px;}
+  .btn:disabled{opacity:.55; cursor:not-allowed;}
+
+  /* fake ad overlays */
+  .adcard{
+    background:#111;
+    color:#fff;
+    border-radius:18px;
+    width:100%;
+    max-width:320px;
+    padding:0;
+    overflow:hidden;
+    text-align:center;
+  }
+  .adscreen{
+    height:220px;
+    background:linear-gradient(135deg,#2FA6A6,#173238);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'Fredoka',sans-serif;
+  }
+  .adscreen .adtag{position:absolute; margin-top:-190px; margin-left:-140px; font-size:10px; background:rgba(255,255,255,.2); padding:2px 8px; border-radius:20px;}
+  .adfoot{padding:14px; font-size:13px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .adring{
+    width:46px; height:46px; border-radius:50%;
+    border:4px solid rgba(255,255,255,.25); border-top-color:#fff;
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  #toast{
+    position:absolute; left:50%; bottom:120px; transform:translate(-50%,20px);
+    background:var(--ink); color:#fff; padding:8px 16px; border-radius:20px;
+    font-size:12px; font-weight:700; opacity:0; transition:opacity .3s, transform .3s;
+    z-index:30; pointer-events:none; white-space:nowrap;
+  }
+  #toast.show{opacity:1; transform:translate(-50%,0);}
+
+  #startBadges{display:flex; gap:6px; justify-content:center; margin-bottom:14px; flex-wrap:wrap;}
+  #startBadges span{background:#fff; border:1px solid var(--line); border-radius:20px; padding:5px 10px; font-size:11px; font-weight:700; color:var(--pond-dark);}
+</style>
+</head>
+<body>
+
+<div id="frame">
+
+  <div id="hud">
+    <div id="hud-top">
+      <div class="hud-stat">🎮 Cấp <b id="hudLevel">1</b></div>
+      <div class="hud-stat">⭐ <b id="hudScore">0</b></div>
+    </div>
+    <div id="timeRow">⏱ <span id="hudTime">30</span>s
+      <div class="bar-track"><div class="bar-fill" id="timeFill" style="width:100%"></div></div>
+    </div>
+    <div id="susRow">🚨
+      <div class="bar-track"><div class="bar-fill" id="susFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div id="stage">
+    <div id="grid"></div>
+    <div id="toast"></div>
+  </div>
+
+  <div id="powerbar">
+    <div class="pwr" onclick="usePowerup('hint')"><span class="ic">💡</span>Gợi ý</div>
+    <div class="pwr" onclick="usePowerup('shield')"><span class="ic">🛡️</span>-Nghi ngờ</div>
+    <div class="pwr" onclick="usePowerup('time')"><span class="ic">⏳</span>+10 giây</div>
+  </div>
+
+  <div id="adbanner">QUẢNG CÁO · 320×50</div>
+
+  <!-- START SCREEN -->
+  <div class="overlay" id="ovStart">
+    <div class="card">
+      <span class="big-emoji">🦆🪿🪿</span>
+      <h2>Vịt Lẩn Trốn</h2>
+      <p>Một chú vịt trà trộn vào đàn ngỗng! Chạm thật nhanh để tìm ra tất cả chú vịt trước khi bị phát hiện.</p>
+      <div id="startBadges">
+        <span>👆 Chơi 1 chạm</span>
+        <span>📈 Khó dần theo cấp</span>
+        <span>🕊️ Nhẹ nhàng, thư giãn</span>
+      </div>
+      <button class="btn btn-primary" onclick="startGame(1)">▶️ Bắt đầu chơi</button>
+    </div>
+  </div>
+
+  <!-- LEVEL COMPLETE -->
+  <div class="overlay" id="ovWin" style="display:none;">
+    <div class="card">
+      <span class="big-emoji">🎉</span>
+      <h2>Qua cấp <span id="winLevel"></span>!</h2>
+      <p>Bạn đã tìm ra hết vịt. Điểm cộng: <b id="winScore"></b></p>
+      <button class="btn btn-gold" onclick="offerDoubleScore()">🎬 Xem QC nhân đôi điểm</button>
+      <button class="btn btn-primary" onclick="proceedNextLevel()">➡️ Cấp tiếp theo</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="overlay" id="ovLose" style="display:none;">
+    <div class="card">
+      <span class="big-emoji" id="loseEmoji">🪿</span>
+      <h2 id="loseTitle">Bị phát hiện rồi!</h2>
+      <p>Điểm của bạn: <b id="loseScore"></b> · Kỷ lục: <b id="loseBest"></b></p>
+      <button class="btn btn-gold" id="reviveBtn" onclick="offerRevive()">🎬 Xem QC để chơi tiếp</button>
+      <button class="btn btn-primary" onclick="backToMenuFlow()">🔁 Chơi lại từ đầu</button>
+    </div>
+  </div>
+
+  <!-- INTERSTITIAL AD -->
+  <div class="overlay" id="ovInter" style="display:none;">
+    <div class="adcard">
+      <div class="adscreen">
+        <span class="adtag">QUẢNG CÁO</span>
+        <div style="font-size:34px;">📢</div>
+        <div style="margin-top:6px;font-weight:700;">Nhà tài trợ giả lập</div>
+      </div>
+      <div class="adfoot">
+        <span id="interNote">Có thể bỏ qua sau <span id="interCount">5</span>s</span>
+        <button class="btn btn-primary" style="margin:0;width:auto;padding:8px 14px;" id="interSkip" disabled onclick="closeInterstitial()">Bỏ qua ✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REWARDED AD -->
+  <div class="overlay" id="ovReward" style="display:none;">
+    <div class="adcard">
+      <div class="adscreen">
+        <span class="adtag">QUẢNG CÁO CÓ THƯỞNG</span>
+        <div class="adring"></div>
+        <div style="margin-top:12px;font-weight:700;" id="rewardNote">Đang phát… <span id="rewardCount">20</span>s</div>
+      </div>
+      <div class="adfoot" style="justify-content:center;">
+        <span style="opacity:.7;">Xem hết để nhận thưởng, không thể bỏ qua</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =====================================================================
+   VỊT LẨN TRỐN — hyper-casual "find the duck" social-deduction skinned
+   single-file browser game. Vanilla JS, no external deps.
+   Ad blocks below are SIMULATED placeholders that follow the same
+   pacing/UX rules real AdSense/AdMob (banner / interstitial / rewarded)
+   integrations should use — swap in real SDK calls where marked TODO.
+   ===================================================================== */
+
+// ---------- STATE ----------
+let state = {
+  level: 1,
+  score: 0,
+  best: 0,
+  ducksTotal: 0,
+  ducksFound: 0,
+  suspicion: 0,
+  timeLeft: 30,
+  timeTotal: 30,
+  movesLeft: null,
+  tickHandle: null,
+  sweepHandle: null,
+  cfg: null,
+  revivedThisLevel: false,
+  lastAdTime: -999999,          // timestamp of last interstitial shown
+  AD_MIN_GAP_MS: 75000,         // 75s, within the 60-90s rule
+  pendingAfterAd: null
+};
+
+const gridEl = document.getElementById('grid');
+
+// ---------- DIFFICULTY CURVE ----------
+function getLevelConfig(level){
+  let cols, rows;
+  if(level<=2){cols=3; rows=3;}
+  else if(level<=5){cols=4; rows=4;}
+  else if(level<=8){cols=5; rows=4;}
+  else if(level<=12){cols=5; rows=5;}
+  else {cols=6; rows=5;}
+  const total = cols*rows;
+  const ducks = Math.min(1+Math.floor(level/3), Math.max(2, Math.floor(total/5)));
+  const baseTime = Math.max(12, 42 - level*2);
+  const movesLimit = level>=6 ? Math.round(total*1.6) : null;
+  const suspicionDrift = level>=6 ? Math.min(4, Math.floor((level-5)/3)+1) : 0;
+  const wrongPenalty = Math.min(32, 12+level);
+  const hasSweep = level>=8;
+  return {cols, rows, total, ducks, baseTime, movesLimit, suspicionDrift, wrongPenalty, hasSweep};
+}
+
+// ---------- LEVEL SETUP ----------
+function startGame(level){
+  hide('ovStart'); hide('ovWin'); hide('ovLose');
+  state.level = level;
+  state.revivedThisLevel = false;
+  buildLevel();
+}
+
+function buildLevel(){
+  const cfg = getLevelConfig(state.level);
+  state.cfg = cfg;
+  state.ducksTotal = cfg.ducks;
+  state.ducksFound = 0;
+  state.suspicion = 0;
+  state.timeTotal = cfg.baseTime;
+  state.timeLeft = cfg.baseTime;
+  state.movesLeft = cfg.movesLimit;
+
+  gridEl.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+  gridEl.innerHTML = '';
+
+  const idxs = [...Array(cfg.total).keys()];
+  shuffle(idxs);
+  const duckSet = new Set(idxs.slice(0, cfg.ducks));
+
+  for(let i=0;i<cfg.total;i++){
+    const tile = document.createElement('div');
+    tile.className='tile';
+    tile.dataset.duck = duckSet.has(i) ? '1':'0';
+    tile.style.animation = `popIn .35s ${(i*15)}ms both`;
+    tile.style.transform = `rotate(${(Math.random()*10-5).toFixed(1)}deg)`;
+    tile.textContent = duckSet.has(i) ? '🦆' : '🪿';
+    tile.addEventListener('click', ()=>handleTap(tile));
+    gridEl.appendChild(tile);
+  }
+
+  updateHud();
+  clearInterval(state.tickHandle);
+  clearInterval(state.sweepHandle);
+  state.tickHandle = setInterval(tick, 1000);
+  if(cfg.hasSweep){
+    state.sweepHandle = setInterval(sweepObstacle, 3600);
+  }
+}
+
+// ---------- CORE LOOP ----------
+function tick(){
+  state.timeLeft--;
+  if(state.cfg.suspicionDrift>0) state.suspicion = Math.min(100, state.suspicion + state.cfg.suspicionDrift);
+  updateHud();
+  if(state.timeLeft<=0) return endLevel(false,'time');
+  if(state.suspicion>=100) return endLevel(false,'suspicion');
+}
+
+function handleTap(tile){
+  if(tile.classList.contains('found') || tile.classList.contains('covered')) return;
+
+  if(state.movesLeft!==null){
+    state.movesLeft--;
+  }
+
+  if(tile.dataset.duck==='1'){
+    tile.classList.add('found');
+    tile.innerHTML = '🦆<span class="mark">✔️</span>';
+    state.ducksFound++;
+    state.score += 10*state.level;
+    state.suspicion = Math.max(0, state.suspicion-5);
+    showToast('Tóm được vịt! +' + (10*state.level));
+  } else {
+    tile.classList.add('wrong');
+    setTimeout(()=>tile.classList.remove('wrong'), 350);
+    state.suspicion = Math.min(100, state.suspicion + state.cfg.wrongPenalty);
+  }
+
+  updateHud();
+
+  if(state.ducksFound>=state.ducksTotal) return endLevel(true);
+  if(state.suspicion>=100) return endLevel(false,'suspicion');
+  if(state.movesLeft!==null && state.movesLeft<=0 && state.ducksFound<state.ducksTotal) return endLevel(false,'moves');
+}
+
+function sweepObstacle(){
+  const tiles = [...gridEl.querySelectorAll('.tile:not(.found):not(.covered)')];
+  if(!tiles.length) return;
+  const t = tiles[Math.floor(Math.random()*tiles.length)];
+  t.classList.add('covered');
+  showToast('Ngỗng canh gác đang nhìn… đợi chút!');
+  setTimeout(()=>t.classList.remove('covered'), 1200);
+}
+
+// ---------- END OF LEVEL ----------
+function endLevel(won, reason){
+  clearInterval(state.tickHandle);
+  clearInterval(state.sweepHandle);
+
+  if(won){
+    const bonus = state.timeLeft*2;
+    state.score += bonus;
+    document.getElementById('winLevel').textContent = state.level;
+    document.getElementById('winScore').textContent = (10*state.ducksTotal*state.level)+bonus;
+    show('ovWin');
+  } else {
+    state.best = Math.max(state.best, state.score);
+    const msgs = {
+      time:['⏰','Hết giờ rồi!'],
+      suspicion:['🚨','Đàn ngỗng phát hiện ra bạn!'],
+      moves:['🐾','Hết lượt đi mất rồi!']
+    };
+    document.getElementById('loseEmoji').textContent = msgs[reason][0];
+    document.getElementById('loseTitle').textContent = msgs[reason][1];
+    document.getElementById('loseScore').textContent = state.score;
+    document.getElementById('loseBest').textContent = state.best;
+    document.getElementById('reviveBtn').style.display = state.revivedThisLevel ? 'none':'block';
+    show('ovLose');
+  }
+  updateHud();
+}
+
+function proceedNextLevel(){
+  hide('ovWin');
+  maybeShowInterstitial(()=>{
+    state.level++;
+    buildLevel();
+  });
+}
+
+function backToMenuFlow(){
+  hide('ovLose');
+  maybeShowInterstitial(()=>{
+    state.level = 1;
+    state.score = 0;
+    show('ovStart');
+  });
+}
+
+// ---------- POWERUPS (granted via rewarded ad) ----------
+function usePowerup(type){
+  showRewardedAd(()=>{
+    if(type==='hint'){
+      const duck = [...gridEl.querySelectorAll('.tile[data-duck="1"]:not(.found)')][0];
+      if(duck){
+        duck.style.outline = '3px solid var(--bill)';
+        showToast('Vịt ở đây nè! 👀');
+        setTimeout(()=>duck.style.outline='', 1500);
+      } else {
+        showToast('Bạn đã tìm hết vịt rồi!');
+      }
+    } else if(type==='shield'){
+      state.suspicion = Math.max(0, state.suspicion-40);
+      showToast('Giảm 40 điểm nghi ngờ 🛡️');
+      updateHud();
+    } else if(type==='time'){
+      state.timeLeft += 10;
+      state.timeTotal += 10;
+      showToast('+10 giây!');
+      updateHud();
+    }
+  });
+}
+
+function offerDoubleScore(){
+  showRewardedAd(()=>{
+    state.score += (10*state.ducksTotal*state.level);
+    showToast('Điểm đã nhân đôi! 💰');
+    proceedNextLevel();
+  });
+}
+
+function offerRevive(){
+  showRewardedAd(()=>{
+    state.revivedThisLevel = true;
+    state.suspicion = 0;
+    state.timeLeft = Math.max(10, Math.round(state.timeTotal/2));
+    hide('ovLose');
+    updateHud();
+    state.tickHandle = setInterval(tick,1000);
+    if(state.cfg.hasSweep) state.sweepHandle = setInterval(sweepObstacle,3600);
+    showToast('Hồi sinh! Cố lên nào 💪');
+  });
+}
+
+// ---------- AD SIMULATION LAYER ----------
+// Sticky banner: static element already in layout (#adbanner), always visible,
+// never overlapping the game canvas thanks to the flex column frame layout.
+// TODO(real integration): mount AdSense/AdMob banner unit inside #adbanner.
+
+function maybeShowInterstitial(after){
+  const now = Date.now();
+  if(now - state.lastAdTime < state.AD_MIN_GAP_MS){
+    after(); // respect 60-90s spacing rule: skip ad, just continue
+    return;
+  }
+  state.lastAdTime = now;
+  state.pendingAfterAd = after;
+  show('ovInter');
+  let count = 5;
+  document.getElementById('interCount').textContent = count;
+  document.getElementById('interSkip').disabled = true;
+  const h = setInterval(()=>{
+    count--;
+    document.getElementById('interCount').textContent = count;
+    if(count<=0){
+      clearInterval(h);
+      document.getElementById('interNote').textContent = 'Sẵn sàng để đóng';
+      document.getElementById('interSkip').disabled = false;
+    }
+  },1000);
+  // TODO(real integration): call AdMob/AdSense interstitial show(), then closeInterstitial() in its close callback.
+}
+function closeInterstitial(){
+  hide('ovInter');
+  const fn = state.pendingAfterAd;
+  state.pendingAfterAd = null;
+  if(fn) fn();
+}
+
+function showRewardedAd(onReward){
+  show('ovReward');
+  let count = 15 + Math.floor(Math.random()*16); // 15-30s per spec
+  document.getElementById('rewardCount').textContent = count;
+  const h = setInterval(()=>{
+    count--;
+    document.getElementById('rewardCount').textContent = count;
+    if(count<=0){
+      clearInterval(h);
+      hide('ovReward');
+      onReward();
+    }
+  },1000);
+  // TODO(real integration): request AdMob/AdSense rewarded unit, call onReward() only in the "user earned reward" callback.
+}
+
+// ---------- HUD / UTIL ----------
+function updateHud(){
+  document.getElementById('hudLevel').textContent = state.level;
+  document.getElementById('hudScore').textContent = state.score;
+  document.getElementById('hudTime').textContent = Math.max(0,state.timeLeft);
+  const timePct = Math.max(0, Math.min(100, (state.timeLeft/state.timeTotal)*100));
+  const timeFill = document.getElementById('timeFill');
+  timeFill.style.width = timePct+'%';
+  timeFill.style.background = timePct<25 ? 'var(--alert)' : '#fff';
+  const susFill = document.getElementById('susFill');
+  susFill.style.width = state.suspicion+'%';
+  susFill.style.background = state.suspicion>70 ? 'var(--alert)' : state.suspicion>35 ? 'var(--bill)' : 'var(--grass)';
+}
+
+function show(id){ document.getElementById(id).style.display='flex'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+</script>
+</body>
+</html>
