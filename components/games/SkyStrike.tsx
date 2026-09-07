@@ -1232,7 +1232,7 @@ export default function SkyStrike() {
 
       <div className="game-shell">
         <div className="ad-slot ad-side" data-ad-slot="side-left" aria-hidden="true">
-          Quảng cáo
+          Ad
         </div>
 
         <div className="stage-wrap" ref={stageWrapRef}>
@@ -1396,7 +1396,7 @@ export default function SkyStrike() {
 
               {showInterstitial && (
                 <div className="interstitial" data-ad-slot="gameover-interstitial" aria-hidden="true">
-                  {adBusy === 'interstitial' ? 'Đang tải quảng cáo…' : 'Quảng cáo xen kẽ (interstitial)'}
+                  {adBusy === 'interstitial' ? 'Đang tải quảng cáo…' : 'Ad xen kẽ (interstitial)'}
                 </div>
               )}
             </div>
@@ -1404,7 +1404,7 @@ export default function SkyStrike() {
         </div>
 
         <div className="ad-slot ad-side" data-ad-slot="side-right" aria-hidden="true">
-          Quảng cáo
+          Ad
         </div>
       </div>
 
@@ -1415,7 +1415,7 @@ export default function SkyStrike() {
           would mount (e.g. an <ins class="adsbygoogle"> tag or a native
           bridge banner view). */}
       <div className="banner-ad" data-ad-slot="sticky-bottom-banner" aria-hidden="true">
-        Quảng cáo banner 320×50
+        Ad banner 320×50
       </div>
 
       <div className="about">
