@@ -14,6 +14,7 @@ import BubbleShoot from '@/components/games/BubbleShoot';
 import CrystalBlocks from '@/components/games/CrystalBlocks';
 import SudokuZen from '@/components/games/SudokuZen';
 import GooseGooseDuck from '@/components/games/GooseGooseDuck';
+import PlantsVsBugs from '@/components/games/PlantsVsBugs';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -26,7 +27,8 @@ const componentMap: Record<string, React.ComponentType> = {
   'bubble-shoot': BubbleShoot,
   'crystal-blocks': CrystalBlocks,
   'sudoku-zen': SudokuZen,
-  'goose-goose-duck': GooseGooseDuck
+  'goose-goose-duck': GooseGooseDuck,
+  'plants-vs-bugs': PlantsVsBugs
 };
 
 export function generateStaticParams() {

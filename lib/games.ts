@@ -123,6 +123,20 @@ export const GAME_CONFIGS: GameMeta[] = [
     },
     ogImage: '/games/icon-goose-goose-duck.svg',
     genre: ['Casual', 'Puzzle', 'Arcade']
+  },
+  {
+    slug: 'plants-vs-bugs',
+    name: { en: 'Plants vs Bugs', vi: 'Cây Trồng Diệt Bọ' },
+    tagline: {
+      en: 'Plant gardens, stop bugs, defend your yard.',
+      vi: 'Trồng cây, cản bọ, bảo vệ khu vườn của bạn.'
+    },
+    description: {
+      en: 'A strategic garden defense game. Place sunflowers, peashooters, and special plants to fight off waves of hungry bugs before they breach your yard.',
+      vi: 'Game thủ thành bảo vệ khu vườn đầy chiến thuật. Trồng hoa hướng dương, đậu bắn súng và các loại cây đặc biệt để ngăn chặn từng đàn bọ biến mất trước khi chúng xâm nhập.'
+    },
+    ogImage: '/games/icon-plants-vs-bugs.svg',
+    genre: ['Strategy', 'Tower Defense', 'Casual']
   }
   /* {
     slug: 'chaos-or-nah',

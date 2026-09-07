@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Plants vs Bugs: Garden Defense</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-top:#8fd3f4;
+  --sky-bottom:#cdf2bf;
+  --grass-a:#7bc850;
+  --grass-b:#6fbb46;
+  --soil:#8b5e34;
+  --soil-dark:#6e4a29;
+  --sun:#ffc93c;
+  --sun-dark:#e8a415;
+  --panel:#5a3a22;
+  --panel-light:#7a4b2a;
+  --card:#fff6e0;
+  --card-border:#c98a3a;
+  --ink:#2c1c0e;
+  --pink:#ff6f91;
+  --red:#c0392b;
+  --green-btn:#4a9c3f;
+  --blue:#3a7dc9;
+  --white:#ffffff;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none;}
+html,body{
+  margin:0; padding:0; width:100%; height:100%;
+  overflow:hidden;
+  font-family:'Nunito',sans-serif;
+  background:#1c2b17;
+  touch-action:none;
+}
+h1,h2,h3,.display{font-family:'Baloo 2',cursive;}
+
+/* ---------- Desktop blurred backdrop ---------- */
+#backdrop{
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(circle at 20% 15%, #fff7c9 0%, transparent 40%),
+    linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bottom) 55%, var(--grass-a) 56%, var(--grass-b) 100%);
+  filter:blur(18px) saturate(1.15) brightness(0.85);
+  transform:scale(1.15);
+}
+#backdrop::after{
+  content:""; position:absolute; inset:0; background:rgba(10,20,10,0.35);
+}
+
+/* ---------- Stage: fixed 9:16-ish game frame ---------- */
+#stage-outer{
+  position:fixed; inset:0; z-index:1;
+  display:flex; align-items:center; justify-content:center;
+  padding-bottom: calc(52px + var(--safe-b));
+  padding-top: var(--safe-t);
+}
+#stage{
+  position:relative;
+  width: min(100vw, calc((100vh - 52px - var(--safe-b) - var(--safe-t)) * 9 / 16));
+  height: min(calc(100vh - 52px - var(--safe-b) - var(--safe-t)), calc(100vw * 16 / 9));
+  background:linear-gradient(180deg,var(--sky-top) 0%, var(--sky-bottom) 38%, var(--grass-a) 40%, var(--grass-b) 100%);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 10px 40px rgba(0,0,0,.5), 0 0 0 4px var(--panel);
+  display:flex; flex-direction:column;
+}
+
+/* ---------- HUD ---------- */
+#hud{
+  display:flex; align-items:center; gap:8px;
+  padding:6px 8px;
+  background:linear-gradient(180deg,var(--panel-light),var(--panel));
+  border-bottom:3px solid var(--soil-dark);
+  flex:0 0 auto;
+  z-index:5;
+}
+.hud-pill{
+  display:flex; align-items:center; gap:5px;
+  background:rgba(0,0,0,.25);
+  border-radius:20px;
+  padding:4px 10px;
+  color:#fff6e0;
+  font-weight:800;
+  font-size:14px;
+  white-space:nowrap;
+}
+.hud-pill .ic{font-size:16px;}
+#hearts{display:flex; gap:2px; font-size:16px;}
+#hud-spacer{flex:1;}
+.icon-btn{
+  width:34px; height:34px; border-radius:50%;
+  background:rgba(0,0,0,.25); border:none; color:#fff6e0;
+  font-size:16px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.icon-btn:active{transform:scale(.9);}
+
+/* ---------- Tray ---------- */
+#tray-wrap{
+  flex:0 0 auto;
+  background:linear-gradient(180deg,var(--soil),var(--soil-dark));
+  border-bottom:3px solid #4a3018;
+  padding:6px 6px;
+}
+#tray{
+  display:flex; gap:6px; overflow-x:auto; overflow-y:hidden;
+  scrollbar-width:none; padding-bottom:2px;
+}
+#tray::-webkit-scrollbar{display:none;}
+.card{
+  position:relative;
+  flex:0 0 auto;
+  width:54px; height:64px;
+  background:linear-gradient(180deg,var(--card),#f3e3bd);
+  border:2px solid var(--card-border);
+  border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:transform .1s;
+}
+.card .emoji{font-size:22px; line-height:1;}
+.card .cost{
+  font-size:10px; font-weight:800; color:var(--ink);
+  background:var(--sun); border-radius:8px; padding:0 5px;
+  margin-top:2px;
+}
+.card.selected{border-color:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.6); transform:translateY(-4px);}
+.card.disabled{filter:grayscale(.85) brightness(.7); cursor:not-allowed;}
+.card .cooldown{
+  position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.55);
+  border-radius:0 0 8px 8px;
+}
+.card .lock{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(20,10,0,.55); border-radius:8px; font-size:18px;}
+.card.tool{background:linear-gradient(180deg,#dceeff,#b9dcf7); border-color:#3a7dc9;}
+.card.tool.power{background:linear-gradient(180deg,#ffe3c2,#ffcf94); border-color:#e08a2b;}
+
+/* ---------- Canvas ---------- */
+#canvasWrap{flex:1 1 auto; position:relative; min-height:0;}
+canvas{display:block; width:100%; height:100%;}
+
+/* Floating combo text */
+.floater{
+  position:absolute; font-family:'Baloo 2',cursive; font-weight:800;
+  pointer-events:none; text-shadow:0 2px 3px rgba(0,0,0,.4);
+  animation:floatUp .9s ease-out forwards;
+  z-index:6;
+}
+@keyframes floatUp{
+  0%{transform:translate(-50%,-50%) scale(.6); opacity:0;}
+  15%{transform:translate(-50%,-70%) scale(1.15); opacity:1;}
+  100%{transform:translate(-50%,-160%) scale(1); opacity:0;}
+}
+
+/* ---------- Ad banner ---------- */
+#ad-banner{
+  position:fixed; left:0; right:0; bottom:0; z-index:20;
+  height:calc(50px + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  background:#20140a;
+  border-top:2px dashed #a37a4a;
+  display:flex; align-items:center; justify-content:center;
+  color:#a37a4a; font-size:12px; font-weight:700; letter-spacing:.5px;
+}
+
+/* ---------- Modals ---------- */
+.modal-bg{
+  position:fixed; inset:0; z-index:50;
+  background:rgba(10,15,8,.72);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-bg.hidden{display:none;}
+.modal{
+  background:linear-gradient(180deg,#fff8e6,#f2e0b8);
+  border:4px solid var(--card-border);
+  border-radius:18px;
+  padding:22px 20px;
+  max-width:360px; width:100%;
+  text-align:center;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
+  max-height:88vh; overflow-y:auto;
+}
+.modal h2{margin:0 0 8px; color:var(--ink); font-size:24px;}
+.modal p{color:#4a3620; font-size:14.5px; line-height:1.5; margin:6px 0 14px;}
+.btn{
+  display:inline-block; border:none; border-radius:26px;
+  padding:12px 22px; font-family:'Baloo 2',cursive; font-weight:700; font-size:16px;
+  cursor:pointer; color:#fff; margin:5px; box-shadow:0 4px 0 rgba(0,0,0,.25);
+}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.25);}
+.btn-green{background:var(--green-btn);}
+.btn-blue{background:var(--blue);}
+.btn-orange{background:#e08a2b;}
+.btn-grey{background:#8a8a8a;}
+.stars{font-size:34px; letter-spacing:6px; margin:8px 0;}
+.tip-box{
+  background:#eef7e2; border:2px dashed #7bb85a; border-radius:12px;
+  padding:10px 12px; font-size:13px; color:#2c4a1c; text-align:left; margin:10px 0;
+}
+.bug-row{display:flex; align-items:center; gap:10px; background:#fff; border-radius:10px; padding:8px 10px; margin:6px 0; text-align:left;}
+.bug-row .em{font-size:26px;}
+.bug-row b{display:block; font-size:14px;}
+.bug-row span{font-size:12px; color:#555;}
+#rewardBarWrap{background:#ddd; border-radius:8px; height:14px; overflow:hidden; margin:14px 0;}
+#rewardBar{height:100%; width:0%; background:linear-gradient(90deg,#4a9c3f,#8fd35c); transition:width .1s linear;}
+.small-note{font-size:11px; color:#8a7454; margin-top:10px;}
+#levelSelectGrid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:12px 0;}
+.lvl-btn{
+  aspect-ratio:1; border-radius:10px; border:2px solid var(--card-border);
+  background:var(--card); font-family:'Baloo 2',cursive; font-weight:800; font-size:16px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink);
+}
+.lvl-btn.locked{background:#ccc; color:#888; border-color:#aaa; cursor:not-allowed;}
+.lvl-btn .st{font-size:9px; display:block; margin-top:2px;}
+#waveBarWrap{position:absolute; top:4px; left:50%; transform:translateX(-50%); width:70%; height:8px; background:rgba(0,0,0,.3); border-radius:6px; overflow:hidden; z-index:4;}
+#waveBar{height:100%; width:0%; background:linear-gradient(90deg,#ff6f91,#ffc93c);}
+#bossBanner{
+  position:absolute; top:40%; left:0; right:0; text-align:center; z-index:8;
+  font-family:'Baloo 2',cursive; font-weight:800; font-size:26px; color:#fff;
+  text-shadow:0 3px 6px rgba(0,0,0,.6); pointer-events:none; opacity:0;
+}
+.paused-pill{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:30; background:rgba(0,0,0,.4);}
+.hidden{display:none !important;}
+#tutHand{position:absolute; font-size:30px; pointer-events:none; animation:tutMove 1.4s ease-in-out infinite;}
+@keyframes tutMove{0%,100%{transform:translate(0,0);}50%{transform:translate(10px,10px);}}
+
+@media (max-width:480px){
+  .modal{padding:16px 14px;}
+  .card{width:48px; height:58px;}
+}
+</style>
+</head>
+<body>
+
+<div id="backdrop"></div>
+
+<div id="stage-outer">
+  <div id="stage">
+    <div id="hud">
+      <div class="hud-pill"><span class="ic">☀️</span><span id="sunCount">0</span></div>
+      <div class="hud-pill" id="hearts"></div>
+      <div class="hud-pill"><span class="ic">🌿</span><span id="levelLabel">1</span></div>
+      <div id="hud-spacer"></div>
+      <button class="icon-btn" id="muteBtn" title="Âm thanh">🔊</button>
+      <button class="icon-btn" id="pauseBtn" title="Tạm dừng">⏸️</button>
+    </div>
+
+    <div id="tray-wrap">
+      <div id="tray"></div>
+    </div>
+
+    <div id="canvasWrap">
+      <canvas id="game"></canvas>
+      <div id="waveBarWrap"><div id="waveBar"></div></div>
+      <div id="bossBanner">⚠️ TRÙM XUẤT HIỆN! ⚠️</div>
+      <div id="floaterLayer" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;"></div>
+      <div id="pauseOverlay" class="paused-pill hidden">
+        <div style="text-align:center;color:#fff;font-family:'Baloo 2',cursive;">
+          <div style="font-size:30px;">⏸️ TẠM DỪNG</div>
+          <button class="btn btn-green" id="resumeBtn">Tiếp tục</button>
+          <button class="btn btn-grey" id="quitBtn">Về màn hình chính</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ad-banner">Khoảng trống Quảng cáo Banner · 320×50</div>
+
+<!-- ============ MODALS ============ -->
+
+<div class="modal-bg" id="modalStart">
+  <div class="modal">
+    <h2>🌻 Plants vs Bugs</h2>
+    <h3 style="margin-top:-6px;color:#7a4b2a;">Garden Defense</h3>
+    <p>Trồng cây, bắn hạt đậu, bảo vệ khu vườn khỏi lũ côn trùng phá hoại! Chạm để chọn cây, chạm vào ô đất để trồng.</p>
+    <div class="tip-box">💡 <b>Mẹo:</b> Hoa hướng dương tạo ra Mặt Trời — chạm vào giọt nắng rơi để thu thập năng lượng trồng cây nhé!</div>
+    <button class="btn btn-green" id="btnPlay">▶ Chơi ngay</button>
+    <button class="btn btn-orange" id="btnLevels">🗺️ Chọn màn</button>
+    <div class="small-note">Trò chơi phù hợp mọi lứa tuổi · Chơi thư giãn bất cứ lúc nào</div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalLevels">
+  <div class="modal">
+    <h2>Chọn màn chơi</h2>
+    <div id="levelSelectGrid"></div>
+    <button class="btn btn-grey" id="btnLevelsBack">Quay lại</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalTip">
+  <div class="modal">
+    <h2 id="tipLevelTitle">Màn 1</h2>
+    <p id="tipLevelDesc">Những chú rệp đầu tiên xuất hiện!</p>
+    <div class="tip-box" id="tipLevelFact">💡 Đang tải...</div>
+    <button class="btn btn-green" id="btnStartLevel">Bắt đầu!</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalWin">
+  <div class="modal">
+    <h2>🎉 Hoàn thành!</h2>
+    <div class="stars" id="winStars">⭐⭐⭐</div>
+    <p id="winText">Bạn đã bảo vệ khu vườn thành công!</p>
+    <div class="tip-box" id="winBonus">+50 ☀️ thưởng</div>
+    <button class="btn btn-orange" id="btnDouble">📺 Xem QC nhân đôi thưởng x2</button><br>
+    <button class="btn btn-green" id="btnNextLevel">Màn tiếp theo ▶</button>
+    <button class="btn btn-grey" id="btnWinMenu">Màn hình chính</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalLose">
+  <div class="modal">
+    <h2>😵 Khu vườn gặp nguy!</h2>
+    <p>Lũ côn trùng đã tràn vào! Bạn có muốn hồi sinh để tiếp tục không?</p>
+    <button class="btn btn-orange" id="btnRevive">📺 Xem QC để hồi sinh</button><br>
+    <button class="btn btn-green" id="btnRetry">🔁 Chơi lại màn</button>
+    <button class="btn btn-grey" id="btnLoseMenu">Màn hình chính</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalInterstitial">
+  <div class="modal">
+    <h2>Quảng cáo</h2>
+    <p>Nội dung quảng cáo xen kẽ (Interstitial) sẽ hiển thị ở đây giữa các màn chơi.</p>
+    <div id="rewardBarWrap"><div id="rewardBar"></div></div>
+    <button class="btn btn-grey" id="btnSkipInter" disabled>Bỏ qua (5)</button>
+    <div class="small-note">Placeholder — tích hợp Google AdSense/AdMob Interstitial tại đây.</div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalRewarded">
+  <div class="modal">
+    <h2 id="rewardedTitle">Quảng cáo thưởng</h2>
+    <p id="rewardedDesc">Xem video ngắn để nhận phần thưởng.</p>
+    <div id="rewardBarWrap2"><div id="rewardBar2" style="height:100%;width:0%;background:linear-gradient(90deg,#e08a2b,#ffc93c);transition:width .1s linear;"></div></div>
+    <button class="btn btn-grey" id="btnCancelRewarded">Hủy</button>
+    <div class="small-note">Placeholder — tích hợp AdMob Rewarded Video tại đây (15–30 giây).</div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="modalHelp">
+  <div class="modal">
+    <h2 id="helpTitle">🌼 Hoa Hướng Dương</h2>
+    <p id="helpDesc"></p>
+    <button class="btn btn-green" id="btnHelpClose">Đã hiểu</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   DATA CONFIG
+========================================================= */
+const PLANTS = {
+  sunflower:{name:"Hoa Hướng Dương",emoji:"🌻",cost:50,cooldown:6000,hp:100,role:"sun",sunAmount:25,sunEvery:6000,unlock:1,desc:"Sinh ra Mặt Trời mỗi vài giây để bạn thu thập năng lượng trồng thêm cây."},
+  peashooter:{name:"Súng Đậu Hà Lan",emoji:"🌱",cost:100,cooldown:4000,hp:100,role:"shooter",dmg:20,rate:1200,shots:1,unlock:1,desc:"Bắn hạt đậu tấn công côn trùng ở cùng hàng phía trước."},
+  wallnut:{name:"Hạt Óc Chó",emoji:"🌰",cost:50,cooldown:8000,hp:400,role:"wall",unlock:1,desc:"Tường thành chắc chắn, cản đường lũ côn trùng lâu hơn."},
+  snowpea:{name:"Đậu Băng",emoji:"🥶",cost:150,cooldown:6000,hp:100,role:"shooter",dmg:15,rate:1400,shots:1,slow:0.5,slowTime:2000,unlock:3,desc:"Bắn đậu lạnh vừa gây sát thương vừa làm chậm côn trùng."},
+  repeater:{name:"Đậu Liên Thanh",emoji:"🌿",cost:200,cooldown:6000,hp:100,role:"shooter",dmg:20,rate:1200,shots:2,unlock:4,desc:"Bắn liên tiếp 2 hạt đậu mỗi đợt, sát thương gấp đôi."},
+  cherrybomb:{name:"Bom Anh Đào",emoji:"🍒",cost:150,cooldown:20000,hp:1,role:"bomb",dmg:900,radius:1.6,fuse:900,unlock:5,desc:"Phát nổ diện rộng sau khi đặt, tiêu diệt tức thì côn trùng gần đó."},
+  melonpult:{name:"Đại Bác Dưa Hấu",emoji:"🍉",cost:300,cooldown:8000,hp:100,role:"shooter",dmg:70,rate:2000,shots:1,splash:1.1,unlock:6,desc:"Bắn dưa hấu gây sát thương diện rộng quanh điểm rơi."}
+};
+const PLANT_ORDER = ["sunflower","peashooter","wallnut","snowpea","repeater","cherrybomb","melonpult"];
+
+const BUGS = {
+  aphid:{name:"Rệp Vừng",emoji:"🐛",hp:60,speed:26,dmg:1,atkRate:900,points:10,color:"#8bc34a",
+    fact:"Rệp vừng hút nhựa cây khiến lá quăn queo và vàng úa. Bọ rùa chính là khắc tinh tự nhiên của chúng!"},
+  beetle:{name:"Bọ Cánh Cứng",emoji:"🪲",hp:150,speed:18,dmg:2,atkRate:900,points:18,color:"#5d4037",
+    fact:"Bọ cánh cứng có lớp vỏ cứng bảo vệ, chuyên gặm lá và rễ cây rất nhanh."},
+  hopper:{name:"Châu Chấu",emoji:"🦗",hp:80,speed:46,dmg:2,atkRate:800,points:16,color:"#7cb342",
+    fact:"Châu chấu di chuyển và nhảy rất nhanh, có thể ăn trụi cả một luống rau trong thời gian ngắn."},
+  snail:{name:"Ốc Sên",emoji:"🐌",hp:260,speed:12,dmg:3,atkRate:900,points:24,color:"#a1887f",
+    fact:"Ốc sên di chuyển chậm nhưng ăn rất khỏe, thường hoạt động mạnh vào ban đêm hoặc trời ẩm."},
+  wasp:{name:"Ong Bắp Cày",emoji:"🐝",hp:70,speed:52,dmg:2,atkRate:800,points:20,flying:true,color:"#fdd835",
+    fact:"Ong bắp cày bay lượn nên rất khó cản bằng tường cây — cần hỏa lực bắn tầm xa để hạ gục."},
+  caterpillar:{name:"Sâu Bướm",emoji:"🐛",hp:30,speed:22,dmg:1,atkRate:900,points:8,color:"#c0ca33",
+    fact:"Sâu bướm là ấu trùng của bướm/ngài, ăn lá cây rất dữ để tích lũy năng lượng hóa nhộng."},
+  slugboss:{name:"Ốc Sên Chúa",emoji:"🐌",hp:1400,speed:10,dmg:5,atkRate:700,points:200,boss:true,color:"#6d4c41",
+    fact:"Trùm cuối siêu bền! Hãy dồn toàn bộ hỏa lực và dùng Bom Anh Đào để rút ngắn thời gian."}
+};
+
+const ROWS=5, COLS=7;
+
+function buildLevels(){
+  const levels=[];
+  for(let n=1;n<=10;n++){
+    const pool=["aphid"];
+    if(n>=2) pool.push("beetle");
+    if(n>=3) pool.push("hopper");
+    if(n>=4) pool.push("snail");
+    if(n>=5) pool.push("wasp");
+    if(n>=6) pool.push("caterpillar");
+    const waveCount = 3 + Math.floor(n/2);
+    const baseInterval = Math.max(1900 - n*90, 650);
+    const waves=[];
+    for(let w=0; w<waveCount; w++){
+      const bugCount = 4 + n + w;
+      const isFinal = (w===waveCount-1);
+      const boss = isFinal && (n===5 || n===10);
+      waves.push({bugCount, interval: baseInterval, pool: pool.slice(), boss});
+    }
+    levels.push({
+      num:n,
+      startSun: 60 + n*8,
+      waves,
+      unlocksPlant: PLANT_ORDER.find(p=>PLANTS[p].unlock===n) || null,
+      title:"Màn "+n,
+      fact: BUGS[pool[pool.length-1]].fact
+    });
+  }
+  return levels;
+}
+const LEVELS = buildLevels();
+
+/* =========================================================
+   AUDIO
+========================================================= */
+let actx=null, muted=false;
+function ensureAudio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function tone(freq,dur,type,vol){
+  if(muted || !actx) return;
+  const t=actx.currentTime;
+  const osc=actx.createOscillator(); const gain=actx.createGain();
+  osc.type=type||"sine"; osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0.0001,t);
+  gain.gain.exponentialRampToValueAtTime((vol||0.18),t+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  osc.connect(gain); gain.connect(actx.destination);
+  osc.start(t); osc.stop(t+dur+0.02);
+}
+const COMBO_SCALE=[261.6,293.7,329.6,349.2,392.0,440.0,493.9,523.3];
+function sfxPlant(){ tone(220,0.12,"triangle",0.15); }
+function sfxShoot(){ tone(600,0.06,"square",0.06); }
+function sfxHit(){ tone(150,0.08,"sawtooth",0.08); }
+function sfxCombo(n){ tone(COMBO_SCALE[n%COMBO_SCALE.length],0.18,"sine",0.2); }
+function sfxSun(){ tone(880,0.15,"sine",0.15); }
+function sfxError(){ tone(120,0.15,"square",0.12); }
+function sfxExplode(){ tone(80,0.3,"sawtooth",0.25); }
+function sfxWin(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.25,"triangle",0.2),i*120)); }
+function sfxLose(){ [400,320,240].forEach((f,i)=>setTimeout(()=>tone(f,0.3,"sawtooth",0.18),i*150)); }
+
+/* =========================================================
+   STATE
+========================================================= */
+const SAVE_KEY="pvb_garden_defense_save_v1";
+function loadSave(){
+  try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); if(s) return s; }catch(e){}
+  return {maxLevel:1, stars:{}, muted:false};
+}
+function writeSave(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
+let save = loadSave();
+muted = !!save.muted;
+
+let state = {
+  screen:"start", // start, levels, playing
+  level:1,
+  sun:0,
+  lives:3,
+  maxLives:3,
+  selectedCard:null, // key in PLANTS or 'shovel'
+  cooldowns:{}, // plant key -> ready timestamp
+  plants:[], // {key,row,col,x,y,hp,maxHp,timer,fuse}
+  bugs:[], // {key,row,x,y,hp,maxHp,slowUntil,atkTimer,speedBase}
+  projectiles:[], // {x,y,vx,dmg,row,type,arc,dist,traveled}
+  suns:[], // falling collectible {x,y,vy,value,phase}
+  particles:[],
+  waveIndex:0,
+  waveTimer:0,
+  spawnedInWave:0,
+  waveActive:false,
+  levelFinishedSpawning:false,
+  combo:0, comboTimer:0,
+  shakeT:0, shakeMag:0,
+  lastInterstitial:0,
+  paused:false,
+  bossBannerT:0,
+  doubleSunUntil:0,
+  freezeUntil:0,
+  win:false
+};
+
+/* =========================================================
+   DOM refs
+========================================================= */
+const $ = id=>document.getElementById(id);
+const canvas=$("game"); const ctx=canvas.getContext("2d");
+const trayEl=$("tray");
+const sunCountEl=$("sunCount");
+const heartsEl=$("hearts");
+const levelLabelEl=$("levelLabel");
+const floaterLayer=$("floaterLayer");
+const waveBar=$("waveBar");
+const bossBanner=$("bossBanner");
+
+let cellW=0, cellH=0, boardX=0, boardY=0, DPR=1;
+
+function resizeCanvas(){
+  const wrap = $("canvasWrap");
+  const rect = wrap.getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  canvas.width = Math.round(rect.width*DPR);
+  canvas.height = Math.round(rect.height*DPR);
+  canvas.style.width = rect.width+"px";
+  canvas.style.height = rect.height+"px";
+  cellW = rect.width/COLS;
+  cellH = rect.height/ROWS;
+  boardX=0; boardY=0;
+}
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", ()=>setTimeout(resizeCanvas,200));
+
+/* =========================================================
+   TRAY / CARDS
+========================================================= */
+function unlockedPlants(){
+  return PLANT_ORDER.filter(k=>PLANTS[k].unlock<=state.level);
+}
+function renderTray(){
+  trayEl.innerHTML="";
+  // Shovel tool
+  const shovel=document.createElement("div");
+  shovel.className="card tool"+(state.selectedCard==='shovel'?' selected':'');
+  shovel.innerHTML=`<div class="emoji">🪓</div><div class="cost" style="background:#3a7dc9;color:#fff;">Xẻng</div>`;
+  shovel.onclick=()=>{ selectCard('shovel'); };
+  trayEl.appendChild(shovel);
+
+  // Freeze powerup (rewarded ad)
+  const freeze=document.createElement("div");
+  freeze.className="card tool power";
+  freeze.innerHTML=`<div class="emoji">🧊</div><div class="cost" style="background:#e08a2b;color:#fff;">Ad</div>`;
+  freeze.onclick=()=>{
+    showRewarded("Đóng băng côn trùng","Xem quảng cáo để đóng băng toàn bộ côn trùng trong 5 giây!",()=>{
+      state.freezeUntil = performance.now()+5000;
+      spawnFloater(canvas.clientWidth/2, canvas.clientHeight/2, "🧊 Đóng băng!", "#3a7dc9");
+    });
+  };
+  trayEl.appendChild(freeze);
+
+  // Sun boost powerup
+  const boost=document.createElement("div");
+  boost.className="card tool power";
+  boost.innerHTML=`<div class="emoji">⏫</div><div class="cost" style="background:#e08a2b;color:#fff;">Ad</div>`;
+  boost.onclick=()=>{
+    showRewarded("Nhân đôi Mặt Trời","Xem quảng cáo để nhận gấp đôi Mặt Trời trong 20 giây!",()=>{
+      state.doubleSunUntil = performance.now()+20000;
+      spawnFloater(canvas.clientWidth/2, canvas.clientHeight/2, "☀️ x2!", "#ffc93c");
+    });
+  };
+  trayEl.appendChild(boost);
+
+  unlockedPlants().forEach(key=>{
+    const p=PLANTS[key];
+    const now=performance.now();
+    const ready = !state.cooldowns[key] || state.cooldowns[key]<=now;
+    const affordable = state.sun>=p.cost;
+    const card=document.createElement("div");
+    card.className="card"+((state.selectedCard===key)?" selected":"")+((!ready)?" disabled":"");
+    card.innerHTML=`<div class="emoji">${p.emoji}</div><div class="cost">${p.cost}</div>`+
+      (!ready?`<div class="cooldown" style="height:${cooldownPct(key)}%;"></div>`:``);
+    if(!affordable && ready) card.style.opacity=".55";
+    card.onclick=(e)=>{
+      if(!ready){ sfxError(); return; }
+      selectCard(key);
+      showHelpOnce(key);
+    };
+    trayEl.appendChild(card);
+  });
+}
+function cooldownPct(key){
+  const now=performance.now();
+  const end=state.cooldowns[key]||0;
+  const p=PLANTS[key];
+  const remain = Math.max(0, end-now);
+  return Math.min(100, (remain/p.cooldown)*100);
+}
+function selectCard(key){
+  state.selectedCard = (state.selectedCard===key)? null : key;
+  renderTray();
+}
+let helpShown={};
+function showHelpOnce(key){
+  if(helpShown[key]) return; helpShown[key]=true;
+  const p=PLANTS[key];
+  $("helpTitle").textContent=p.emoji+" "+p.name;
+  $("helpDesc").textContent=p.desc;
+  $("modalHelp").classList.remove("hidden");
+}
+$("btnHelpClose").onclick=()=>$("modalHelp").classList.add("hidden");
+
+/* =========================================================
+   HUD update
+========================================================= */
+function updateHUD(){
+  sunCountEl.textContent = Math.floor(state.sun);
+  levelLabelEl.textContent = state.level+"/10";
+  heartsEl.innerHTML="";
+  for(let i=0;i<state.maxLives;i++){
+    heartsEl.innerHTML += (i<state.lives? "❤️":"🤍");
+  }
+}
+
+/* =========================================================
+   FLOATERS & PARTICLES
+========================================================= */
+function spawnFloater(x,y,text,color){
+  const el=document.createElement("div");
+  el.className="floater";
+  el.style.left=x+"px"; el.style.top=y+"px";
+  el.style.color=color||"#fff"; el.style.fontSize="18px";
+  el.textContent=text;
+  floaterLayer.appendChild(el);
+  setTimeout(()=>el.remove(),950);
+}
+function spawnParticles(x,y,color,count){
+  for(let i=0;i<(count||10);i++){
+    const ang=Math.random()*Math.PI*2, spd=40+Math.random()*120;
+    state.particles.push({x,y,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,life:0.5+Math.random()*0.4,age:0,color:color||"#fff",size:2+Math.random()*3});
+  }
+}
+function shake(mag,t){ state.shakeMag=Math.max(state.shakeMag,mag); state.shakeT=Math.max(state.shakeT,t); }
+
+/* =========================================================
+   LEVEL LIFECYCLE
+========================================================= */
+function resetLevelState(levelNum){
+  const lv = LEVELS[levelNum-1];
+  state.level=levelNum;
+  state.sun=lv.startSun;
+  state.lives=3; state.maxLives=3;
+  state.plants=[]; state.bugs=[]; state.projectiles=[]; state.suns=[]; state.particles=[];
+  state.waveIndex=0; state.waveTimer=0; state.spawnedInWave=0; state.waveActive=false;
+  state.levelFinishedSpawning=false;
+  state.combo=0; state.comboTimer=0;
+  state.selectedCard=null; state.cooldowns={};
+  state.doubleSunUntil=0; state.freezeUntil=0;
+  state.win=false;
+  updateHUD(); renderTray();
+}
+
+function startLevelFlow(levelNum){
+  const lv=LEVELS[levelNum-1];
+  $("tipLevelTitle").textContent = lv.title + (lv.unlocksPlant? "  🔓 Mở khóa: "+PLANTS[lv.unlocksPlant].emoji+" "+PLANTS[lv.unlocksPlant].name : "");
+  $("tipLevelDesc").textContent = "Chuẩn bị bảo vệ khu vườn! Số đợt côn trùng: "+lv.waves.length+".";
+  $("tipLevelFact").innerHTML = "💡 <b>Bạn có biết?</b> "+lv.fact;
+  $("modalTip").classList.remove("hidden");
+}
+$("btnStartLevel").onclick=()=>{
+  $("modalTip").classList.add("hidden");
+  resetLevelState(state.level);
+  state.screen="playing";
+  showStage(true);
+};
+
+function showStage(show){
+  document.getElementById("stage").style.visibility = show? "visible":"visible";
+}
+
+/* =========================================================
+   INPUT: place plants on canvas
+========================================================= */
+function canvasPosFromEvent(e){
+  const rect=canvas.getBoundingClientRect();
+  const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+  return {x:cx,y:cy};
+}
+function cellAt(x,y){
+  const col=Math.floor(x/cellW), row=Math.floor(y/cellH);
+  if(row<0||row>=ROWS||col<0||col>=COLS) return null;
+  return {row,col};
+}
+function plantAtCell(row,col){
+  return state.plants.find(p=>p.row===row && p.col===col);
+}
+
+function handleCanvasTap(e){
+  if(state.screen!=="playing" || state.paused) return;
+  ensureAudio();
+  const pos=canvasPosFromEvent(e);
+  // check sun collectible tap first
+  for(let i=state.suns.length-1;i>=0;i--){
+    const s=state.suns[i];
+    const dx=pos.x-s.x, dy=pos.y-s.y;
+    if(dx*dx+dy*dy < 34*34){
+      collectSun(s); state.suns.splice(i,1); return;
+    }
+  }
+  const cell=cellAt(pos.x,pos.y);
+  if(!cell) return;
+  if(!state.selectedCard) return;
+  if(state.selectedCard==='shovel'){
+    const existing=plantAtCell(cell.row,cell.col);
+    if(existing){
+      state.plants=state.plants.filter(p=>p!==existing);
+      spawnParticles(existing.x,existing.y,"#8b5e34",8);
+      sfxPlant();
+    }
+    return;
+  }
+  const key=state.selectedCard;
+  const p=PLANTS[key];
+  const now=performance.now();
+  if(state.cooldowns[key] && state.cooldowns[key]>now){ sfxError(); return; }
+  if(state.sun < p.cost){ sfxError(); flashInsufficient(); return; }
+  if(plantAtCell(cell.row,cell.col)){ sfxError(); return; }
+
+  state.sun -= p.cost;
+  state.cooldowns[key] = now + p.cooldown;
+  const px = cell.col*cellW + cellW/2;
+  const py = cell.row*cellH + cellH/2;
+  const newPlant={key,row:cell.row,col:cell.col,x:px,y:py,hp:p.hp,maxHp:p.hp,timer:0,fuse:p.role==='bomb'?p.fuse:0};
+  state.plants.push(newPlant);
+  sfxPlant();
+  spawnParticles(px,py,"#7bc850",10);
+  updateHUD(); renderTray();
+  if(!keepSelectedAfterPlace(key)) { state.selectedCard=null; renderTray(); }
+}
+function keepSelectedAfterPlace(){ return false; }
+function flashInsufficient(){
+  spawnFloater(canvas.clientWidth/2, 20, "Chưa đủ ☀️!", "#ff6f91");
+}
+canvas.addEventListener("pointerdown", handleCanvasTap);
+
+/* Collect sun */
+function collectSun(s){
+  const mult = performance.now()<state.doubleSunUntil? 2:1;
+  state.sun += s.value*mult;
+  state.combo++; state.comboTimer=1200;
+  sfxSun();
+  spawnParticles(s.x,s.y,"#ffc93c",12);
+  spawnFloater(s.x,s.y,"+"+(s.value*mult)+" ☀️","#e8a415");
+  updateHUD(); renderTray();
+}
+
+/* =========================================================
+   SPAWNING
+========================================================= */
+function spawnBugForWave(wave){
+  const key = wave.pool[Math.floor(Math.random()*wave.pool.length)];
+  const def=BUGS[key];
+  const row=Math.floor(Math.random()*ROWS);
+  const x = COLS*cellW + 30;
+  const y = row*cellH + cellH/2;
+  state.bugs.push({key,row,x,y,hp:def.hp,maxHp:def.hp,speedBase:def.speed,slowUntil:0,atkTimer:0,dying:0});
+}
+function spawnBoss(){
+  const def=BUGS.slugboss;
+  const row=Math.floor(ROWS/2);
+  state.bugs.push({key:"slugboss",row,x:COLS*cellW+40,y:row*cellH+cellH/2,hp:def.hp,maxHp:def.hp,speedBase:def.speed,slowUntil:0,atkTimer:0,dying:0});
+  bossBanner.style.opacity=1;
+  state.bossBannerT=2500;
+  sfxExplode();
+}
+
+/* =========================================================
+   MAIN UPDATE LOOP
+========================================================= */
+let lastT=performance.now();
+function loop(t){
+  const dt=Math.min(40, t-lastT); lastT=t;
+  if(state.screen==="playing" && !state.paused){
+    update(dt/1000, t);
+  }
+  render(t);
+  requestAnimationFrame(loop);
+}
+
+function update(dt,now){
+  const lv=LEVELS[state.level-1];
+
+  // ambient sun trickle
+  state._ambientAcc=(state._ambientAcc||0)+dt;
+  if(state._ambientAcc>10){ state._ambientAcc=0; spawnFallingSun(); }
+
+  // combo timer
+  if(state.comboTimer>0){ state.comboTimer-=dt*1000; if(state.comboTimer<=0){ state.combo=0; } }
+
+  // boss banner
+  if(state.bossBannerT>0){ state.bossBannerT-=dt*1000; if(state.bossBannerT<=0) bossBanner.style.opacity=0; }
+
+  // shake decay
+  if(state.shakeT>0){ state.shakeT-=dt*1000; if(state.shakeT<=0){ state.shakeT=0; state.shakeMag=0; } }
+
+  // wave spawn logic
+  if(!state.levelFinishedSpawning){
+    const wave=lv.waves[state.waveIndex];
+    state.waveTimer -= dt*1000;
+    if(state.waveTimer<=0){
+      if(wave.boss && state.spawnedInWave===0){
+        spawnBoss();
+        state.spawnedInWave = wave.bugCount; // boss counts as full wave
+      } else if(state.spawnedInWave < wave.bugCount){
+        spawnBugForWave(wave);
+        state.spawnedInWave++;
+      }
+      state.waveTimer = wave.interval;
+    }
+    if(state.spawnedInWave>=wave.bugCount){
+      state.waveIndex++;
+      state.spawnedInWave=0;
+      state.waveTimer=800;
+      if(state.waveIndex>=lv.waves.length){
+        state.levelFinishedSpawning=true;
+      }
+    }
+  }
+  // wave progress bar
+  const totalWaves=lv.waves.length;
+  const pct = Math.min(100, ((state.waveIndex)/totalWaves)*100 + (state.levelFinishedSpawning?100:0)/totalWaves*0.01);
+  waveBar.style.width = Math.min(100,(state.waveIndex/totalWaves)*100)+"%";
+
+  // plants: sunflower production, bomb fuse, shooter firing
+  state.plants.forEach(p=>{
+    const def=PLANTS[p.key];
+    p.timer += dt*1000;
+    if(def.role==="sun"){
+      if(p.timer>=def.sunEvery){
+        p.timer=0;
+        state.suns.push({x:p.x+(Math.random()*20-10),y:p.y-10,vy:22,value:def.sunAmount,phase:Math.random()*Math.PI*2, targetY:p.y+18});
+      }
+    } else if(def.role==="shooter"){
+      const bugAhead = state.bugs.find(b=>b.row===p.row && b.x>p.x && !b.dying);
+      if(bugAhead && p.timer>=def.rate){
+        p.timer=0;
+        fireProjectile(p,def);
+      }
+    } else if(def.role==="bomb"){
+      p.fuse -= dt*1000;
+      if(p.fuse<=0){
+        explodeBomb(p,def);
+        state.plants=state.plants.filter(pp=>pp!==p);
+      }
+    }
+  });
+
+  // projectiles
+  for(let i=state.projectiles.length-1;i>=0;i--){
+    const pr=state.projectiles[i];
+    pr.x += pr.vx*dt;
+    if(pr.arc){ pr.travTime=(pr.travTime||0)+dt; }
+    let hit=false;
+    for(const b of state.bugs){
+      if(b.dying) continue;
+      if(b.row!==pr.row) continue;
+      if(Math.abs(b.x-pr.x) < cellW*0.35){
+        applyDamage(b, pr.dmg);
+        if(pr.slow){ b.slowUntil = now + pr.slowTimeMs; }
+        if(pr.splash){
+          state.bugs.forEach(b2=>{
+            if(b2!==b && !b2.dying && b2.row===b.row && Math.abs(b2.x-b.x)<cellW*pr.splash) applyDamage(b2, pr.dmg*0.6);
+          });
+        }
+        sfxHit();
+        spawnParticles(pr.x,pr.y,"#c0392b",6);
+        hit=true;
+        break;
+      }
+    }
+    if(hit || pr.x > COLS*cellW+40){ state.projectiles.splice(i,1); }
+  }
+
+  // bugs movement & attack & house damage
+  const frozen = now < state.freezeUntil;
+  for(let i=state.bugs.length-1;i>=0;i--){
+    const b=state.bugs[i];
+    if(b.dying){
+      b.dying -= dt*1000;
+      if(b.dying<=0) state.bugs.splice(i,1);
+      continue;
+    }
+    if(frozen) continue;
+    const def=BUGS[b.key];
+    let speed=b.speedBase * (now<b.slowUntil? 0.5:1);
+    // check blocking plant in same row (non-flying only)
+    let blocker=null;
+    if(!def.flying){
+      blocker = state.plants.find(p=>p.row===b.row && Math.abs(p.x-b.x)<cellW*0.42);
+    }
+    if(blocker){
+      b.atkTimer -= dt*1000;
+      if(b.atkTimer<=0){
+        b.atkTimer=def.atkRate;
+        blocker.hp -= def.dmg*4;
+        spawnParticles(blocker.x,blocker.y,"#4a3620",4);
+        if(blocker.hp<=0){
+          state.plants=state.plants.filter(p=>p!==blocker);
+          spawnParticles(blocker.x,blocker.y,"#4a3620",10);
+        }
+      }
+    } else {
+      b.x -= speed*dt;
+    }
+    if(b.x < -20){
+      state.bugs.splice(i,1);
+      state.lives--;
+      shake(8,300); sfxLose();
+      spawnFloater(30, ROWS*cellH-20, "💔", "#ff3b3b");
+      updateHUD();
+      if(state.lives<=0){ triggerGameOver(); }
+    }
+  }
+
+  // falling suns physics
+  for(let i=state.suns.length-1;i>=0;i--){
+    const s=state.suns[i];
+    if(s.y < s.targetY){ s.y += s.vy*dt; }
+    s.phase += dt*4;
+    s.life = (s.life||0)+dt;
+    if(s.life>8){ state.suns.splice(i,1); }
+  }
+
+  // particles
+  for(let i=state.particles.length-1;i>=0;i--){
+    const pt=state.particles[i];
+    pt.age += dt;
+    pt.x += pt.vx*dt; pt.y += pt.vy*dt; pt.vy += 220*dt;
+    if(pt.age>pt.life) state.particles.splice(i,1);
+  }
+
+  // win check
+  if(state.levelFinishedSpawning && state.bugs.length===0 && !state.win){
+    state.win=true;
+    triggerWin();
+  }
+
+  refreshTrayCooldownsOnly();
+}
+
+function refreshTrayCooldownsOnly(){
+  state._trayTick=(state._trayTick||0)+1;
+  if(state._trayTick%12===0) renderTray();
+}
+
+function applyDamage(b,dmg){
+  b.hp -= dmg;
+  if(b.hp<=0 && !b.dying){
+    b.dying = 260;
+    const def=BUGS[b.key];
+    state.sun += 0; // no direct sun from kills (kept for balance); points via combo
+    spawnParticles(b.x,b.y,def.color,def.boss?26:14);
+    sfxCombo(state.combo);
+    state.combo++; state.comboTimer=1200;
+    if(state.combo>1) spawnFloater(b.x,b.y-10,"Combo x"+state.combo,"#ffc93c");
+    if(def.boss) shake(14,500);
+  }
+}
+
+function fireProjectile(p,def){
+  sfxShoot();
+  for(let s=0;s<def.shots;s++){
+    setTimeout(()=>{
+      if(state.screen!=="playing") return;
+      state.projectiles.push({x:p.x+cellW*0.3,y:p.y,vx:420,dmg:def.dmg,row:p.row,slow:!!def.slow,slowTimeMs:def.slowTime||0,splash:def.splash||0});
+    }, s*110);
+  }
+}
+function explodeBomb(p,def){
+  shake(16,400); sfxExplode();
+  spawnParticles(p.x,p.y,"#ff6f2b",30);
+  state.bugs.forEach(b=>{
+    if(b.dying) return;
+    const dx=(b.x-p.x)/cellW, dy=(b.row-p.row);
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=def.radius) applyDamage(b,def.dmg);
+  });
+}
+function spawnFallingSun(){
+  const col=Math.floor(Math.random()*COLS);
+  const row=Math.floor(Math.random()*ROWS);
+  state.suns.push({x:col*cellW+cellW/2,y:-20,vy:40,value:25,phase:Math.random()*10,targetY:row*cellH+cellH/2});
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function render(t){
+  ctx.save();
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const w=canvas.width/DPR, h=canvas.height/DPR;
+  ctx.clearRect(0,0,w,h);
+
+  let shakeX=0, shakeY=0;
+  if(state.shakeT>0){
+    shakeX=(Math.random()*2-1)*state.shakeMag*(state.shakeT/400);
+    shakeY=(Math.random()*2-1)*state.shakeMag*(state.shakeT/400);
+  }
+  ctx.translate(shakeX,shakeY);
+
+  // lawn stripes
+  for(let r=0;r<ROWS;r++){
+    ctx.fillStyle = (r%2===0)?"#7bc850":"#72c048";
+    ctx.fillRect(0,r*cellH,w,cellH);
+  }
+  // subtle soil edge at bottom row divider decorative
+  ctx.strokeStyle="rgba(0,0,0,0.06)";
+  for(let c=1;c<COLS;c++){ ctx.beginPath(); ctx.moveTo(c*cellW,0); ctx.lineTo(c*cellW,h); ctx.stroke(); }
+
+  if(state.screen!=="playing"){ ctx.restore(); return; }
+
+  // falling suns
+  state.suns.forEach(s=>{
+    ctx.save();
+    ctx.translate(s.x, s.y + Math.sin(s.phase)*3);
+    ctx.font="26px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.shadowColor="rgba(255,201,60,.8)"; ctx.shadowBlur=12;
+    ctx.fillText("☀️",0,0);
+    ctx.restore();
+  });
+
+  // plants
+  state.plants.forEach(p=>{
+    const def=PLANTS[p.key];
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.font=(cellH*0.55)+"px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(def.emoji,0,2);
+    ctx.restore();
+    if(def.role!=="bomb"){
+      const pct=Math.max(0,p.hp/p.maxHp);
+      ctx.fillStyle="rgba(0,0,0,.25)";
+      ctx.fillRect(p.x-16,p.y+cellH*0.28,32,4);
+      ctx.fillStyle= pct>0.5?"#7bc850":pct>0.25?"#ffc93c":"#e74c3c";
+      ctx.fillRect(p.x-16,p.y+cellH*0.28,32*pct,4);
+    }
+  });
+
+  // projectiles
+  state.projectiles.forEach(pr=>{
+    ctx.save();
+    ctx.translate(pr.x,pr.y);
+    ctx.fillStyle= pr.slow? "#a7e3ff":"#3f8f1f";
+    ctx.beginPath(); ctx.arc(0,0,6,0,7); ctx.fill();
+    ctx.restore();
+  });
+
+  // bugs
+  state.bugs.forEach(b=>{
+    const def=BUGS[b.key];
+    ctx.save();
+    const bob = Math.sin(t/150 + b.x)*2;
+    ctx.translate(b.x, b.y+bob);
+    if(b.dying) ctx.globalAlpha = Math.max(0,b.dying/260);
+    ctx.font=(def.boss? cellH*1.1: cellH*0.5)+"px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.save(); ctx.scale(-1,1); ctx.fillText(def.emoji,0,2); ctx.restore();
+    ctx.restore();
+    // hp bar
+    if(!b.dying){
+      const pct=Math.max(0,b.hp/b.maxHp);
+      const barW = def.boss? 60:28;
+      ctx.fillStyle="rgba(0,0,0,.3)";
+      ctx.fillRect(b.x-barW/2,b.y-cellH*0.38,barW,4);
+      ctx.fillStyle="#e74c3c";
+      ctx.fillRect(b.x-barW/2,b.y-cellH*0.38,barW*pct,4);
+    }
+  });
+
+  // particles
+  state.particles.forEach(pt=>{
+    ctx.globalAlpha = Math.max(0,1-pt.age/pt.life);
+    ctx.fillStyle=pt.color;
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.size,0,7); ctx.fill();
+    ctx.globalAlpha=1;
+  });
+
+  // frozen overlay
+  if(t < state.freezeUntil){
+    ctx.fillStyle="rgba(150,220,255,0.18)";
+    ctx.fillRect(0,0,w,h);
+  }
+
+  ctx.restore();
+}
+
+/* =========================================================
+   WIN / LOSE FLOW
+========================================================= */
+function triggerWin(){
+  state.screen="idle";
+  const stars = state.lives===3?3: state.lives===2?2:1;
+  save.maxLevel = Math.max(save.maxLevel, Math.min(10,state.level+1));
+  save.stars = save.stars||{};
+  save.stars[state.level]=Math.max(save.stars[state.level]||0, stars);
+  writeSave();
+  sfxWin();
+  $("winStars").textContent = "⭐".repeat(stars)+"☆".repeat(3-stars);
+  $("winText").textContent = "Bạn đã bảo vệ khu vườn ở Màn "+state.level+"!";
+  const bonus = 30+state.level*5;
+  state._pendingBonus=bonus;
+  $("winBonus").textContent = "+"+bonus+" ☀️ thưởng cho lượt sau";
+  $("btnNextLevel").style.display = state.level<10? "inline-block":"none";
+  $("modalWin").classList.remove("hidden");
+  maybeInterstitial();
+}
+$("btnDouble").onclick=()=>{
+  showRewarded("Nhân đôi thưởng","Xem quảng cáo để nhận gấp đôi ☀️ thưởng màn chơi!",()=>{
+    state._pendingBonus*=2;
+    $("winBonus").textContent = "+"+state._pendingBonus+" ☀️ thưởng (đã x2!)";
+  });
+};
+$("btnNextLevel").onclick=()=>{
+  $("modalWin").classList.add("hidden");
+  const next=Math.min(10,state.level+1);
+  goToLevelIntro(next, state._pendingBonus||0);
+};
+$("btnWinMenu").onclick=()=>{ $("modalWin").classList.add("hidden"); goToMenu(); };
+
+function triggerGameOver(){
+  state.screen="idle";
+  sfxLose();
+  $("modalLose").classList.remove("hidden");
+}
+$("btnRevive").onclick=()=>{
+  showRewarded("Hồi sinh khu vườn","Xem quảng cáo để hồi sinh và tiếp tục màn chơi!",()=>{
+    $("modalLose").classList.add("hidden");
+    state.lives=1;
+    state.bugs = state.bugs.filter(b=> b.x < COLS*cellW*0.5); // clear closer threats a bit
+    state.screen="playing";
+    updateHUD();
+  });
+};
+$("btnRetry").onclick=()=>{
+  $("modalLose").classList.add("hidden");
+  resetLevelState(state.level);
+  state.screen="playing";
+};
+$("btnLoseMenu").onclick=()=>{ $("modalLose").classList.add("hidden"); goToMenu(); };
+
+function goToLevelIntro(levelNum, bonusSun){
+  state._carryBonus = bonusSun||0;
+  startLevelFlow(levelNum);
+  const origReset = resetLevelState;
+  state.level = levelNum;
+}
+// wrap reset to add carry bonus
+const _origReset = resetLevelState;
+resetLevelState = function(levelNum){
+  _origReset(levelNum);
+  if(state._carryBonus){ state.sun += state._carryBonus; state._carryBonus=0; updateHUD(); }
+};
+
+/* =========================================================
+   MENUS
+========================================================= */
+function goToMenu(){
+  state.screen="start";
+  $("modalStart").classList.remove("hidden");
+}
+$("btnPlay").onclick=()=>{
+  $("modalStart").classList.add("hidden");
+  const lvl = Math.min(10, save.maxLevel||1);
+  goToLevelIntro(lvl,0);
+};
+$("btnLevels").onclick=()=>{
+  $("modalStart").classList.add("hidden");
+  renderLevelSelect();
+  $("modalLevels").classList.remove("hidden");
+};
+$("btnLevelsBack").onclick=()=>{
+  $("modalLevels").classList.add("hidden");
+  $("modalStart").classList.remove("hidden");
+};
+function renderLevelSelect(){
+  const grid=$("levelSelectGrid");
+  grid.innerHTML="";
+  for(let i=1;i<=10;i++){
+    const locked = i>save.maxLevel;
+    const btn=document.createElement("div");
+    btn.className="lvl-btn"+(locked?" locked":"");
+    const st = (save.stars&&save.stars[i])||0;
+    btn.innerHTML = i + (!locked? `<span class="st">${"⭐".repeat(st)||"·"}</span>`:`<span class="st">🔒</span>`);
+    if(!locked){
+      btn.onclick=()=>{ $("modalLevels").classList.add("hidden"); goToLevelIntro(i,0); };
+    }
+    grid.appendChild(btn);
+  }
+}
+
+/* =========================================================
+   PAUSE / MUTE
+========================================================= */
+$("pauseBtn").onclick=()=>{
+  if(state.screen!=="playing") return;
+  state.paused=true;
+  $("pauseOverlay").classList.remove("hidden");
+};
+$("resumeBtn").onclick=()=>{
+  state.paused=false;
+  $("pauseOverlay").classList.add("hidden");
+};
+$("quitBtn").onclick=()=>{
+  state.paused=false;
+  $("pauseOverlay").classList.add("hidden");
+  state.screen="idle";
+  goToMenu();
+};
+$("muteBtn").onclick=()=>{
+  muted=!muted; save.muted=muted; writeSave();
+  $("muteBtn").textContent = muted? "🔇":"🔊";
+};
+
+/* =========================================================
+   AD PLACEHOLDERS
+========================================================= */
+const INTERSTITIAL_COOLDOWN = 75000; // 60-90s range
+function maybeInterstitial(){
+  const now=performance.now();
+  if(now - state.lastInterstitial < INTERSTITIAL_COOLDOWN) return;
+  state.lastInterstitial = now;
+  const modal=$("modalInterstitial");
+  modal.classList.remove("hidden");
+  const bar=$("rewardBar"); const skip=$("btnSkipInter");
+  let t=0; bar.style.width="0%"; skip.disabled=true; skip.textContent="Bỏ qua (5)";
+  const iv=setInterval(()=>{
+    t+=100;
+    const pct=Math.min(100,(t/5000)*100);
+    bar.style.width=pct+"%";
+    const remain=Math.max(0,Math.ceil((5000-t)/1000));
+    skip.textContent="Bỏ qua ("+remain+")";
+    if(t>=5000){ clearInterval(iv); skip.disabled=false; skip.textContent="Bỏ qua ✓"; }
+  },100);
+  skip.onclick=()=>{ if(skip.disabled) return; modal.classList.add("hidden"); clearInterval(iv); };
+}
+
+function showRewarded(title,desc,onReward){
+  ensureAudio();
+  $("rewardedTitle").textContent=title;
+  $("rewardedDesc").textContent=desc;
+  const modal=$("modalRewarded");
+  modal.classList.remove("hidden");
+  const bar=$("rewardBar2");
+  let t=0; bar.style.width="0%";
+  const DURATION=4000; // simulated; real network typically 15-30s
+  const iv=setInterval(()=>{
+    t+=100;
+    bar.style.width=Math.min(100,(t/DURATION)*100)+"%";
+    if(t>=DURATION){
+      clearInterval(iv);
+      modal.classList.add("hidden");
+      onReward && onReward();
+    }
+  },100);
+  $("btnCancelRewarded").onclick=()=>{
+    clearInterval(iv);
+    modal.classList.add("hidden");
+  };
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+$("muteBtn").textContent = muted? "🔇":"🔊";
+resizeCanvas();
+updateHUD();
+renderTray();
+requestAnimationFrame(loop);
+
+// enable audio context on first user gesture
+["pointerdown","touchstart","click"].forEach(evt=>{
+  document.addEventListener(evt, ensureAudio, {once:true});
+});
+
+})();
+</script>
+</body>
+</html>
