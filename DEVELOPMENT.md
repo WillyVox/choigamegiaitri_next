@@ -81,7 +81,39 @@ PHẦN 4: KỸ THUẬT WEB GAME TRÊN NEXT.JS (RESPONSIVE)
 
 Next game ideas
 - Trò chơi giải trí phổ biến: Các tựa game nhẹ nhàng, vui nhộn như Goose Goose Duck (suy luận xã hội), 
-Magic Dodos (trí tuệ) hoặc các game casual trên điện thoại. [1] (https://ai-hay.vn/choi-game-giai-tri-tren-win-10-mien-phi-pN1UmIcNNdW)
+- Magic Dodos (trí tuệ) 
+- hoặc các game casual trên điện thoại. [1] (https://ai-hay.vn/choi-game-giai-tri-tren-win-10-mien-phi-pN1UmIcNNdW)
 
 - Game đố vui & Trí tuệ nhẹ nhàng 
 - Brain Out / Brain Test: Những câu đố "hại não" nhưng đầy hài hước và bất ngờ, giúp kích thích tư duy sáng tạo. 
+
+
+
+Trên Windows 10, có rất nhiều lựa chọn game giải trí miễn phí mà bạn có thể trải nghiệm. Dưới đây là một số gợi ý đa dạng về thể loại:
+
+Game Hành Động & Sinh Tồn ⚔️
+Liên Minh Huyền Thoại (League of Legends): Tựa game MOBA huyền thoại, đòi hỏi chiến thuật và sự phối hợp đồng đội.
+Counter-Strike 2: Phiên bản nâng cấp của CS:GO, mang đến trải nghiệm bắn súng chiến thuật đỉnh cao.
+PUBG: Battlegrounds: Game Battle Royale sinh tồn, nơi bạn cạnh tranh với 99 người chơi khác để trở thành người sống sót cuối cùng.
+Call of Duty: Warzone: Game Battle Royale với nhịp độ nhanh, bản đồ rộng lớn và kho vũ khí đa dạng.
+Forza Motorsport 6 Apex: Thỏa mãn đam mê tốc độ với những màn đua xe gay cấn trên PC.
+Team Fortress 2: Game bắn súng đồng đội với nhiều lớp nhân vật độc đáo và lối chơi hấp dẫn. phongvu gamevui
+Game Giải Trí & Nhập Vai 🎮
+Viking Rituals: Khám phá các trò chơi nhỏ lấy cảm hứng từ thời đại Viking.
+Magic Dodos: Kết hợp game vui và trí tuệ, thử thách người chơi giúp chim Dodo di chuyển đến nơi an toàn.
+EGGNOGG+: Game chiến đấu đi cảnh với những trận đấu kiếm quyết liệt.
+Tin Heart: Game điều khiển trái tim kim loại né tránh chướng ngại vật nguy hiểm.
+Goose Goose Duck: Game suy luận xã hội, tương tự Among Us nhưng có nhiều chế độ độc đáo.
+Destiny 2: Game bắn súng góc nhìn thứ nhất kết hợp nhập vai MMO với nhiều chế độ chơi thử thách.
+Honkai: Star Rail: Game nhập vai với cốt truyện hấp dẫn và hình ảnh đẹp mắt.
+Zenless Zone Zero: Game hành động nhập vai với phong cách độc đáo.
+Once Human: Game sinh tồn với yếu tố nhập vai.
+Wuthering Waves: Game hành động nhập vai thế giới mở. download
+Game Thể Thao & Đấu Trường 🏆
+FIFA Online 4: Trải nghiệm bóng đá chân thực với việc xây dựng đội hình mơ ước.
+The Finals: Game bắn súng với lối chơi độc đáo và môi trường có thể phá hủy. thegioididong
+Các Lựa Chọn Khác 🌟
+Plants vs Bugs: Garden Defense: Game phòng thủ chủ đề bảo vệ khu vườn.
+Arknights, eFootball 2027, Drift, Cuộc chiến Vương quyền, Strix, Morimens: Các lựa chọn đa dạng có sẵn để tải xuống miễn phí.
+HoloCure: Game kiểu Survivors với các nhân vật VTuber yêu thích.
+Dragon Ball Z Budokai X: Game chiến đấu dựa trên Dragon Ball. 

@@ -1,5 +1,5 @@
 # Prompt 1
-Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và tạo cho mình game [Goose Goose Duck (suy luận xã hội) ] thoả các điều kiện ở trên và kèm theo sau nữa, trả về mình file hoàn chỉnh với các yêu cầu sau:
+Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và tạo cho mình game [Goose Goose Duck (suy luận xã hội)] thoả các điều kiện ở trên và kèm theo sau nữa, trả về mình file hoàn chỉnh trước khi bạn hết token với các yêu cầu sau:
 
 PHẦN 1: Tổng quát: 
 - gây nghiện

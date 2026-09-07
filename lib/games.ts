@@ -139,7 +139,7 @@ export const GAME_CONFIGS: GameMeta[] = [
     genre: ['Party', 'Quiz']
   },
   {
-    slug: 'bubble-blast',
+    slug: 'bubble-shoot',
     name: { en: 'Bubble Blast', vi: 'Bắn Bóng Vũ Trụ' },
     tagline: {
       en: 'Aim, shoot, pop matching bubbles.',
@@ -149,7 +149,7 @@ export const GAME_CONFIGS: GameMeta[] = [
       en: 'A classic bubble shooter in a cosmic setting. Aim and fire colored bubbles, match three or more of the same color to pop them, and clear the sky before the bubbles reach the bottom.',
       vi: 'Chơi Game Giải Trí bắn bóng cổ điển giữa không gian đầy sao. Ngắm và bắn bóng màu, ghép từ 3 bóng cùng màu trở lên để nổ, dọn sạch bầu trời trước khi bóng tràn xuống đáy.'
     },
-    ogImage: '/games/icon-bubble-blast.svg',
+    ogImage: '/games/icon-bubble-shoot.svg',
     genre: ['Puzzle', 'Arcade', 'Casual']
   }, 
   */

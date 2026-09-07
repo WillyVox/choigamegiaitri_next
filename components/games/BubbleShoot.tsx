@@ -27,9 +27,9 @@
  *
  *  USAGE
  *  --------------------------------------------------------------------------
- *    import BubbleBlastGame from './BubbleBlastGame';
+ *    import BubbleShootGame from './BubbleShootGame';
  *    export default function Page() {
- *      return <BubbleBlastGame />;
+ *      return <BubbleShootGame />;
  *    }
  *
  *  For Next.js App Router SEO, in the page/layout that renders this
@@ -764,7 +764,7 @@ function createInitialCore(diff: Difficulty): GameCore {
  * REACT COMPONENT
  * ========================================================================== */
 
-export interface BubbleBlastGameProps {
+export interface BubbleShootGameProps {
   /** Optional CSS class applied to the outer wrapper. */
   className?: string;
   /** Called whenever the score changes — hook up to analytics if desired. */
@@ -773,7 +773,7 @@ export interface BubbleBlastGameProps {
   adsEnabled?: boolean;
 }
 
-const BubbleBlastGame: React.FC<BubbleBlastGameProps> = ({ className, onScoreChange, adsEnabled = true }) => {
+const BubbleShootGame: React.FC<BubbleShootGameProps> = ({ className, onScoreChange, adsEnabled = true }) => {
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const confCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -1131,7 +1131,7 @@ const BubbleBlastGame: React.FC<BubbleBlastGameProps> = ({ className, onScoreCha
   );
 };
 
-export default BubbleBlastGame;
+export default BubbleShootGame;
 
 /* ============================================================================
  * AD PLACEHOLDER COMPONENTS

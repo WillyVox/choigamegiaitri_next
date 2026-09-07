@@ -10,7 +10,7 @@ import DragonsGate from '@/components/games/DragonsGate';
 import BubbleBurst from '@/components/games/BubbleBurst';
 import MergeMeadow from '@/components/games/MergeMeadow';
 import ChaosOrNah from '@/components/games/ChaosOrNah';
-import BubbleBlast from '@/components/games/BubbleBlast';
+import BubbleShoot from '@/components/games/BubbleShoot';
 import CrystalBlocks from '@/components/games/CrystalBlocks';
 import SudokuZen from '@/components/games/SudokuZen';
 import GooseGooseDuck from '@/components/games/GooseGooseDuck';
@@ -23,7 +23,7 @@ const componentMap: Record<string, React.ComponentType> = {
   'chaos-or-nah': ChaosOrNah,
   'merge-meadow': MergeMeadow,
   'bubble-burst': BubbleBurst,
-  'bubble-blast': BubbleBlast,
+  'bubble-shoot': BubbleShoot,
   'crystal-blocks': CrystalBlocks,
   'sudoku-zen': SudokuZen,
   'goose-goose-duck': GooseGooseDuck

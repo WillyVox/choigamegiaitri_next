@@ -110,7 +110,27 @@
     "footerNote": "Trò chơi đập bóng bọt thư giãn",
     "adGameOver": "[QC Game Over 300x250]",
     "aboutTitle": "Nổ Bong Bóng – Game giải trí online miễn phí",
-    "aboutP1": "Game bắn bóng thư giãn trên trình duyệt. Phá vỡ bong bóng, tích điểm combo và vượt qua kỷ lục của chính mình."
+    "aboutP1": "Game bắn bóng thư giãn trên trình duyệt. Phá vỡ bong bóng, tích điểm combo và vượt qua kỷ lục của chính mình.",
+    "scoreLabel": "ĐIỂM",
+    "levelLabel": "CẤP {level}",
+    "levelUpTitle": "CẤP {level}",
+    "levelUpSub": "Tốc độ tăng lên!",
+    "defuse": "Gỡ Bom",
+    "slow": "Làm Chậm",
+    "tagline": "Không để bong bóng trôi lên hết màn hình!",
+    "hiscorePill": "KỶ LỤC: {score}",
+    "hint": "Chạm hoặc bấm vào bong bóng để làm vỡ.<br/>Đừng để chúng chạm tới cạnh trên!",
+    "pauseTitle": "TẠM DỪNG",
+    "resumeButton": "TIẾP TỤC",
+    "restartButton": "CHƠI LẠI",
+    "continueTitle": "CHẠM CẠNH TRÊN!",
+    "continueHint": "Xem quảng cáo ngắn để dọn màn hình và chơi tiếp!",
+    "watchAdContinue": "▶ Xem QC & Chơi tiếp ({seconds}s)",
+    "giveUp": "Kết thúc lượt chơi",
+    "finalLabel": "KẾT THÚC",
+    "newRecord": "KỶ LỤC MỚI!",
+    "doubleBtn": "🎬 Xem QC nhận x2 điểm",
+    "replayButton": "CHƠI LẠI"
   },
   "mergeMeadow": {
     "score": "điểm",
@@ -139,7 +159,7 @@
     "shareDaily": "Sao chép kết quả hôm nay",
     "dailyNote": "Thử thách hằng ngày mới sẽ mở khóa vào ngày mai."
   },
-  "bubbleBlast": {
+  "bubbleShoot": {
     "score": "điểm",
     "best": "tốt nhất",
     "next": "tiếp theo",
