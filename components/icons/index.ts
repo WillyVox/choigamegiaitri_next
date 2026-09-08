@@ -7,3 +7,4 @@ export { default as SudokuZenIcon } from './SudokuZenIcon';
 export { default as ChaosOrNahIcon } from './ChaosOrNahIcon';
 export { default as GooseGooseDuckIcon } from './GooseGooseDuckIcon';
 export { default as PlantsVsBugsIcon } from './PlantsVsBugsIcon';
+export { default as MagicDodosIcon } from './MagicDodosIcon';

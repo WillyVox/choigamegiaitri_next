@@ -8,7 +8,8 @@ import {
   SudokuZenIcon,
   ChaosOrNahIcon,
   GooseGooseDuckIcon,
-  PlantsVsBugsIcon
+  PlantsVsBugsIcon,
+  MagicDodosIcon
 } from './index';
 
 /** Maps a GameMeta.slug to its icon component. */
@@ -21,5 +22,6 @@ export const GAME_ICONS: Record<string, ComponentType<SVGProps<SVGSVGElement>>> 
   'sudoku-zen': SudokuZenIcon,
   'chaos-or-nah': ChaosOrNahIcon,
   'goose-goose-duck': GooseGooseDuckIcon,
-  'plants-vs-bugs': PlantsVsBugsIcon
+  'plants-vs-bugs': PlantsVsBugsIcon,
+  'magic-dodos': MagicDodosIcon
 };
