@@ -137,6 +137,23 @@ export const GAME_CONFIGS: GameMeta[] = [
     },
     ogImage: '/games/icon-plants-vs-bugs.svg',
     genre: ['Strategy', 'Tower Defense', 'Casual']
+  },
+  {
+    slug: 'magic-dodos',
+    name: { 
+      en: 'Magic Dodos', 
+      vi: 'Dodo Diệu Kỳ' 
+    },
+    tagline: {
+      en: 'Fit feathered blocks, hatch magical eggs, clear the board.',
+      vi: 'Xếp khối lông vũ, ấp trứng phép thuật, dọn sạch tổ chim.'
+    },
+    description: {
+      en: 'A cozy, addictive egg-puzzle game for all ages. Place magical feathered blocks onto the grid, fill entire rows or columns to clear space, and trigger powerful charm bonuses.',
+      vi: 'Trò chơi xếp hình đố trứng ấm áp và gây nghiện dành cho mọi lứa tuổi. Xếp các khối lông vũ diệu kỳ lên bàn cờ, lấp đầy hàng hoặc cột để dọn dẹp không gian và kích hoạt các bùa phép hỗ trợ.'
+    },
+    ogImage: '/games/icon-magic-dodos.svg',
+    genre: ['Puzzle', 'Casual', 'Strategy']
   }
   /* {
     slug: 'chaos-or-nah',

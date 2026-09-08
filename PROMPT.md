@@ -1,5 +1,5 @@
 # Prompt 1
-Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và tạo cho mình game [Plants vs Bugs: Garden Defense: Game phòng thủ chủ đề bảo vệ khu vườn.] thoả các điều kiện ở trên và kèm theo sau nữa, PHẢI LUÔN NHỚ RẰNG trả về mình file hoàn chỉnh trước khi bạn hết token với các yêu cầu sau:
+Nghiên cứu chuyên sâu, tìm hiểu sâu sắc và tạo cho mình game [Magic Dodos (trí tuệ)] thoả các điều kiện ở trên và kèm theo sau nữa, PHẢI LUÔN NHỚ RẰNG trả về mình file hoàn chỉnh trước khi bạn hết token với các yêu cầu sau:
 
 PHẦN 1: Tổng quát: 
 - gây nghiện

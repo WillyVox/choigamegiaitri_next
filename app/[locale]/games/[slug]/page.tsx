@@ -15,6 +15,7 @@ import CrystalBlocks from '@/components/games/CrystalBlocks';
 import SudokuZen from '@/components/games/SudokuZen';
 import GooseGooseDuck from '@/components/games/GooseGooseDuck';
 import PlantsVsBugs from '@/components/games/PlantsVsBugs';
+import MagicDodos from '@/components/games/MagicDodos';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -28,7 +29,8 @@ const componentMap: Record<string, React.ComponentType> = {
   'crystal-blocks': CrystalBlocks,
   'sudoku-zen': SudokuZen,
   'goose-goose-duck': GooseGooseDuck,
-  'plants-vs-bugs': PlantsVsBugs
+  'plants-vs-bugs': PlantsVsBugs,
+  'magic-dodos': MagicDodos
 };
 
 export function generateStaticParams() {
