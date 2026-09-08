@@ -84,8 +84,8 @@
     "doubleScoreButton": "🎬 Watch ad for 2x score",
     "interstitialLoading": "Loading ad…",
     "interstitialPlaceholder": "Interstitial ad",
-    "adSideLabel": "Ad",
-    "adBannerLabel": "Ad banner 320×50"
+    "adSideLabel": "[AD]",
+    "adBannerLabel": "[AD 320×50]"
   },
   "dragonsGate": {
     "title": "Dragon's Gate",

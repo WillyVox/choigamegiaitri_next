@@ -63,7 +63,6 @@ export default function AdSlot({ size, id }: { size: AdSize; id: string }) {
           font-size: 0.72rem;
           text-align: center;
           padding: 8px;
-          display: none; // temporary disabled!!!
         }
         .ad-slot__label {
           font-weight: 700;

@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import GameCard from '@/components/GameCard';
 import AdSlot from '@/components/AdSlot';
 import { GAME_CONFIGS, type Locale } from '@/lib/games';
+import { AdWrapper } from '@/components/AdWrapper';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -56,17 +57,18 @@ export default async function HomePage({
         <h1>{t('heroTitle')}</h1>
         <p>{t('heroSubtitle')}</p>
       </section>
-
-      <AdSlot size="banner" id="home-top-banner" />
+      <AdWrapper>
+        <AdSlot size="banner" id="home-top-banner" />
+      </AdWrapper>
 
       <section id="games" className="game-grid">
         {GAME_CONFIGS.map((g) => (
           <GameCard key={g.slug} game={g} locale={loc} />
         ))}
       </section>
-
-      <AdSlot size="rectangle" id="home-rect" />
-
+      <AdWrapper>
+        <AdSlot size="rectangle" id="home-rect" />
+      </AdWrapper>
       <section className="seo-copy">
         <h2>{t('aboutHeading')}</h2>
         <p>{t('aboutBody')}</p>

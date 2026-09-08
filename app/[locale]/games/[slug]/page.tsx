@@ -16,6 +16,7 @@ import SudokuZen from '@/components/games/SudokuZen';
 import GooseGooseDuck from '@/components/games/GooseGooseDuck';
 import PlantsVsBugs from '@/components/games/PlantsVsBugs';
 import MagicDodos from '@/components/games/MagicDodos';
+import { AdWrapper } from '@/components/AdWrapper';
 
 const SITE_URL = 'https://choigamegiaitri.com';
 
@@ -109,14 +110,18 @@ export default async function GamePage({
         <h1>{game.name[loc]}</h1>
         <p>{game.description[loc]}</p>
       </header>
-
-      <AdSlot size="banner" id={`${slug}-top-banner`} />
+      
+      <AdWrapper>
+        <AdSlot size="banner" id={`${slug}-top-banner`} />
+      </AdWrapper>
 
       <div className="game-stage-wrap">
         <GameComponent />
       </div>
 
-      <AdSlot size="rectangle" id={`${slug}-rect`} />
+      <AdWrapper>
+        <AdSlot size="rectangle" id={`${slug}-rect`} />
+      </AdWrapper>
 
       <section className="seo-copy">
         <h2>{t('moreGames')}</h2>
